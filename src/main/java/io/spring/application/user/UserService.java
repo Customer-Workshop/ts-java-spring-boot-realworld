@@ -1,5 +1,6 @@
 package io.spring.application.user;
 
+import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import java.lang.annotation.Retention;
@@ -59,7 +60,7 @@ public class UserService {
     User user =
         userRepository
             .findByEmail(passwordResetParam.getEmail())
-            .orElseThrow(() -> new IllegalArgumentException("User with this email does not exist"));
+            .orElseThrow(ResourceNotFoundException::new);
     user.update(
         null, null, passwordEncoder.encode(passwordResetParam.getNewPassword()), null, null);
     userRepository.save(user);
