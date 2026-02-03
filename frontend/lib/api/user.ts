@@ -4,7 +4,7 @@ import { SERVER_BASE_URL } from "../utils/constant";
 
 const UserAPI = {
   current: async () => {
-    const user: any = window.localStorage.getItem("user");
+    const user: any = JSON.parse(window.localStorage.getItem("user"));
     const token = user?.token;
     try {
       const response = await axios.get(`/user`, {
@@ -50,6 +50,8 @@ const UserAPI = {
     }
   },
   save: async (user) => {
+    const currentUser: any = JSON.parse(window.localStorage.getItem("user"));
+    const token = currentUser?.token;
     try {
       const response = await axios.put(
         `${SERVER_BASE_URL}/user`,
@@ -57,6 +59,7 @@ const UserAPI = {
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Token ${token}`,
           },
         }
       );
