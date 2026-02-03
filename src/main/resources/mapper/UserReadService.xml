@@ -7,4 +7,10 @@
     <select id="findById" resultType="io.spring.application.data.UserData">
         select * from users where id = #{id}
     </select>
+    <select id="searchByUsername" resultType="io.spring.application.data.UserData">
+        select * from users where username like '%' || #{query} || '%'
+    </select>
+    <select id="countArticlesByUserId" resultType="java.lang.Integer">
+        select count(*) from articles where user_id = #{userId}
+    </select>
 </mapper>
