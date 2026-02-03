@@ -7,6 +7,7 @@ import io.spring.api.exception.InvalidAuthenticationException;
 import io.spring.application.UserQueryService;
 import io.spring.application.data.UserData;
 import io.spring.application.data.UserWithToken;
+import io.spring.application.user.PasswordResetParam;
 import io.spring.application.user.RegisterParam;
 import io.spring.application.user.UserService;
 import io.spring.core.service.JwtService;
@@ -55,6 +56,13 @@ public class UsersApi {
     } else {
       throw new InvalidAuthenticationException();
     }
+  }
+
+  @RequestMapping(path = "/users/password-reset", method = POST)
+  public ResponseEntity resetPassword(@Valid @RequestBody PasswordResetParam passwordResetParam) {
+    User user = userService.resetPassword(passwordResetParam);
+    UserData userData = userQueryService.findById(user.getId()).get();
+    return ResponseEntity.ok(userResponse(new UserWithToken(userData, jwtService.toToken(user))));
   }
 
   private Map<String, Object> userResponse(UserWithToken userWithToken) {

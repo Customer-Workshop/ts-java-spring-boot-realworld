@@ -54,6 +54,17 @@ public class UserService {
         updateUserParam.getImage());
     userRepository.save(user);
   }
+
+  public User resetPassword(@Valid PasswordResetParam passwordResetParam) {
+    User user =
+        userRepository
+            .findByEmail(passwordResetParam.getEmail())
+            .orElseThrow(() -> new IllegalArgumentException("User with this email does not exist"));
+    user.update(
+        null, null, passwordEncoder.encode(passwordResetParam.getNewPassword()), null, null);
+    userRepository.save(user);
+    return user;
+  }
 }
 
 @Constraint(validatedBy = UpdateUserValidator.class)
