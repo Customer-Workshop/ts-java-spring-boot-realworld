@@ -11,10 +11,13 @@ public class DefaultJwtServiceTest {
 
   private JwtService jwtService;
 
+  private static final String TEST_SECRET = System.getenv("JWT_SECRET") != null 
+      ? System.getenv("JWT_SECRET") 
+      : "nRvyYC4soFxBdZ-F-5Nnzz5USXstR1YylsTd-mA0aKtI9HUlriGrtkf-TiuDapkLiUCogO3JOK7kwZisrHp6wA";
+
   @BeforeEach
   public void setUp() {
-    jwtService =
-        new DefaultJwtService("123123123123123123123123123123123123123123123123123123123123", 3600);
+    jwtService = new DefaultJwtService(TEST_SECRET, 3600);
   }
 
   @Test
