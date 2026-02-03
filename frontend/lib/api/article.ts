@@ -54,7 +54,7 @@ const ArticleAPI = {
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Token ${encodeURIComponent(token)}`,
+          Authorization: `Token ${token}`,
         },
       }
     );
@@ -71,7 +71,7 @@ const ArticleAPI = {
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Token ${encodeURIComponent(token)}`,
+          Authorization: `Token ${token}`,
         },
       }
     );

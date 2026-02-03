@@ -4,12 +4,12 @@ import { SERVER_BASE_URL } from "../utils/constant";
 
 const UserAPI = {
   current: async () => {
-    const user: any = window.localStorage.getItem("user");
+    const user: any = JSON.parse(window.localStorage.getItem("user"));
     const token = user?.token;
     try {
       const response = await axios.get(`/user`, {
         headers: {
-          Authorization: `Token ${encodeURIComponent(token)}`,
+          Authorization: `Token ${token}`,
         },
       });
       return response;
@@ -74,7 +74,7 @@ const UserAPI = {
         {},
         {
           headers: {
-            Authorization: `Token ${encodeURIComponent(token)}`,
+            Authorization: `Token ${token}`,
           },
         }
       );
@@ -91,7 +91,7 @@ const UserAPI = {
         `${SERVER_BASE_URL}/profiles/${username}/follow`,
         {
           headers: {
-            Authorization: `Token ${encodeURIComponent(token)}`,
+            Authorization: `Token ${token}`,
           },
         }
       );
