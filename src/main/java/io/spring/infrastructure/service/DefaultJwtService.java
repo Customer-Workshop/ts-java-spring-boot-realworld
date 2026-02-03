@@ -1,21 +1,28 @@
 package io.spring.infrastructure.service;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.SignatureException;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import java.util.Date;
 import java.util.Optional;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DefaultJwtService implements JwtService {
+  private static final Logger logger = LoggerFactory.getLogger(DefaultJwtService.class);
+
   private final SecretKey signingKey;
   private final SignatureAlgorithm signatureAlgorithm;
   private int sessionTime;
@@ -43,7 +50,17 @@ public class DefaultJwtService implements JwtService {
       Jws<Claims> claimsJws =
           Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(token);
       return Optional.ofNullable(claimsJws.getBody().getSubject());
+    } catch (ExpiredJwtException e) {
+      logger.warn("JWT token has expired: {}", e.getMessage());
+      return Optional.empty();
+    } catch (SignatureException e) {
+      logger.warn("JWT signature validation failed: {}", e.getMessage());
+      return Optional.empty();
+    } catch (MalformedJwtException e) {
+      logger.warn("JWT token is malformed: {}", e.getMessage());
+      return Optional.empty();
     } catch (Exception e) {
+      logger.warn("JWT validation failed with unexpected error: {}", e.getMessage());
       return Optional.empty();
     }
   }
