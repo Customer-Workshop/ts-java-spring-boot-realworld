@@ -13,8 +13,10 @@ public class DefaultJwtServiceTest {
 
   @BeforeEach
   public void setUp() {
+    // JJWT 0.12.5 requires minimum 512 bits (64 bytes) for HS512 algorithm
     jwtService =
-        new DefaultJwtService("123123123123123123123123123123123123123123123123123123123123", 3600);
+        new DefaultJwtService(
+            "1231231231231231231231231231231231231231231231231231231231231234", 3600);
   }
 
   @Test
