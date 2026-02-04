@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  main-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:sqlite:/data/dev.db
+      - TAGS_SERVICE_URL=http://tags-service:8081
+    volumes:
+      - main-app-data:/data
+    depends_on:
+      - tags-service
+    networks:
+      - realworld-network
+
+  tags-service:
+    build:
+      context: ./tags-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:sqlite:/data/tags.db
+      - SERVER_PORT=8081
+    volumes:
+      - tags-service-data:/data
+    networks:
+      - realworld-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://main-app:8080
+    depends_on:
+      - main-app
+    networks:
+      - realworld-network
+
+volumes:
+  main-app-data:
+  tags-service-data:
+
+networks:
+  realworld-network:
+    driver: bridge
