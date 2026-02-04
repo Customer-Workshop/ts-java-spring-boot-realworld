@@ -1,14 +1,8 @@
 package io.spring.api;
 
-import io.spring.api.exception.NoAuthorizationException;
-import io.spring.api.exception.ResourceNotFoundException;
-import io.spring.application.ArticleQueryService;
-import io.spring.application.article.ArticleCommandService;
 import io.spring.application.article.UpdateArticleParam;
 import io.spring.application.data.ArticleData;
-import io.spring.core.article.Article;
-import io.spring.core.article.ArticleRepository;
-import io.spring.core.service.AuthorizationService;
+import io.spring.application.facade.ArticleApiFacade;
 import io.spring.core.user.User;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,17 +22,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "/articles/{slug}")
 @AllArgsConstructor
 public class ArticleApi {
-  private ArticleQueryService articleQueryService;
-  private ArticleRepository articleRepository;
-  private ArticleCommandService articleCommandService;
+  private ArticleApiFacade articleApiFacade;
 
   @GetMapping
   public ResponseEntity<?> article(
       @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
-    return articleQueryService
-        .findBySlug(slug, user)
-        .map(articleData -> ResponseEntity.ok(articleResponse(articleData)))
-        .orElseThrow(ResourceNotFoundException::new);
+    ArticleData articleData = articleApiFacade.getArticle(slug, user);
+    return ResponseEntity.ok(articleResponse(articleData));
   }
 
   @PutMapping
@@ -46,36 +36,15 @@ public class ArticleApi {
       @PathVariable("slug") String slug,
       @AuthenticationPrincipal User user,
       @Valid @RequestBody UpdateArticleParam updateArticleParam) {
-    return articleRepository
-        .findBySlug(slug)
-        .map(
-            article -> {
-              if (!AuthorizationService.canWriteArticle(user, article)) {
-                throw new NoAuthorizationException();
-              }
-              Article updatedArticle =
-                  articleCommandService.updateArticle(article, updateArticleParam);
-              return ResponseEntity.ok(
-                  articleResponse(
-                      articleQueryService.findBySlug(updatedArticle.getSlug(), user).get()));
-            })
-        .orElseThrow(ResourceNotFoundException::new);
+    ArticleData articleData = articleApiFacade.updateArticle(slug, updateArticleParam, user);
+    return ResponseEntity.ok(articleResponse(articleData));
   }
 
   @DeleteMapping
   public ResponseEntity deleteArticle(
       @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
-    return articleRepository
-        .findBySlug(slug)
-        .map(
-            article -> {
-              if (!AuthorizationService.canWriteArticle(user, article)) {
-                throw new NoAuthorizationException();
-              }
-              articleRepository.remove(article);
-              return ResponseEntity.noContent().build();
-            })
-        .orElseThrow(ResourceNotFoundException::new);
+    articleApiFacade.deleteArticle(slug, user);
+    return ResponseEntity.noContent().build();
   }
 
   private Map<String, Object> articleResponse(ArticleData articleData) {

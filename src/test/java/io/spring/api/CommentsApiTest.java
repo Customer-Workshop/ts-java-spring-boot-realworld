@@ -5,18 +5,19 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import io.spring.JacksonCustomizations;
+import io.spring.api.exception.NoAuthorizationException;
 import io.spring.api.security.WebSecurityConfig;
-import io.spring.application.CommentQueryService;
 import io.spring.application.data.CommentData;
 import io.spring.application.data.ProfileData;
+import io.spring.application.facade.CommentApiFacade;
 import io.spring.core.article.Article;
-import io.spring.core.article.ArticleRepository;
 import io.spring.core.comment.Comment;
-import io.spring.core.comment.CommentRepository;
 import io.spring.core.user.User;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -34,10 +35,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import({WebSecurityConfig.class, JacksonCustomizations.class})
 public class CommentsApiTest extends TestWithCurrentUser {
 
-  @MockBean private ArticleRepository articleRepository;
-
-  @MockBean private CommentRepository commentRepository;
-  @MockBean private CommentQueryService commentQueryService;
+  @MockBean private CommentApiFacade commentApiFacade;
 
   private Article article;
   private CommentData commentData;
@@ -49,7 +47,6 @@ public class CommentsApiTest extends TestWithCurrentUser {
     RestAssuredMockMvc.mockMvc(mvc);
     super.setUp();
     article = new Article("title", "desc", "body", Arrays.asList("test", "java"), user.getId());
-    when(articleRepository.findBySlug(eq(article.getSlug()))).thenReturn(Optional.of(article));
     comment = new Comment("comment", user.getId(), article.getId());
     commentData =
         new CommentData(
@@ -77,7 +74,8 @@ public class CommentsApiTest extends TestWithCurrentUser {
           }
         };
 
-    when(commentQueryService.findById(anyString(), eq(user))).thenReturn(Optional.of(commentData));
+    when(commentApiFacade.createComment(eq(article.getSlug()), anyString(), any(User.class)))
+        .thenReturn(commentData);
 
     given()
         .contentType("application/json")
@@ -118,7 +116,7 @@ public class CommentsApiTest extends TestWithCurrentUser {
 
   @Test
   public void should_get_comments_of_article_success() throws Exception {
-    when(commentQueryService.findByArticleId(anyString(), eq(null)))
+    when(commentApiFacade.getComments(eq(article.getSlug()), eq(null)))
         .thenReturn(Arrays.asList(commentData));
     RestAssuredMockMvc.when()
         .get("/articles/{slug}/comments", article.getSlug())
@@ -130,8 +128,9 @@ public class CommentsApiTest extends TestWithCurrentUser {
 
   @Test
   public void should_delete_comment_success() throws Exception {
-    when(commentRepository.findById(eq(article.getId()), eq(comment.getId())))
-        .thenReturn(Optional.of(comment));
+    doNothing()
+        .when(commentApiFacade)
+        .deleteComment(eq(article.getSlug()), eq(comment.getId()), any(User.class));
 
     given()
         .header("Authorization", "Token " + token)
@@ -151,8 +150,10 @@ public class CommentsApiTest extends TestWithCurrentUser {
     when(userRepository.findById(eq(anotherUser.getId())))
         .thenReturn(Optional.ofNullable(anotherUser));
 
-    when(commentRepository.findById(eq(article.getId()), eq(comment.getId())))
-        .thenReturn(Optional.of(comment));
+    doThrow(new NoAuthorizationException())
+        .when(commentApiFacade)
+        .deleteComment(eq(article.getSlug()), eq(comment.getId()), any(User.class));
+
     String token = jwtService.toToken(anotherUser);
     when(userRepository.findById(eq(anotherUser.getId()))).thenReturn(Optional.of(anotherUser));
     given()

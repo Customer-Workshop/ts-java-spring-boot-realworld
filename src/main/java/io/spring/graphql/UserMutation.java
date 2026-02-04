@@ -5,13 +5,14 @@ import com.netflix.graphql.dgs.DgsData;
 import com.netflix.graphql.dgs.InputArgument;
 import graphql.execution.DataFetcherResult;
 import io.spring.api.exception.InvalidAuthenticationException;
+import io.spring.application.facade.UserApiFacade;
 import io.spring.application.user.RegisterParam;
-import io.spring.application.user.UpdateUserCommand;
 import io.spring.application.user.UpdateUserParam;
 import io.spring.application.user.UserService;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import io.spring.graphql.DgsConstants.MUTATION;
+import io.spring.graphql.exception.AuthenticationException;
 import io.spring.graphql.exception.GraphQLCustomizeExceptionHandler;
 import io.spring.graphql.types.CreateUserInput;
 import io.spring.graphql.types.UpdateUserInput;
@@ -20,9 +21,6 @@ import io.spring.graphql.types.UserResult;
 import java.util.Optional;
 import javax.validation.ConstraintViolationException;
 import lombok.AllArgsConstructor;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @DgsComponent
@@ -32,6 +30,7 @@ public class UserMutation {
   private UserRepository userRepository;
   private PasswordEncoder encryptService;
   private UserService userService;
+  private UserApiFacade userApiFacade;
 
   @DgsData(parentType = MUTATION.TYPE_NAME, field = MUTATION.CreateUser)
   public DataFetcherResult<UserResult> createUser(@InputArgument("input") CreateUserInput input) {
@@ -69,12 +68,7 @@ public class UserMutation {
   @DgsData(parentType = MUTATION.TYPE_NAME, field = MUTATION.UpdateUser)
   public DataFetcherResult<UserPayload> updateUser(
       @InputArgument("changes") UpdateUserInput updateUserInput) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication instanceof AnonymousAuthenticationToken
-        || authentication.getPrincipal() == null) {
-      return null;
-    }
-    io.spring.core.user.User currentUser = (io.spring.core.user.User) authentication.getPrincipal();
+    User currentUser = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
     UpdateUserParam param =
         UpdateUserParam.builder()
             .username(updateUserInput.getUsername())
@@ -84,7 +78,7 @@ public class UserMutation {
             .image(updateUserInput.getImage())
             .build();
 
-    userService.updateUser(new UpdateUserCommand(currentUser, param));
+    userApiFacade.updateUser(currentUser, param, "");
     return DataFetcherResult.<UserPayload>newResult()
         .data(UserPayload.newBuilder().build())
         .localContext(currentUser)

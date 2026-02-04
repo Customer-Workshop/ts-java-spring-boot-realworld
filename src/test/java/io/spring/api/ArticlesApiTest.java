@@ -12,10 +12,10 @@ import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import io.spring.JacksonCustomizations;
 import io.spring.api.security.WebSecurityConfig;
 import io.spring.application.ArticleQueryService;
-import io.spring.application.article.ArticleCommandService;
 import io.spring.application.data.ArticleData;
 import io.spring.application.data.ProfileData;
-import io.spring.core.article.Article;
+import io.spring.application.facade.ArticleApiFacade;
+import io.spring.core.user.User;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,9 +34,9 @@ import org.springframework.test.web.servlet.MockMvc;
 public class ArticlesApiTest extends TestWithCurrentUser {
   @Autowired private MockMvc mvc;
 
-  @MockBean private ArticleQueryService articleQueryService;
+  @MockBean private ArticleApiFacade articleApiFacade;
 
-  @MockBean private ArticleCommandService articleCommandService;
+  @MockBean private ArticleQueryService articleQueryService;
 
   @Override
   @BeforeEach
@@ -68,13 +68,7 @@ public class ArticlesApiTest extends TestWithCurrentUser {
             tagList,
             new ProfileData("userid", user.getUsername(), user.getBio(), user.getImage(), false));
 
-    when(articleCommandService.createArticle(any(), any()))
-        .thenReturn(new Article(title, description, body, tagList, user.getId()));
-
-    when(articleQueryService.findBySlug(eq(Article.toSlug(title)), any()))
-        .thenReturn(Optional.empty());
-
-    when(articleQueryService.findById(any(), any())).thenReturn(Optional.of(articleData));
+    when(articleApiFacade.createArticle(any(), any(User.class))).thenReturn(articleData);
 
     given()
         .contentType("application/json")
@@ -91,7 +85,7 @@ public class ArticlesApiTest extends TestWithCurrentUser {
         .body("article.author.username", equalTo(user.getUsername()))
         .body("article.author.id", equalTo(null));
 
-    verify(articleCommandService).createArticle(any(), any());
+    verify(articleApiFacade).createArticle(any(), any(User.class));
   }
 
   @Test
@@ -123,7 +117,7 @@ public class ArticlesApiTest extends TestWithCurrentUser {
     String[] tagList = {"reactjs", "angularjs", "dragons"};
     Map<String, Object> param = prepareParam(title, description, body, asList(tagList));
 
-    ArticleData articleData =
+    ArticleData existingArticle =
         new ArticleData(
             "123",
             slug,
@@ -137,10 +131,7 @@ public class ArticlesApiTest extends TestWithCurrentUser {
             asList(tagList),
             new ProfileData("userid", user.getUsername(), user.getBio(), user.getImage(), false));
 
-    when(articleQueryService.findBySlug(eq(Article.toSlug(title)), any()))
-        .thenReturn(Optional.of(articleData));
-
-    when(articleQueryService.findById(any(), any())).thenReturn(Optional.of(articleData));
+    when(articleQueryService.findBySlug(eq(slug), any())).thenReturn(Optional.of(existingArticle));
 
     given()
         .contentType("application/json")

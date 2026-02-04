@@ -1,11 +1,8 @@
 package io.spring.api;
 
-import io.spring.application.UserQueryService;
-import io.spring.application.data.UserData;
 import io.spring.application.data.UserWithToken;
-import io.spring.application.user.UpdateUserCommand;
+import io.spring.application.facade.UserApiFacade;
 import io.spring.application.user.UpdateUserParam;
-import io.spring.application.user.UserService;
 import io.spring.core.user.User;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,27 +22,25 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class CurrentUserApi {
 
-  private UserQueryService userQueryService;
-  private UserService userService;
+  private UserApiFacade userApiFacade;
 
   @GetMapping
   public ResponseEntity currentUser(
       @AuthenticationPrincipal User currentUser,
       @RequestHeader(value = "Authorization") String authorization) {
-    UserData userData = userQueryService.findById(currentUser.getId()).get();
-    return ResponseEntity.ok(
-        userResponse(new UserWithToken(userData, authorization.split(" ")[1])));
+    String token = authorization.split(" ")[1];
+    UserWithToken userWithToken = userApiFacade.getCurrentUser(currentUser, token);
+    return ResponseEntity.ok(userResponse(userWithToken));
   }
 
   @PutMapping
   public ResponseEntity updateProfile(
       @AuthenticationPrincipal User currentUser,
-      @RequestHeader("Authorization") String token,
+      @RequestHeader("Authorization") String authorization,
       @Valid @RequestBody UpdateUserParam updateUserParam) {
-
-    userService.updateUser(new UpdateUserCommand(currentUser, updateUserParam));
-    UserData userData = userQueryService.findById(currentUser.getId()).get();
-    return ResponseEntity.ok(userResponse(new UserWithToken(userData, token.split(" ")[1])));
+    String token = authorization.split(" ")[1];
+    UserWithToken userWithToken = userApiFacade.updateUser(currentUser, updateUserParam, token);
+    return ResponseEntity.ok(userResponse(userWithToken));
   }
 
   private Map<String, Object> userResponse(UserWithToken userWithToken) {

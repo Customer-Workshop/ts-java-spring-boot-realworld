@@ -9,6 +9,8 @@ import graphql.execution.DataFetcherExceptionHandlerParameters;
 import graphql.execution.DataFetcherExceptionHandlerResult;
 import io.spring.api.exception.FieldErrorResource;
 import io.spring.api.exception.InvalidAuthenticationException;
+import io.spring.api.exception.NoAuthorizationException;
+import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.graphql.types.Error;
 import io.spring.graphql.types.ErrorItem;
 import java.util.ArrayList;
@@ -30,15 +32,37 @@ public class GraphQLCustomizeExceptionHandler implements DataFetcherExceptionHan
   @Override
   public DataFetcherExceptionHandlerResult onException(
       DataFetcherExceptionHandlerParameters handlerParameters) {
-    if (handlerParameters.getException() instanceof InvalidAuthenticationException) {
+    Throwable exception = handlerParameters.getException();
+
+    if (exception instanceof InvalidAuthenticationException
+        || exception instanceof AuthenticationException) {
       GraphQLError graphqlError =
           TypedGraphQLError.newBuilder()
               .errorType(ErrorType.UNAUTHENTICATED)
-              .message(handlerParameters.getException().getMessage())
+              .message(
+                  exception.getMessage() != null
+                      ? exception.getMessage()
+                      : "Authentication required")
               .path(handlerParameters.getPath())
               .build();
       return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
-    } else if (handlerParameters.getException() instanceof ConstraintViolationException) {
+    } else if (exception instanceof NoAuthorizationException) {
+      GraphQLError graphqlError =
+          TypedGraphQLError.newBuilder()
+              .errorType(ErrorType.PERMISSION_DENIED)
+              .message("You are not authorized to perform this action")
+              .path(handlerParameters.getPath())
+              .build();
+      return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
+    } else if (exception instanceof ResourceNotFoundException) {
+      GraphQLError graphqlError =
+          TypedGraphQLError.newBuilder()
+              .errorType(ErrorType.NOT_FOUND)
+              .message("Resource not found")
+              .path(handlerParameters.getPath())
+              .build();
+      return DataFetcherExceptionHandlerResult.newResult().error(graphqlError).build();
+    } else if (exception instanceof ConstraintViolationException) {
       List<FieldErrorResource> errors = new ArrayList<>();
       for (ConstraintViolation<?> violation :
           ((ConstraintViolationException) handlerParameters.getException())

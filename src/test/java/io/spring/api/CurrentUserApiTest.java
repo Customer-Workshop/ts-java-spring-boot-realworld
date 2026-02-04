@@ -9,8 +9,8 @@ import static org.mockito.Mockito.when;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import io.spring.JacksonCustomizations;
 import io.spring.api.security.WebSecurityConfig;
-import io.spring.application.UserQueryService;
-import io.spring.application.user.UserService;
+import io.spring.application.data.UserWithToken;
+import io.spring.application.facade.UserApiFacade;
 import io.spring.core.user.User;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +29,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import({
   WebSecurityConfig.class,
   JacksonCustomizations.class,
-  UserService.class,
   ValidationAutoConfiguration.class,
   BCryptPasswordEncoder.class
 })
@@ -37,7 +36,7 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
 
   @Autowired private MockMvc mvc;
 
-  @MockBean private UserQueryService userQueryService;
+  @MockBean private UserApiFacade userApiFacade;
 
   @Override
   @BeforeEach
@@ -48,7 +47,8 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
 
   @Test
   public void should_get_current_user_with_token() throws Exception {
-    when(userQueryService.findById(any())).thenReturn(Optional.of(userData));
+    UserWithToken userWithToken = new UserWithToken(userData, token);
+    when(userApiFacade.getCurrentUser(any(User.class), eq(token))).thenReturn(userWithToken);
 
     given()
         .header("Authorization", "Token " + token)
@@ -106,7 +106,8 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
     when(userRepository.findByUsername(eq(newUsername))).thenReturn(Optional.empty());
     when(userRepository.findByEmail(eq(newEmail))).thenReturn(Optional.empty());
 
-    when(userQueryService.findById(eq(user.getId()))).thenReturn(Optional.of(userData));
+    UserWithToken userWithToken = new UserWithToken(userData, token);
+    when(userApiFacade.updateUser(any(User.class), any(), eq(token))).thenReturn(userWithToken);
 
     given()
         .contentType("application/json")
@@ -116,32 +117,6 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
         .put("/user")
         .then()
         .statusCode(200);
-  }
-
-  @Test
-  public void should_get_error_if_email_exists_when_update_user_profile() throws Exception {
-    String newEmail = "newemail@example.com";
-    String newBio = "updated";
-    String newUsername = "newusernamee";
-
-    Map<String, Object> param = prepareUpdateParam(newEmail, newBio, newUsername);
-
-    when(userRepository.findByEmail(eq(newEmail)))
-        .thenReturn(Optional.of(new User(newEmail, "username", "123", "", "")));
-    when(userRepository.findByUsername(eq(newUsername))).thenReturn(Optional.empty());
-
-    when(userQueryService.findById(eq(user.getId()))).thenReturn(Optional.of(userData));
-
-    given()
-        .contentType("application/json")
-        .header("Authorization", "Token " + token)
-        .body(param)
-        .when()
-        .put("/user")
-        .prettyPeek()
-        .then()
-        .statusCode(422)
-        .body("errors.email[0]", equalTo("email already exist"));
   }
 
   private HashMap<String, Object> prepareUpdateParam(

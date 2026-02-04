@@ -3,17 +3,17 @@ package io.spring.api;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static io.spring.TestHelper.articleDataFixture;
 import static java.util.Arrays.asList;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import io.spring.JacksonCustomizations;
 import io.spring.api.security.WebSecurityConfig;
-import io.spring.application.ArticleQueryService;
 import io.spring.application.Page;
-import io.spring.application.article.ArticleCommandService;
 import io.spring.application.data.ArticleDataList;
-import io.spring.core.article.ArticleRepository;
+import io.spring.application.facade.ArticleApiFacade;
+import io.spring.core.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest(ArticlesApi.class)
 @Import({WebSecurityConfig.class, JacksonCustomizations.class})
 public class ListArticleApiTest extends TestWithCurrentUser {
-  @MockBean private ArticleRepository articleRepository;
-
-  @MockBean private ArticleQueryService articleQueryService;
-
-  @MockBean private ArticleCommandService articleCommandService;
+  @MockBean private ArticleApiFacade articleApiFacade;
 
   @Autowired private MockMvc mvc;
 
@@ -45,8 +41,7 @@ public class ListArticleApiTest extends TestWithCurrentUser {
     ArticleDataList articleDataList =
         new ArticleDataList(
             asList(articleDataFixture("1", user), articleDataFixture("2", user)), 2);
-    when(articleQueryService.findRecentArticles(
-            eq(null), eq(null), eq(null), eq(new Page(0, 20)), eq(null)))
+    when(articleApiFacade.getArticles(eq(null), eq(null), eq(null), eq(new Page(0, 20)), eq(null)))
         .thenReturn(articleDataList);
     RestAssuredMockMvc.when().get("/articles").prettyPeek().then().statusCode(200);
   }
@@ -61,7 +56,7 @@ public class ListArticleApiTest extends TestWithCurrentUser {
     ArticleDataList articleDataList =
         new ArticleDataList(
             asList(articleDataFixture("1", user), articleDataFixture("2", user)), 2);
-    when(articleQueryService.findUserFeed(eq(user), eq(new Page(0, 20))))
+    when(articleApiFacade.getUserFeed(any(User.class), eq(new Page(0, 20))))
         .thenReturn(articleDataList);
 
     given()

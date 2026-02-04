@@ -2,18 +2,16 @@ package io.spring.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import io.spring.JacksonCustomizations;
 import io.spring.api.security.WebSecurityConfig;
-import io.spring.application.ProfileQueryService;
 import io.spring.application.data.ProfileData;
-import io.spring.core.user.FollowRelation;
+import io.spring.application.facade.UserApiFacade;
 import io.spring.core.user.User;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +27,7 @@ public class ProfileApiTest extends TestWithCurrentUser {
 
   @Autowired private MockMvc mvc;
 
-  @MockBean private ProfileQueryService profileQueryService;
+  @MockBean private UserApiFacade userApiFacade;
 
   private ProfileData profileData;
 
@@ -45,14 +43,11 @@ public class ProfileApiTest extends TestWithCurrentUser {
             anotherUser.getBio(),
             anotherUser.getImage(),
             false);
-    when(userRepository.findByUsername(eq(anotherUser.getUsername())))
-        .thenReturn(Optional.of(anotherUser));
   }
 
   @Test
   public void should_get_user_profile_success() throws Exception {
-    when(profileQueryService.findByUsername(eq(profileData.getUsername()), eq(null)))
-        .thenReturn(Optional.of(profileData));
+    when(userApiFacade.getProfile(eq(profileData.getUsername()), eq(null))).thenReturn(profileData);
     RestAssuredMockMvc.when()
         .get("/profiles/{username}", profileData.getUsername())
         .prettyPeek()
@@ -63,8 +58,15 @@ public class ProfileApiTest extends TestWithCurrentUser {
 
   @Test
   public void should_follow_user_success() throws Exception {
-    when(profileQueryService.findByUsername(eq(profileData.getUsername()), eq(user)))
-        .thenReturn(Optional.of(profileData));
+    ProfileData followedProfile =
+        new ProfileData(
+            anotherUser.getId(),
+            anotherUser.getUsername(),
+            anotherUser.getBio(),
+            anotherUser.getImage(),
+            true);
+    when(userApiFacade.followUser(eq(anotherUser.getUsername()), any(User.class)))
+        .thenReturn(followedProfile);
     given()
         .header("Authorization", "Token " + token)
         .when()
@@ -72,16 +74,12 @@ public class ProfileApiTest extends TestWithCurrentUser {
         .prettyPeek()
         .then()
         .statusCode(200);
-    verify(userRepository).saveRelation(new FollowRelation(user.getId(), anotherUser.getId()));
   }
 
   @Test
   public void should_unfollow_user_success() throws Exception {
-    FollowRelation followRelation = new FollowRelation(user.getId(), anotherUser.getId());
-    when(userRepository.findRelation(eq(user.getId()), eq(anotherUser.getId())))
-        .thenReturn(Optional.of(followRelation));
-    when(profileQueryService.findByUsername(eq(profileData.getUsername()), eq(user)))
-        .thenReturn(Optional.of(profileData));
+    when(userApiFacade.unfollowUser(eq(anotherUser.getUsername()), any(User.class)))
+        .thenReturn(profileData);
 
     given()
         .header("Authorization", "Token " + token)
@@ -90,7 +88,5 @@ public class ProfileApiTest extends TestWithCurrentUser {
         .prettyPeek()
         .then()
         .statusCode(200);
-
-    verify(userRepository).removeRelation(eq(followRelation));
   }
 }
