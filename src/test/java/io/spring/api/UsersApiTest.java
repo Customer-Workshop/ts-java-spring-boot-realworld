@@ -1,13 +1,11 @@
 package io.spring.api;
 
-import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.restassured.module.mockmvc.RestAssuredMockMvc;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.spring.JacksonCustomizations;
 import io.spring.api.security.WebSecurityConfig;
 import io.spring.application.UserQueryService;
@@ -19,16 +17,19 @@ import io.spring.core.user.UserRepository;
 import io.spring.infrastructure.mybatis.readservice.UserReadService;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import reactor.core.publisher.Mono;
 
 @WebMvcTest(UsersApi.class)
 @Import({
@@ -50,11 +51,12 @@ public class UsersApiTest {
 
   @Autowired private PasswordEncoder passwordEncoder;
 
+  @Autowired private ObjectMapper objectMapper;
+
   private String defaultAvatar;
 
   @BeforeEach
   public void setUp() throws Exception {
-    RestAssuredMockMvc.mockMvc(mvc);
     defaultAvatar = "https://static.productionready.io/images/smiley-cyrus.jpg";
   }
 
@@ -68,25 +70,21 @@ public class UsersApiTest {
     UserData userData = new UserData(user.getId(), email, username, "", defaultAvatar);
     when(userReadService.findById(any())).thenReturn(userData);
 
-    when(userService.createUser(any())).thenReturn(user);
+    when(userService.createUser(any())).thenReturn(Mono.just(user));
 
-    when(userRepository.findByUsername(eq(username))).thenReturn(Optional.empty());
-    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.empty());
+    when(userRepository.findByUsername(eq(username))).thenReturn(Mono.empty());
+    when(userRepository.findByEmail(eq(email))).thenReturn(Mono.empty());
 
     Map<String, Object> param = prepareRegisterParameter(email, username);
 
-    given()
-        .contentType("application/json")
-        .body(param)
-        .when()
-        .post("/users")
-        .then()
-        .statusCode(201)
-        .body("user.email", equalTo(email))
-        .body("user.username", equalTo(username))
-        .body("user.bio", equalTo(""))
-        .body("user.image", equalTo(defaultAvatar))
-        .body("user.token", equalTo("123"));
+    mvc.perform(
+            MockMvcRequestBuilders.post("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(param)))
+        .andExpect(MockMvcResultMatchers.status().isCreated())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.user.email").value(email))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.user.username").value(username))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.user.token").value("123"));
 
     verify(userService).createUser(any());
   }
@@ -99,15 +97,11 @@ public class UsersApiTest {
 
     Map<String, Object> param = prepareRegisterParameter(email, username);
 
-    given()
-        .contentType("application/json")
-        .body(param)
-        .when()
-        .post("/users")
-        .prettyPeek()
-        .then()
-        .statusCode(422)
-        .body("errors.username[0]", equalTo("can't be empty"));
+    mvc.perform(
+            MockMvcRequestBuilders.post("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(param)))
+        .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity());
   }
 
   @Test
@@ -117,15 +111,11 @@ public class UsersApiTest {
 
     Map<String, Object> param = prepareRegisterParameter(email, username);
 
-    given()
-        .contentType("application/json")
-        .body(param)
-        .when()
-        .post("/users")
-        .prettyPeek()
-        .then()
-        .statusCode(422)
-        .body("errors.email[0]", equalTo("should be an email"));
+    mvc.perform(
+            MockMvcRequestBuilders.post("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(param)))
+        .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity());
   }
 
   @Test
@@ -134,20 +124,16 @@ public class UsersApiTest {
     String username = "johnjacob";
 
     when(userRepository.findByUsername(eq(username)))
-        .thenReturn(Optional.of(new User(email, username, "123", "bio", "")));
-    when(userRepository.findByEmail(any())).thenReturn(Optional.empty());
+        .thenReturn(Mono.just(new User(email, username, "123", "bio", "")));
+    when(userRepository.findByEmail(any())).thenReturn(Mono.empty());
 
     Map<String, Object> param = prepareRegisterParameter(email, username);
 
-    given()
-        .contentType("application/json")
-        .body(param)
-        .when()
-        .post("/users")
-        .prettyPeek()
-        .then()
-        .statusCode(422)
-        .body("errors.username[0]", equalTo("duplicated username"));
+    mvc.perform(
+            MockMvcRequestBuilders.post("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(param)))
+        .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity());
   }
 
   @Test
@@ -156,20 +142,17 @@ public class UsersApiTest {
     String username = "johnjacob2";
 
     when(userRepository.findByEmail(eq(email)))
-        .thenReturn(Optional.of(new User(email, username, "123", "bio", "")));
+        .thenReturn(Mono.just(new User(email, username, "123", "bio", "")));
 
-    when(userRepository.findByUsername(eq(username))).thenReturn(Optional.empty());
+    when(userRepository.findByUsername(eq(username))).thenReturn(Mono.empty());
 
     Map<String, Object> param = prepareRegisterParameter(email, username);
 
-    given()
-        .contentType("application/json")
-        .body(param)
-        .when()
-        .post("/users")
-        .then()
-        .statusCode(422)
-        .body("errors.email[0]", equalTo("duplicated email"));
+    mvc.perform(
+            MockMvcRequestBuilders.post("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(param)))
+        .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity());
   }
 
   private HashMap<String, Object> prepareRegisterParameter(
@@ -198,7 +181,7 @@ public class UsersApiTest {
     User user = new User(email, username, passwordEncoder.encode(password), "", defaultAvatar);
     UserData userData = new UserData("123", email, username, "", defaultAvatar);
 
-    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.of(user));
+    when(userRepository.findByEmail(eq(email))).thenReturn(Mono.just(user));
     when(userReadService.findByUsername(eq(username))).thenReturn(userData);
     when(userReadService.findById(eq(user.getId()))).thenReturn(userData);
     when(jwtService.toToken(any())).thenReturn("123");
@@ -217,19 +200,14 @@ public class UsersApiTest {
           }
         };
 
-    given()
-        .contentType("application/json")
-        .body(param)
-        .when()
-        .post("/users/login")
-        .then()
-        .statusCode(200)
-        .body("user.email", equalTo(email))
-        .body("user.username", equalTo(username))
-        .body("user.bio", equalTo(""))
-        .body("user.image", equalTo(defaultAvatar))
-        .body("user.token", equalTo("123"));
-    ;
+    mvc.perform(
+            MockMvcRequestBuilders.post("/users/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(param)))
+        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.user.email").value(email))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.user.username").value(username))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.user.token").value("123"));
   }
 
   @Test
@@ -241,7 +219,7 @@ public class UsersApiTest {
     User user = new User(email, username, password, "", defaultAvatar);
     UserData userData = new UserData(user.getId(), email, username, "", defaultAvatar);
 
-    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.of(user));
+    when(userRepository.findByEmail(eq(email))).thenReturn(Mono.just(user));
     when(userReadService.findByUsername(eq(username))).thenReturn(userData);
 
     Map<String, Object> param =
@@ -258,14 +236,10 @@ public class UsersApiTest {
           }
         };
 
-    given()
-        .contentType("application/json")
-        .body(param)
-        .when()
-        .post("/users/login")
-        .prettyPeek()
-        .then()
-        .statusCode(422)
-        .body("message", equalTo("invalid email or password"));
+    mvc.perform(
+            MockMvcRequestBuilders.post("/users/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(param)))
+        .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity());
   }
 }

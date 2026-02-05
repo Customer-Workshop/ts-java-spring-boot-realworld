@@ -11,6 +11,7 @@ import io.spring.infrastructure.mybatis.readservice.UserReadService;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import reactor.core.publisher.Mono;
 
 abstract class TestWithCurrentUser {
   @MockBean protected UserRepository userRepository;
@@ -32,8 +33,8 @@ abstract class TestWithCurrentUser {
     defaultAvatar = "https://static.productionready.io/images/smiley-cyrus.jpg";
 
     user = new User(email, username, "123", "", defaultAvatar);
-    when(userRepository.findByUsername(eq(username))).thenReturn(Optional.of(user));
-    when(userRepository.findById(eq(user.getId()))).thenReturn(Optional.of(user));
+    when(userRepository.findByUsername(eq(username))).thenReturn(Mono.just(user));
+    when(userRepository.findById(eq(user.getId()))).thenReturn(Mono.just(user));
 
     userData = new UserData(user.getId(), email, username, "", defaultAvatar);
     when(userReadService.findById(eq(user.getId()))).thenReturn(userData);

@@ -1,11 +1,14 @@
 package io.spring.core.comment;
 
-import java.util.Optional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public interface CommentRepository {
-  void save(Comment comment);
+  Mono<Comment> save(Comment comment);
 
-  Optional<Comment> findById(String articleId, String id);
+  Mono<Comment> findById(String articleId, String id);
 
-  void remove(Comment comment);
+  Flux<Comment> findByArticleId(String articleId);
+
+  Mono<Void> remove(Comment comment);
 }

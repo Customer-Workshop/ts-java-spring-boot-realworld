@@ -6,8 +6,8 @@ import io.spring.application.article.ArticleCommandService;
 import io.spring.application.article.NewArticleParam;
 import io.spring.core.article.Article;
 import io.spring.core.user.User;
+import jakarta.validation.Valid;
 import java.util.HashMap;
-import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,7 +28,7 @@ public class ArticlesApi {
   @PostMapping
   public ResponseEntity createArticle(
       @Valid @RequestBody NewArticleParam newArticleParam, @AuthenticationPrincipal User user) {
-    Article article = articleCommandService.createArticle(newArticleParam, user);
+    Article article = articleCommandService.createArticle(newArticleParam, user).block();
     return ResponseEntity.ok(
         new HashMap<String, Object>() {
           {

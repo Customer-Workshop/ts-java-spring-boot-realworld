@@ -2,24 +2,21 @@ package io.spring.infrastructure.mybatis.mapper;
 
 import io.spring.core.article.Article;
 import io.spring.core.article.Tag;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
-@Mapper
 public interface ArticleMapper {
-  void insert(@Param("article") Article article);
+  void insert(Article article);
 
-  Article findById(@Param("id") String id);
+  Article findById(String id);
 
-  Tag findTag(@Param("tagName") String tagName);
+  Tag findTag(String tagName);
 
-  void insertTag(@Param("tag") Tag tag);
+  void insertTag(Tag tag);
 
-  void insertArticleTagRelation(@Param("articleId") String articleId, @Param("tagId") String tagId);
+  void insertArticleTagRelation(String articleId, String tagId);
 
-  Article findBySlug(@Param("slug") String slug);
+  Article findBySlug(String slug);
 
-  void update(@Param("article") Article article);
+  void update(Article article);
 
-  void delete(@Param("id") String id);
+  void delete(String id);
 }

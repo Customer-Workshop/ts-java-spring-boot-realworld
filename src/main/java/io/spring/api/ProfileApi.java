@@ -39,10 +39,11 @@ public class ProfileApi {
       @PathVariable("username") String username, @AuthenticationPrincipal User user) {
     return userRepository
         .findByUsername(username)
+        .blockOptional()
         .map(
             target -> {
               FollowRelation followRelation = new FollowRelation(user.getId(), target.getId());
-              userRepository.saveRelation(followRelation);
+              userRepository.saveRelation(followRelation).block();
               return profileResponse(profileQueryService.findByUsername(username, user).get());
             })
         .orElseThrow(ResourceNotFoundException::new);
@@ -51,14 +52,15 @@ public class ProfileApi {
   @DeleteMapping(path = "follow")
   public ResponseEntity unfollow(
       @PathVariable("username") String username, @AuthenticationPrincipal User user) {
-    Optional<User> userOptional = userRepository.findByUsername(username);
+    Optional<User> userOptional = userRepository.findByUsername(username).blockOptional();
     if (userOptional.isPresent()) {
       User target = userOptional.get();
       return userRepository
           .findRelation(user.getId(), target.getId())
+          .blockOptional()
           .map(
               relation -> {
-                userRepository.removeRelation(relation);
+                userRepository.removeRelation(relation).block();
                 return profileResponse(profileQueryService.findByUsername(username, user).get());
               })
           .orElseThrow(ResourceNotFoundException::new);

@@ -33,9 +33,12 @@ public class CommentMutation {
       @InputArgument("slug") String slug, @InputArgument("body") String body) {
     User user = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
     Article article =
-        articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
+        articleRepository
+            .findBySlug(slug)
+            .blockOptional()
+            .orElseThrow(ResourceNotFoundException::new);
     Comment comment = new Comment(body, user.getId(), article.getId());
-    commentRepository.save(comment);
+    commentRepository.save(comment).block();
     CommentData commentData =
         commentQueryService
             .findById(comment.getId(), user)
@@ -52,15 +55,19 @@ public class CommentMutation {
     User user = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
 
     Article article =
-        articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
+        articleRepository
+            .findBySlug(slug)
+            .blockOptional()
+            .orElseThrow(ResourceNotFoundException::new);
     return commentRepository
         .findById(article.getId(), commentId)
+        .blockOptional()
         .map(
             comment -> {
               if (!AuthorizationService.canWriteComment(user, article, comment)) {
                 throw new NoAuthorizationException();
               }
-              commentRepository.remove(comment);
+              commentRepository.remove(comment).block();
               return DeletionStatus.newBuilder().success(true).build();
             })
         .orElseThrow(ResourceNotFoundException::new);

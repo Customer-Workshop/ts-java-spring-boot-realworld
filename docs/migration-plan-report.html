@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java 21 Upgrade & Reactive Modernization Plan</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --success-color: #16a34a;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), #1d4ed8);
+            color: white;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .kpi-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .kpi-card h3 {
+            font-size: 0.875rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .kpi-card .value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .kpi-card.success { border-left-color: var(--success-color); }
+        .kpi-card.success .value { color: var(--success-color); }
+        
+        .kpi-card.warning { border-left-color: var(--warning-color); }
+        .kpi-card.warning .value { color: var(--warning-color); }
+        
+        .section {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .section h3 {
+            font-size: 1.125rem;
+            margin: 1rem 0 0.5rem;
+            color: #475569;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        tr:hover {
+            background: #f8fafc;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-high { background: #fee2e2; color: #991b1b; }
+        .badge-medium { background: #fef3c7; color: #92400e; }
+        .badge-low { background: #dcfce7; color: #166534; }
+        .badge-yes { background: #dcfce7; color: #166534; }
+        .badge-no { background: #fee2e2; color: #991b1b; }
+        
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.5rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-color);
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.5rem;
+            top: 0.25rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+        
+        .timeline-item h4 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .timeline-item p {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+        
+        .checklist {
+            list-style: none;
+        }
+        
+        .checklist li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .checklist li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.75rem;
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 3px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+        
+        .progress-bar .fill {
+            height: 100%;
+            background: var(--primary-color);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        code {
+            background: #f1f5f9;
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.875rem;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .alert-warning {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+        }
+        
+        .alert-info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Java 21 Upgrade & Reactive Modernization Plan</h1>
+            <p>Spring Boot RealWorld Example App - Migration Report</p>
+        </header>
+        
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h3>Current Java</h3>
+                <div class="value">11</div>
+            </div>
+            <div class="kpi-card success">
+                <h3>Target Java</h3>
+                <div class="value">21</div>
+            </div>
+            <div class="kpi-card warning">
+                <h3>Current Coverage</h3>
+                <div class="value">33%</div>
+            </div>
+            <div class="kpi-card success">
+                <h3>Target Coverage</h3>
+                <div class="value">95%</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Spring Boot</h3>
+                <div class="value">2.6.3 &rarr; 3.2.x</div>
+            </div>
+            <div class="kpi-card success">
+                <h3>Architecture</h3>
+                <div class="value">Reactive</div>
+            </div>
+        </div>
+        
+        <section class="section">
+            <h2>1. Executive Summary</h2>
+            <p>This migration plan outlines the upgrade of the spring-boot-realworld-example-app from Java 11 to Java 21, converting from a blocking servlet-based architecture to a fully reactive stack using Spring WebFlux.</p>
+            
+            <h3>Primary KPIs</h3>
+            <ul class="checklist">
+                <li>Java version: <strong>21</strong></li>
+                <li>Reactive framework: <strong>Spring WebFlux / Reactor</strong></li>
+                <li>Code coverage: <strong>&ge;95%</strong> (line + branch)</li>
+                <li>Sonar: <strong>Quality Gate PASS</strong></li>
+                <li>42Crunch: <strong>API Security Gate PASS</strong></li>
+                <li>No breaking functionality: <strong>0 critical regressions</strong></li>
+            </ul>
+        </section>
+        
+        <section class="section">
+            <h2>2. Current State Analysis</h2>
+            
+            <div class="two-column">
+                <div>
+                    <h3>Technology Stack</h3>
+                    <table>
+                        <tr><th>Component</th><th>Current</th></tr>
+                        <tr><td>Java Version</td><td>11</td></tr>
+                        <tr><td>Spring Boot</td><td>2.6.3</td></tr>
+                        <tr><td>Web Framework</td><td>Spring MVC (Blocking)</td></tr>
+                        <tr><td>Data Access</td><td>MyBatis + JDBC</td></tr>
+                        <tr><td>Database</td><td>SQLite</td></tr>
+                        <tr><td>GraphQL</td><td>Netflix DGS 4.9.21</td></tr>
+                        <tr><td>Build Tool</td><td>Gradle</td></tr>
+                    </table>
+                </div>
+                <div>
+                    <h3>Code Coverage</h3>
+                    <p>Current: 33% | Target: 95%</p>
+                    <div class="progress-bar">
+                        <div class="fill" style="width: 33%"></div>
+                    </div>
+                    <p style="margin-top: 1rem; color: #64748b;">Gap to close: 62 percentage points</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>3. Blocking Code Hotspots</h2>
+            <p>Components requiring reactive conversion:</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Count</th>
+                        <th>Priority</th>
+                        <th>Effort</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>REST Controllers</td>
+                        <td>8</td>
+                        <td><span class="badge badge-high">High</span></td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td>Repositories</td>
+                        <td>4</td>
+                        <td><span class="badge badge-high">High</span></td>
+                        <td>High</td>
+                    </tr>
+                    <tr>
+                        <td>MyBatis Mappers</td>
+                        <td>3+</td>
+                        <td><span class="badge badge-high">High</span></td>
+                        <td>High</td>
+                    </tr>
+                    <tr>
+                        <td>Read Services</td>
+                        <td>5</td>
+                        <td><span class="badge badge-high">High</span></td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td>Application Services</td>
+                        <td>7</td>
+                        <td><span class="badge badge-high">High</span></td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td>Security Components</td>
+                        <td>3</td>
+                        <td><span class="badge badge-high">High</span></td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td>GraphQL Components</td>
+                        <td>9</td>
+                        <td><span class="badge badge-medium">Medium</span></td>
+                        <td>Medium</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="alert alert-info">
+                <strong>Good News:</strong> No RestTemplate, Thread.sleep(), synchronized blocks, or .block() calls found in the codebase.
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>4. Dependency Upgrade Matrix</h2>
+            
+            <h3>Core Framework Changes</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Artifact</th>
+                        <th>Current</th>
+                        <th>Target</th>
+                        <th>Java 21</th>
+                        <th>Risk</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>spring-boot-starter-web</code></td>
+                        <td>2.6.3</td>
+                        <td>Remove</td>
+                        <td>N/A</td>
+                        <td><span class="badge badge-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>spring-boot-starter-webflux</code></td>
+                        <td>N/A</td>
+                        <td>3.2.2</td>
+                        <td><span class="badge badge-yes">Yes</span></td>
+                        <td><span class="badge badge-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>mybatis-spring-boot-starter</code></td>
+                        <td>2.2.2</td>
+                        <td>Remove</td>
+                        <td>N/A</td>
+                        <td><span class="badge badge-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>spring-boot-starter-data-r2dbc</code></td>
+                        <td>N/A</td>
+                        <td>3.2.2</td>
+                        <td><span class="badge badge-yes">Yes</span></td>
+                        <td><span class="badge badge-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>graphql-dgs-spring-boot-starter</code></td>
+                        <td>4.9.21</td>
+                        <td>8.2.0</td>
+                        <td><span class="badge badge-yes">Yes</span></td>
+                        <td><span class="badge badge-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>jjwt-api</code></td>
+                        <td>0.11.2</td>
+                        <td>0.12.5</td>
+                        <td><span class="badge badge-yes">Yes</span></td>
+                        <td><span class="badge badge-low">Low</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>Database Migration</h3>
+            <div class="alert alert-warning">
+                <strong>Note:</strong> SQLite does not have R2DBC support. Migration to H2 database is required for reactive data access.
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>5. Migration Timeline</h2>
+            
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h4>Phase 0: Baseline Snapshot (Day 1-2)</h4>
+                    <p>Capture current coverage, Sonar status, and functional regression suite results. Freeze dependency inventory.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Phase 1: Toolchain Upgrade to Java 21 (Day 3-5)</h4>
+                    <p>Update build configs and CI images. Ensure compilation and tests run.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Phase 2: Framework & Dependency Upgrades (Week 2)</h4>
+                    <p>Upgrade core framework to Java 21-compatible versions. Resolve conflicts, update configs.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Phase 3: Reactive Refactor (Week 3-4)</h4>
+                    <p>Convert controllers/handlers + clients + persistence to reactive. Remove/contain blocking IO.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Phase 4: Coverage Ramp to 95% (Week 2-5, continuous)</h4>
+                    <p>Iterate test additions until &ge;95% achieved. Ensure meaningful tests.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Phase 5: Sonar + 42Crunch Hardening (Week 4-5)</h4>
+                    <p>Remediate high severity issues. Align OpenAPI and security policies.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Phase 6: Hosting + Final Regression (Week 5-6)</h4>
+                    <p>Deploy to staging. Run full regression and performance checks.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>6. Risk Register</h2>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Risk</th>
+                        <th>Impact</th>
+                        <th>Mitigation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Hidden blocking IO breaks reactive throughput</td>
+                        <td><span class="badge badge-high">High</span></td>
+                        <td>Hotspot scan + boundedElastic isolation + refactor</td>
+                    </tr>
+                    <tr>
+                        <td>Dependency conflicts post-upgrade</td>
+                        <td><span class="badge badge-high">High</span></td>
+                        <td>Phased upgrades + lockfiles/BOM + dependency convergence</td>
+                    </tr>
+                    <tr>
+                        <td>Coverage increases but test value low</td>
+                        <td><span class="badge badge-medium">Medium</span></td>
+                        <td>Prioritize business-critical paths</td>
+                    </tr>
+                    <tr>
+                        <td>API spec drift</td>
+                        <td><span class="badge badge-high">High</span></td>
+                        <td>Contract tests + spec generation checks</td>
+                    </tr>
+                    <tr>
+                        <td>Tooling gate failures late in timeline</td>
+                        <td><span class="badge badge-medium">Medium</span></td>
+                        <td>Shift-left: run Sonar + 42Crunch in PR pipeline</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section class="section">
+            <h2>7. Quality Gates</h2>
+            
+            <div class="two-column">
+                <div>
+                    <h3>Sonar Quality Gate</h3>
+                    <ul class="checklist">
+                        <li>No new critical/blocker issues</li>
+                        <li>Code smells under threshold</li>
+                        <li>Duplications controlled</li>
+                        <li>Coverage on new code &ge;95%</li>
+                        <li>Security hotspots reviewed</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>42Crunch API Security Gate</h3>
+                    <ul class="checklist">
+                        <li>Authentication schemes validated</li>
+                        <li>Request/response schemas defined</li>
+                        <li>Error contracts specified</li>
+                        <li>No excessive data exposure</li>
+                        <li>Injection risks mitigated</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2>8. Deliverables</h2>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Document</th>
+                        <th>Purpose</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>docs/reactive-hotspots.md</code></td>
+                        <td>Blocking code analysis</td>
+                        <td><span class="badge badge-yes">Complete</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>docs/dependency-upgrade-matrix.md</code></td>
+                        <td>Dependency upgrade plan</td>
+                        <td><span class="badge badge-yes">Complete</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>docs/migration-plan-report.html</code></td>
+                        <td>Visual migration report</td>
+                        <td><span class="badge badge-yes">Complete</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>docs/reactive-target-architecture.md</code></td>
+                        <td>Target architecture design</td>
+                        <td>Pending</td>
+                    </tr>
+                    <tr>
+                        <td><code>docs/coverage-iteration-log.md</code></td>
+                        <td>Coverage improvement tracking</td>
+                        <td>Pending</td>
+                    </tr>
+                    <tr>
+                        <td><code>docs/sonar-ruleset-and-gates.md</code></td>
+                        <td>Sonar configuration</td>
+                        <td>Pending</td>
+                    </tr>
+                    <tr>
+                        <td><code>docs/openapi-security-findings.md</code></td>
+                        <td>42Crunch findings</td>
+                        <td>Pending</td>
+                    </tr>
+                    <tr>
+                        <td><code>docs/hosting-and-validation-report.md</code></td>
+                        <td>Deployment validation</td>
+                        <td>Pending</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <footer>
+            <p>Generated: <span id="date"></span> | Spring Boot RealWorld Example App Migration Plan</p>
+        </footer>
+    </div>
+    
+    <script>
+        document.getElementById('date').textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    </script>
+</body>
+</html>

@@ -27,10 +27,11 @@ public class RelationMutation {
     User user = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
     return userRepository
         .findByUsername(username)
+        .blockOptional()
         .map(
             target -> {
               FollowRelation followRelation = new FollowRelation(user.getId(), target.getId());
-              userRepository.saveRelation(followRelation);
+              userRepository.saveRelation(followRelation).block();
               Profile profile = buildProfile(username, user);
               return ProfilePayload.newBuilder().profile(profile).build();
             })
@@ -41,12 +42,16 @@ public class RelationMutation {
   public ProfilePayload unfollow(@InputArgument("username") String username) {
     User user = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
     User target =
-        userRepository.findByUsername(username).orElseThrow(ResourceNotFoundException::new);
+        userRepository
+            .findByUsername(username)
+            .blockOptional()
+            .orElseThrow(ResourceNotFoundException::new);
     return userRepository
         .findRelation(user.getId(), target.getId())
+        .blockOptional()
         .map(
             relation -> {
-              userRepository.removeRelation(relation);
+              userRepository.removeRelation(relation).block();
               Profile profile = buildProfile(username, user);
               return ProfilePayload.newBuilder().profile(profile).build();
             })

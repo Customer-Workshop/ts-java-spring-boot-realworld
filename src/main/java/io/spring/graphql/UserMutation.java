@@ -17,8 +17,8 @@ import io.spring.graphql.types.CreateUserInput;
 import io.spring.graphql.types.UpdateUserInput;
 import io.spring.graphql.types.UserPayload;
 import io.spring.graphql.types.UserResult;
+import jakarta.validation.ConstraintViolationException;
 import java.util.Optional;
-import javax.validation.ConstraintViolationException;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -39,7 +39,7 @@ public class UserMutation {
         new RegisterParam(input.getEmail(), input.getUsername(), input.getPassword());
     User user;
     try {
-      user = userService.createUser(registerParam);
+      user = userService.createUser(registerParam).block();
     } catch (ConstraintViolationException cve) {
       return DataFetcherResult.<UserResult>newResult()
           .data(GraphQLCustomizeExceptionHandler.getErrorsAsData(cve))
@@ -55,7 +55,7 @@ public class UserMutation {
   @DgsData(parentType = MUTATION.TYPE_NAME, field = MUTATION.Login)
   public DataFetcherResult<UserPayload> login(
       @InputArgument("password") String password, @InputArgument("email") String email) {
-    Optional<User> optional = userRepository.findByEmail(email);
+    Optional<User> optional = userRepository.findByEmail(email).blockOptional();
     if (optional.isPresent() && encryptService.matches(password, optional.get().getPassword())) {
       return DataFetcherResult.<UserPayload>newResult()
           .data(UserPayload.newBuilder().build())
@@ -84,7 +84,7 @@ public class UserMutation {
             .image(updateUserInput.getImage())
             .build();
 
-    userService.updateUser(new UpdateUserCommand(currentUser, param));
+    userService.updateUser(new UpdateUserCommand(currentUser, param)).block();
     return DataFetcherResult.<UserPayload>newResult()
         .data(UserPayload.newBuilder().build())
         .localContext(currentUser)

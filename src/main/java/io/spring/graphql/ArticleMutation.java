@@ -43,7 +43,7 @@ public class ArticleMutation {
             .body(input.getBody())
             .tagList(input.getTagList() == null ? Collections.emptyList() : input.getTagList())
             .build();
-    Article article = articleCommandService.createArticle(newArticleParam, user);
+    Article article = articleCommandService.createArticle(newArticleParam, user).block();
     return DataFetcherResult.<ArticlePayload>newResult()
         .data(ArticlePayload.newBuilder().build())
         .localContext(article)
@@ -54,15 +54,21 @@ public class ArticleMutation {
   public DataFetcherResult<ArticlePayload> updateArticle(
       @InputArgument("slug") String slug, @InputArgument("changes") UpdateArticleInput params) {
     Article article =
-        articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
+        articleRepository
+            .findBySlug(slug)
+            .blockOptional()
+            .orElseThrow(ResourceNotFoundException::new);
     User user = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
     if (!AuthorizationService.canWriteArticle(user, article)) {
       throw new NoAuthorizationException();
     }
     article =
-        articleCommandService.updateArticle(
-            article,
-            new UpdateArticleParam(params.getTitle(), params.getBody(), params.getDescription()));
+        articleCommandService
+            .updateArticle(
+                article,
+                new UpdateArticleParam(
+                    params.getTitle(), params.getBody(), params.getDescription()))
+            .block();
     return DataFetcherResult.<ArticlePayload>newResult()
         .data(ArticlePayload.newBuilder().build())
         .localContext(article)
@@ -73,9 +79,12 @@ public class ArticleMutation {
   public DataFetcherResult<ArticlePayload> favoriteArticle(@InputArgument("slug") String slug) {
     User user = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
     Article article =
-        articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
+        articleRepository
+            .findBySlug(slug)
+            .blockOptional()
+            .orElseThrow(ResourceNotFoundException::new);
     ArticleFavorite articleFavorite = new ArticleFavorite(article.getId(), user.getId());
-    articleFavoriteRepository.save(articleFavorite);
+    articleFavoriteRepository.save(articleFavorite).block();
     return DataFetcherResult.<ArticlePayload>newResult()
         .data(ArticlePayload.newBuilder().build())
         .localContext(article)
@@ -86,12 +95,16 @@ public class ArticleMutation {
   public DataFetcherResult<ArticlePayload> unfavoriteArticle(@InputArgument("slug") String slug) {
     User user = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
     Article article =
-        articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
+        articleRepository
+            .findBySlug(slug)
+            .blockOptional()
+            .orElseThrow(ResourceNotFoundException::new);
     articleFavoriteRepository
         .find(article.getId(), user.getId())
+        .blockOptional()
         .ifPresent(
             favorite -> {
-              articleFavoriteRepository.remove(favorite);
+              articleFavoriteRepository.remove(favorite).block();
             });
     return DataFetcherResult.<ArticlePayload>newResult()
         .data(ArticlePayload.newBuilder().build())
@@ -103,13 +116,16 @@ public class ArticleMutation {
   public DeletionStatus deleteArticle(@InputArgument("slug") String slug) {
     User user = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
     Article article =
-        articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
+        articleRepository
+            .findBySlug(slug)
+            .blockOptional()
+            .orElseThrow(ResourceNotFoundException::new);
 
     if (!AuthorizationService.canWriteArticle(user, article)) {
       throw new NoAuthorizationException();
     }
 
-    articleRepository.remove(article);
+    articleRepository.remove(article).block();
     return DeletionStatus.newBuilder().success(true).build();
   }
 }

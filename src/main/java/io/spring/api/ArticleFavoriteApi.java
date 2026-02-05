@@ -30,9 +30,12 @@ public class ArticleFavoriteApi {
   public ResponseEntity favoriteArticle(
       @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
     Article article =
-        articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
+        articleRepository
+            .findBySlug(slug)
+            .blockOptional()
+            .orElseThrow(ResourceNotFoundException::new);
     ArticleFavorite articleFavorite = new ArticleFavorite(article.getId(), user.getId());
-    articleFavoriteRepository.save(articleFavorite);
+    articleFavoriteRepository.save(articleFavorite).block();
     return responseArticleData(articleQueryService.findBySlug(slug, user).get());
   }
 
@@ -40,12 +43,16 @@ public class ArticleFavoriteApi {
   public ResponseEntity unfavoriteArticle(
       @PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
     Article article =
-        articleRepository.findBySlug(slug).orElseThrow(ResourceNotFoundException::new);
+        articleRepository
+            .findBySlug(slug)
+            .blockOptional()
+            .orElseThrow(ResourceNotFoundException::new);
     articleFavoriteRepository
         .find(article.getId(), user.getId())
+        .blockOptional()
         .ifPresent(
             favorite -> {
-              articleFavoriteRepository.remove(favorite);
+              articleFavoriteRepository.remove(favorite).block();
             });
     return responseArticleData(articleQueryService.findBySlug(slug, user).get());
   }

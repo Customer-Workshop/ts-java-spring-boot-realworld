@@ -12,12 +12,12 @@ import io.spring.application.user.UserService;
 import io.spring.core.service.JwtService;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import javax.validation.Valid;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,7 +38,7 @@ public class UsersApi {
 
   @RequestMapping(path = "/users", method = POST)
   public ResponseEntity createUser(@Valid @RequestBody RegisterParam registerParam) {
-    User user = userService.createUser(registerParam);
+    User user = userService.createUser(registerParam).block();
     UserData userData = userQueryService.findById(user.getId()).get();
     return ResponseEntity.status(201)
         .body(userResponse(new UserWithToken(userData, jwtService.toToken(user))));
@@ -46,7 +46,7 @@ public class UsersApi {
 
   @RequestMapping(path = "/users/login", method = POST)
   public ResponseEntity userLogin(@Valid @RequestBody LoginParam loginParam) {
-    Optional<User> optional = userRepository.findByEmail(loginParam.getEmail());
+    Optional<User> optional = userRepository.findByEmail(loginParam.getEmail()).blockOptional();
     if (optional.isPresent()
         && passwordEncoder.matches(loginParam.getPassword(), optional.get().getPassword())) {
       UserData userData = userQueryService.findById(optional.get().getId()).get();
