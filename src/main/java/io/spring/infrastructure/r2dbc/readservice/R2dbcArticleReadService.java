@@ -113,7 +113,7 @@ public class R2dbcArticleReadService implements ArticleReadService {
 
   @Override
   public List<String> queryArticles(String tag, String author, String favoritedBy, Page page) {
-    StringBuilder sql = new StringBuilder("SELECT DISTINCT a.id FROM articles a ");
+    StringBuilder sql = new StringBuilder("SELECT a.id FROM articles a ");
     sql.append("JOIN users u ON a.user_id = u.id ");
 
     List<String> conditions = new ArrayList<>();
@@ -135,7 +135,7 @@ public class R2dbcArticleReadService implements ArticleReadService {
       sql.append("WHERE ").append(String.join(" AND ", conditions)).append(" ");
     }
 
-    sql.append("ORDER BY a.created_at DESC ");
+    sql.append("GROUP BY a.id, a.created_at ORDER BY a.created_at DESC ");
     sql.append("LIMIT :limit OFFSET :offset");
 
     DatabaseClient.GenericExecuteSpec spec = db.sql(sql.toString());
@@ -382,7 +382,7 @@ public class R2dbcArticleReadService implements ArticleReadService {
   @Override
   public List<String> findArticlesWithCursor(
       String tag, String author, String favoritedBy, CursorPageParameter page) {
-    StringBuilder sql = new StringBuilder("SELECT DISTINCT a.id, a.updated_at FROM articles a ");
+    StringBuilder sql = new StringBuilder("SELECT a.id, a.updated_at FROM articles a ");
     sql.append("JOIN users u ON a.user_id = u.id ");
 
     List<String> conditions = new ArrayList<>();
@@ -411,7 +411,7 @@ public class R2dbcArticleReadService implements ArticleReadService {
       sql.append("WHERE ").append(String.join(" AND ", conditions)).append(" ");
     }
 
-    sql.append("ORDER BY a.updated_at ").append(order).append(" ");
+    sql.append("GROUP BY a.id, a.updated_at ORDER BY a.updated_at ").append(order).append(" ");
     sql.append("LIMIT :limit");
 
     DatabaseClient.GenericExecuteSpec spec = db.sql(sql.toString());
