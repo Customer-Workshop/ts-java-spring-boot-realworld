@@ -89,13 +89,16 @@ public class UsersApiTest {
     verify(userService).createUser(any());
   }
 
-  @Test
-  public void should_show_error_message_for_blank_username() throws Exception {
+    @Test
+    public void should_show_error_message_for_blank_username() throws Exception {
 
-    String email = "john@jacob.com";
-    String username = "";
+      String email = "john@jacob.com";
+      String username = "";
 
-    Map<String, Object> param = prepareRegisterParameter(email, username);
+      when(userRepository.findByUsername(any())).thenReturn(Mono.empty());
+      when(userRepository.findByEmail(any())).thenReturn(Mono.empty());
+
+      Map<String, Object> param = prepareRegisterParameter(email, username);
 
     mvc.perform(
             MockMvcRequestBuilders.post("/users")
@@ -104,12 +107,15 @@ public class UsersApiTest {
         .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity());
   }
 
-  @Test
-  public void should_show_error_message_for_invalid_email() throws Exception {
-    String email = "johnxjacob.com";
-    String username = "johnjacob";
+    @Test
+    public void should_show_error_message_for_invalid_email() throws Exception {
+      String email = "johnxjacob.com";
+      String username = "johnjacob";
 
-    Map<String, Object> param = prepareRegisterParameter(email, username);
+      when(userRepository.findByUsername(any())).thenReturn(Mono.empty());
+      when(userRepository.findByEmail(any())).thenReturn(Mono.empty());
+
+      Map<String, Object> param = prepareRegisterParameter(email, username);
 
     mvc.perform(
             MockMvcRequestBuilders.post("/users")
