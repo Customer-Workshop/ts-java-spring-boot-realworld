@@ -2,6 +2,7 @@ import Router from "next/router";
 import React from "react";
 import { mutate } from "swr";
 
+import CustomLink from "../common/CustomLink";
 import ListErrors from "../common/ListErrors";
 import UserAPI from "../../lib/api/user";
 
@@ -75,6 +76,12 @@ const LoginForm = () => {
           >
             Sign in
           </button>
+
+          <p className="text-xs-center" style={{ marginTop: "1rem" }}>
+            <CustomLink href="/user/forgot-password" as="/user/forgot-password">
+              Forgot password?
+            </CustomLink>
+          </p>
         </fieldset>
       </form>
     </>

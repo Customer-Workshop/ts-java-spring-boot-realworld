@@ -101,6 +101,38 @@ const UserAPI = {
     }
   },
   get: async (username) => axios.get(`${SERVER_BASE_URL}/profiles/${username}`),
+  requestPasswordReset: async (email) => {
+    try {
+      const response = await axios.post(
+        `${SERVER_BASE_URL}/users/password-reset-request`,
+        JSON.stringify({ passwordReset: { email } }),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response;
+    } catch (error) {
+      return error.response;
+    }
+  },
+  resetPassword: async (token, password) => {
+    try {
+      const response = await axios.post(
+        `${SERVER_BASE_URL}/users/password-reset`,
+        JSON.stringify({ passwordReset: { token, password } }),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response;
+    } catch (error) {
+      return error.response;
+    }
+  },
 };
 
 export default UserAPI;
