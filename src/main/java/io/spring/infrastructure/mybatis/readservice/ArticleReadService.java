@@ -24,4 +24,8 @@ public interface ArticleReadService {
 
   List<String> findArticlesWithCursor(
       String tag, String author, String favoritedBy, CursorPageParameter page);
+
+  List<String> searchArticles(String query, Page page);
+
+  int countSearchResults(String query);
 }

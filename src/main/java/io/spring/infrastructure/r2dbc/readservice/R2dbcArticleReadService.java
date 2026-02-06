@@ -23,74 +23,76 @@ public class R2dbcArticleReadService implements ArticleReadService {
 
   @Override
   public ArticleData findById(String id) {
-    return db.sql(
-            "SELECT a.id, a.slug, a.title, a.description, a.body, a.created_at, a.updated_at, "
-                + "u.id as user_id, u.username, u.bio, u.image "
-                + "FROM articles a "
-                + "JOIN users u ON a.user_id = u.id "
-                + "WHERE a.id = :id")
-        .bind("id", id)
-        .map(
-            (row, metadata) -> {
-              ProfileData profile =
-                  new ProfileData(
-                      row.get("user_id", String.class),
-                      row.get("username", String.class),
-                      row.get("bio", String.class),
-                      row.get("image", String.class),
-                      false);
-              return new ArticleData(
-                  row.get("id", String.class),
-                  row.get("slug", String.class),
-                  row.get("title", String.class),
-                  row.get("description", String.class),
-                  row.get("body", String.class),
-                  false,
-                  0,
-                  row.get("created_at", LocalDateTime.class),
-                  row.get("updated_at", LocalDateTime.class),
-                  new ArrayList<>(),
-                  profile);
-            })
-        .one()
-        .map(this::loadTags)
-        .block();
+    ArticleData article =
+        db.sql(
+                "SELECT a.id, a.slug, a.title, a.description, a.body, a.created_at, a.updated_at, "
+                    + "u.id as user_id, u.username, u.bio, u.image "
+                    + "FROM articles a "
+                    + "JOIN users u ON a.user_id = u.id "
+                    + "WHERE a.id = :id")
+            .bind("id", id)
+            .map(
+                (row, metadata) -> {
+                  ProfileData profile =
+                      new ProfileData(
+                          row.get("user_id", String.class),
+                          row.get("username", String.class),
+                          row.get("bio", String.class),
+                          row.get("image", String.class),
+                          false);
+                  return new ArticleData(
+                      row.get("id", String.class),
+                      row.get("slug", String.class),
+                      row.get("title", String.class),
+                      row.get("description", String.class),
+                      row.get("body", String.class),
+                      false,
+                      0,
+                      row.get("created_at", LocalDateTime.class),
+                      row.get("updated_at", LocalDateTime.class),
+                      new ArrayList<>(),
+                      profile);
+                })
+            .one()
+            .block();
+    return loadTags(article);
   }
 
   @Override
   public ArticleData findBySlug(String slug) {
-    return db.sql(
-            "SELECT a.id, a.slug, a.title, a.description, a.body, a.created_at, a.updated_at, "
-                + "u.id as user_id, u.username, u.bio, u.image "
-                + "FROM articles a "
-                + "JOIN users u ON a.user_id = u.id "
-                + "WHERE a.slug = :slug")
-        .bind("slug", slug)
-        .map(
-            (row, metadata) -> {
-              ProfileData profile =
-                  new ProfileData(
-                      row.get("user_id", String.class),
-                      row.get("username", String.class),
-                      row.get("bio", String.class),
-                      row.get("image", String.class),
-                      false);
-              return new ArticleData(
-                  row.get("id", String.class),
-                  row.get("slug", String.class),
-                  row.get("title", String.class),
-                  row.get("description", String.class),
-                  row.get("body", String.class),
-                  false,
-                  0,
-                  row.get("created_at", LocalDateTime.class),
-                  row.get("updated_at", LocalDateTime.class),
-                  new ArrayList<>(),
-                  profile);
-            })
-        .one()
-        .map(this::loadTags)
-        .block();
+    ArticleData article =
+        db.sql(
+                "SELECT a.id, a.slug, a.title, a.description, a.body, a.created_at, a.updated_at, "
+                    + "u.id as user_id, u.username, u.bio, u.image "
+                    + "FROM articles a "
+                    + "JOIN users u ON a.user_id = u.id "
+                    + "WHERE a.slug = :slug")
+            .bind("slug", slug)
+            .map(
+                (row, metadata) -> {
+                  ProfileData profile =
+                      new ProfileData(
+                          row.get("user_id", String.class),
+                          row.get("username", String.class),
+                          row.get("bio", String.class),
+                          row.get("image", String.class),
+                          false);
+                  return new ArticleData(
+                      row.get("id", String.class),
+                      row.get("slug", String.class),
+                      row.get("title", String.class),
+                      row.get("description", String.class),
+                      row.get("body", String.class),
+                      false,
+                      0,
+                      row.get("created_at", LocalDateTime.class),
+                      row.get("updated_at", LocalDateTime.class),
+                      new ArrayList<>(),
+                      profile);
+                })
+            .one()
+            .block();
+    return loadTags(article);
   }
 
   private ArticleData loadTags(ArticleData article) {
@@ -430,5 +432,50 @@ public class R2dbcArticleReadService implements ArticleReadService {
     spec = spec.bind("limit", page.getLimit());
 
     return spec.map((row, metadata) -> row.get("id", String.class)).all().collectList().block();
+  }
+
+  @Override
+  public List<String> searchArticles(String query, Page page) {
+    if (query == null || query.trim().isEmpty()) {
+      return new ArrayList<>();
+    }
+
+    String searchPattern = "%" + query.toLowerCase() + "%";
+
+    return db.sql(
+            "SELECT a.id FROM articles a "
+                + "WHERE LOWER(a.title) LIKE :pattern "
+                + "OR LOWER(a.description) LIKE :pattern "
+                + "OR LOWER(a.body) LIKE :pattern "
+                + "ORDER BY a.created_at DESC "
+                + "LIMIT :limit OFFSET :offset")
+        .bind("pattern", searchPattern)
+        .bind("limit", page.getLimit())
+        .bind("offset", page.getOffset())
+        .map((row, metadata) -> row.get("id", String.class))
+        .all()
+        .collectList()
+        .block();
+  }
+
+  @Override
+  public int countSearchResults(String query) {
+    if (query == null || query.trim().isEmpty()) {
+      return 0;
+    }
+
+    String searchPattern = "%" + query.toLowerCase() + "%";
+
+    Long count =
+        db.sql(
+                "SELECT COUNT(*) as cnt FROM articles a "
+                    + "WHERE LOWER(a.title) LIKE :pattern "
+                    + "OR LOWER(a.description) LIKE :pattern "
+                    + "OR LOWER(a.body) LIKE :pattern")
+            .bind("pattern", searchPattern)
+            .map((row, metadata) -> row.get("cnt", Long.class))
+            .one()
+            .block();
+    return count != null ? count.intValue() : 0;
   }
 }
