@@ -15,8 +15,7 @@ import org.mockito.MockitoAnnotations;
 
 public class TagsQueryServiceTest {
 
-  @Mock
-  private TagReadService tagReadService;
+  @Mock private TagReadService tagReadService;
 
   private TagsQueryService tagsQueryService;
 

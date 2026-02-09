@@ -25,11 +25,9 @@ import org.mockito.MockitoAnnotations;
 
 public class CommentQueryServiceTest {
 
-  @Mock
-  private CommentReadService commentReadService;
+  @Mock private CommentReadService commentReadService;
 
-  @Mock
-  private UserRelationshipQueryService userRelationshipQueryService;
+  @Mock private UserRelationshipQueryService userRelationshipQueryService;
 
   private CommentQueryService commentQueryService;
 
@@ -43,7 +41,8 @@ public class CommentQueryServiceTest {
   public void should_find_comment_by_id() {
     LocalDateTime now = LocalDateTime.now();
     ProfileData profile = new ProfileData("user-1", "testuser", "bio", "image.jpg", false);
-    CommentData commentData = new CommentData("comment-1", "Test comment", "article-1", now, now, profile);
+    CommentData commentData =
+        new CommentData("comment-1", "Test comment", "article-1", now, now, profile);
     when(commentReadService.findById("comment-1")).thenReturn(commentData);
     when(userRelationshipQueryService.isUserFollowing(anyString(), anyString())).thenReturn(false);
 
@@ -68,10 +67,14 @@ public class CommentQueryServiceTest {
   public void should_find_comments_by_article_id() {
     LocalDateTime now = LocalDateTime.now();
     ProfileData profile = new ProfileData("user-1", "testuser", "bio", "image.jpg", false);
-    CommentData comment1 = new CommentData("comment-1", "Comment 1", "article-1", now, now, profile);
-    CommentData comment2 = new CommentData("comment-2", "Comment 2", "article-1", now, now, profile);
-    when(commentReadService.findByArticleId("article-1")).thenReturn(Arrays.asList(comment1, comment2));
-    when(userRelationshipQueryService.followingAuthors(anyString(), anyList())).thenReturn(new HashSet<>());
+    CommentData comment1 =
+        new CommentData("comment-1", "Comment 1", "article-1", now, now, profile);
+    CommentData comment2 =
+        new CommentData("comment-2", "Comment 2", "article-1", now, now, profile);
+    when(commentReadService.findByArticleId("article-1"))
+        .thenReturn(Arrays.asList(comment1, comment2));
+    when(userRelationshipQueryService.followingAuthors(anyString(), anyList()))
+        .thenReturn(new HashSet<>());
 
     User user = new User("test@example.com", "testuser", "password", "", "");
     List<CommentData> result = commentQueryService.findByArticleId("article-1", user);
@@ -93,20 +96,26 @@ public class CommentQueryServiceTest {
     LocalDateTime now = LocalDateTime.now();
     ProfileData profile = new ProfileData("user-1", "testuser", "bio", "image.jpg", false);
     CommentData comment = new CommentData("comment-1", "Comment 1", "article-1", now, now, profile);
-    CursorPageParameter<LocalDateTime> page = new CursorPageParameter<>(null, 10, CursorPager.Direction.NEXT);
-    when(commentReadService.findByArticleIdWithCursor(anyString(), any())).thenReturn(Arrays.asList(comment));
+    CursorPageParameter<LocalDateTime> page =
+        new CursorPageParameter<>(null, 10, CursorPager.Direction.NEXT);
+    when(commentReadService.findByArticleIdWithCursor(anyString(), any()))
+        .thenReturn(Arrays.asList(comment));
 
-    CursorPager<CommentData> result = commentQueryService.findByArticleIdWithCursor("article-1", null, page);
+    CursorPager<CommentData> result =
+        commentQueryService.findByArticleIdWithCursor("article-1", null, page);
 
     assertThat(result.getData().size(), is(1));
   }
 
   @Test
   public void should_return_empty_cursor_pager_when_no_comments() {
-    CursorPageParameter<LocalDateTime> page = new CursorPageParameter<>(null, 10, CursorPager.Direction.NEXT);
-    when(commentReadService.findByArticleIdWithCursor(anyString(), any())).thenReturn(Collections.emptyList());
+    CursorPageParameter<LocalDateTime> page =
+        new CursorPageParameter<>(null, 10, CursorPager.Direction.NEXT);
+    when(commentReadService.findByArticleIdWithCursor(anyString(), any()))
+        .thenReturn(Collections.emptyList());
 
-    CursorPager<CommentData> result = commentQueryService.findByArticleIdWithCursor("article-1", null, page);
+    CursorPager<CommentData> result =
+        commentQueryService.findByArticleIdWithCursor("article-1", null, page);
 
     assertThat(result.getData().size(), is(0));
   }

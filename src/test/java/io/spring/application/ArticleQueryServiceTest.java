@@ -27,28 +27,39 @@ import org.mockito.MockitoAnnotations;
 
 public class ArticleQueryServiceTest {
 
-  @Mock
-  private ArticleReadService articleReadService;
+  @Mock private ArticleReadService articleReadService;
 
-  @Mock
-  private UserRelationshipQueryService userRelationshipQueryService;
+  @Mock private UserRelationshipQueryService userRelationshipQueryService;
 
-  @Mock
-  private ArticleFavoritesReadService articleFavoritesReadService;
+  @Mock private ArticleFavoritesReadService articleFavoritesReadService;
 
   private ArticleQueryService articleQueryService;
 
   @BeforeEach
   public void setUp() {
     MockitoAnnotations.openMocks(this);
-    articleQueryService = new ArticleQueryService(articleReadService, userRelationshipQueryService, articleFavoritesReadService);
+    articleQueryService =
+        new ArticleQueryService(
+            articleReadService, userRelationshipQueryService, articleFavoritesReadService);
   }
 
   @Test
   public void should_find_article_by_id() {
     LocalDateTime now = LocalDateTime.now();
     ProfileData profile = new ProfileData("user-1", "testuser", "bio", "image.jpg", false);
-    ArticleData articleData = new ArticleData("article-1", "test-slug", "Test Title", "Description", "Body", false, 0, now, now, Arrays.asList("java"), profile);
+    ArticleData articleData =
+        new ArticleData(
+            "article-1",
+            "test-slug",
+            "Test Title",
+            "Description",
+            "Body",
+            false,
+            0,
+            now,
+            now,
+            Arrays.asList("java"),
+            profile);
     when(articleReadService.findById("article-1")).thenReturn(articleData);
     when(articleFavoritesReadService.isUserFavorite(anyString(), anyString())).thenReturn(false);
     when(articleFavoritesReadService.articleFavoriteCount(anyString())).thenReturn(0);
@@ -74,7 +85,19 @@ public class ArticleQueryServiceTest {
   public void should_find_article_by_slug() {
     LocalDateTime now = LocalDateTime.now();
     ProfileData profile = new ProfileData("user-1", "testuser", "bio", "image.jpg", false);
-    ArticleData articleData = new ArticleData("article-1", "test-slug", "Test Title", "Description", "Body", false, 0, now, now, Arrays.asList("java"), profile);
+    ArticleData articleData =
+        new ArticleData(
+            "article-1",
+            "test-slug",
+            "Test Title",
+            "Description",
+            "Body",
+            false,
+            0,
+            now,
+            now,
+            Arrays.asList("java"),
+            profile);
     when(articleReadService.findBySlug("test-slug")).thenReturn(articleData);
     when(articleFavoritesReadService.isUserFavorite(anyString(), anyString())).thenReturn(false);
     when(articleFavoritesReadService.articleFavoriteCount(anyString())).thenReturn(0);
@@ -91,11 +114,25 @@ public class ArticleQueryServiceTest {
   public void should_find_recent_articles() {
     LocalDateTime now = LocalDateTime.now();
     ProfileData profile = new ProfileData("user-1", "testuser", "bio", "image.jpg", false);
-    ArticleData articleData = new ArticleData("article-1", "test-slug", "Test Title", "Description", "Body", false, 0, now, now, Arrays.asList("java"), profile);
-    when(articleReadService.queryArticles(any(), any(), any(), any())).thenReturn(Arrays.asList("article-1"));
+    ArticleData articleData =
+        new ArticleData(
+            "article-1",
+            "test-slug",
+            "Test Title",
+            "Description",
+            "Body",
+            false,
+            0,
+            now,
+            now,
+            Arrays.asList("java"),
+            profile);
+    when(articleReadService.queryArticles(any(), any(), any(), any()))
+        .thenReturn(Arrays.asList("article-1"));
     when(articleReadService.countArticle(any(), any(), any())).thenReturn(1);
     when(articleReadService.findArticles(anyList())).thenReturn(Arrays.asList(articleData));
-    when(articleFavoritesReadService.articlesFavoriteCount(anyList())).thenReturn(Arrays.asList(new ArticleFavoriteCount("article-1", 5)));
+    when(articleFavoritesReadService.articlesFavoriteCount(anyList()))
+        .thenReturn(Arrays.asList(new ArticleFavoriteCount("article-1", 5)));
 
     Page page = new Page(0, 10);
     ArticleDataList result = articleQueryService.findRecentArticles(null, null, null, page, null);
@@ -106,7 +143,8 @@ public class ArticleQueryServiceTest {
 
   @Test
   public void should_return_empty_list_when_no_articles() {
-    when(articleReadService.queryArticles(any(), any(), any(), any())).thenReturn(Collections.emptyList());
+    when(articleReadService.queryArticles(any(), any(), any(), any()))
+        .thenReturn(Collections.emptyList());
     when(articleReadService.countArticle(any(), any(), any())).thenReturn(0);
 
     Page page = new Page(0, 10);
@@ -120,13 +158,29 @@ public class ArticleQueryServiceTest {
   public void should_find_user_feed() {
     LocalDateTime now = LocalDateTime.now();
     ProfileData profile = new ProfileData("user-1", "testuser", "bio", "image.jpg", false);
-    ArticleData articleData = new ArticleData("article-1", "test-slug", "Test Title", "Description", "Body", false, 0, now, now, Arrays.asList("java"), profile);
-    when(userRelationshipQueryService.followedUsers(anyString())).thenReturn(Arrays.asList("user-2"));
-    when(articleReadService.findArticlesOfAuthors(anyList(), any())).thenReturn(Arrays.asList(articleData));
+    ArticleData articleData =
+        new ArticleData(
+            "article-1",
+            "test-slug",
+            "Test Title",
+            "Description",
+            "Body",
+            false,
+            0,
+            now,
+            now,
+            Arrays.asList("java"),
+            profile);
+    when(userRelationshipQueryService.followedUsers(anyString()))
+        .thenReturn(Arrays.asList("user-2"));
+    when(articleReadService.findArticlesOfAuthors(anyList(), any()))
+        .thenReturn(Arrays.asList(articleData));
     when(articleReadService.countFeedSize(anyList())).thenReturn(1);
-    when(articleFavoritesReadService.articlesFavoriteCount(anyList())).thenReturn(Arrays.asList(new ArticleFavoriteCount("article-1", 5)));
+    when(articleFavoritesReadService.articlesFavoriteCount(anyList()))
+        .thenReturn(Arrays.asList(new ArticleFavoriteCount("article-1", 5)));
     when(articleFavoritesReadService.userFavorites(anyList(), any())).thenReturn(new HashSet<>());
-    when(userRelationshipQueryService.followingAuthors(anyString(), anyList())).thenReturn(new HashSet<>());
+    when(userRelationshipQueryService.followingAuthors(anyString(), anyList()))
+        .thenReturn(new HashSet<>());
 
     User user = new User("test@example.com", "testuser", "password", "", "");
     Page page = new Page(0, 10);
@@ -137,7 +191,8 @@ public class ArticleQueryServiceTest {
 
   @Test
   public void should_return_empty_feed_when_not_following_anyone() {
-    when(userRelationshipQueryService.followedUsers(anyString())).thenReturn(Collections.emptyList());
+    when(userRelationshipQueryService.followedUsers(anyString()))
+        .thenReturn(Collections.emptyList());
 
     User user = new User("test@example.com", "testuser", "password", "", "");
     Page page = new Page(0, 10);
@@ -151,11 +206,25 @@ public class ArticleQueryServiceTest {
   public void should_search_articles() {
     LocalDateTime now = LocalDateTime.now();
     ProfileData profile = new ProfileData("user-1", "testuser", "bio", "image.jpg", false);
-    ArticleData articleData = new ArticleData("article-1", "test-slug", "Test Title", "Description", "Body", false, 0, now, now, Arrays.asList("java"), profile);
-    when(articleReadService.searchArticles(anyString(), any())).thenReturn(Arrays.asList("article-1"));
+    ArticleData articleData =
+        new ArticleData(
+            "article-1",
+            "test-slug",
+            "Test Title",
+            "Description",
+            "Body",
+            false,
+            0,
+            now,
+            now,
+            Arrays.asList("java"),
+            profile);
+    when(articleReadService.searchArticles(anyString(), any()))
+        .thenReturn(Arrays.asList("article-1"));
     when(articleReadService.countSearchResults(anyString())).thenReturn(1);
     when(articleReadService.findArticles(anyList())).thenReturn(Arrays.asList(articleData));
-    when(articleFavoritesReadService.articlesFavoriteCount(anyList())).thenReturn(Arrays.asList(new ArticleFavoriteCount("article-1", 5)));
+    when(articleFavoritesReadService.articlesFavoriteCount(anyList()))
+        .thenReturn(Arrays.asList(new ArticleFavoriteCount("article-1", 5)));
 
     Page page = new Page(0, 10);
     ArticleDataList result = articleQueryService.searchArticles("test", page, null);

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/42Crunch/api-security-audit-action/main/schema/audit-config.json",
+  "audit": {
+    "minScore": 70,
+    "failOn": {
+      "critical": true,
+      "high": true,
+      "medium": false,
+      "low": false
+    }
+  },
+  "mapping": {
+    "openapi": "src/main/resources/openapi/api-spec.yaml"
+  }
+}

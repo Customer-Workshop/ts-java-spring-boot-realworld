@@ -23,11 +23,9 @@ import reactor.core.publisher.Mono;
 
 public class CurrentUserApiTest {
 
-  @Mock
-  private UserQueryService userQueryService;
+  @Mock private UserQueryService userQueryService;
 
-  @Mock
-  private UserService userService;
+  @Mock private UserService userService;
 
   private CurrentUserApi currentUserApi;
 
@@ -40,7 +38,8 @@ public class CurrentUserApiTest {
   @Test
   public void should_get_current_user() {
     User currentUser = new User("test@example.com", "testuser", "password", "bio", "image.jpg");
-    UserData userData = new UserData(currentUser.getId(), "test@example.com", "testuser", "bio", "image.jpg");
+    UserData userData =
+        new UserData(currentUser.getId(), "test@example.com", "testuser", "bio", "image.jpg");
     when(userQueryService.findById(anyString())).thenReturn(Optional.of(userData));
 
     ResponseEntity response = currentUserApi.currentUser(currentUser, "Bearer jwt-token-123");
@@ -52,12 +51,16 @@ public class CurrentUserApiTest {
   @Test
   public void should_update_profile() {
     User currentUser = new User("test@example.com", "testuser", "password", "bio", "image.jpg");
-    UserData userData = new UserData(currentUser.getId(), "new@example.com", "newuser", "new bio", "new-image.jpg");
-    UpdateUserParam updateParam = new UpdateUserParam("new@example.com", "newpassword", "newuser", "new bio", "new-image.jpg");
+    UserData userData =
+        new UserData(currentUser.getId(), "new@example.com", "newuser", "new bio", "new-image.jpg");
+    UpdateUserParam updateParam =
+        new UpdateUserParam(
+            "new@example.com", "newpassword", "newuser", "new bio", "new-image.jpg");
     when(userService.updateUser(any())).thenReturn(Mono.just(currentUser));
     when(userQueryService.findById(anyString())).thenReturn(Optional.of(userData));
 
-    ResponseEntity response = currentUserApi.updateProfile(currentUser, "Bearer jwt-token-123", updateParam);
+    ResponseEntity response =
+        currentUserApi.updateProfile(currentUser, "Bearer jwt-token-123", updateParam);
 
     assertThat(response.getStatusCode(), is(HttpStatus.OK));
     assertThat(response.getBody(), notNullValue());

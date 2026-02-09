@@ -30,14 +30,11 @@ import reactor.core.publisher.Mono;
 
 public class ArticleApiTest {
 
-  @Mock
-  private ArticleQueryService articleQueryService;
+  @Mock private ArticleQueryService articleQueryService;
 
-  @Mock
-  private ArticleRepository articleRepository;
+  @Mock private ArticleRepository articleRepository;
 
-  @Mock
-  private ArticleCommandService articleCommandService;
+  @Mock private ArticleCommandService articleCommandService;
 
   private ArticleApi articleApi;
 
@@ -51,7 +48,19 @@ public class ArticleApiTest {
   public void should_get_article() {
     LocalDateTime now = LocalDateTime.now();
     ProfileData profile = new ProfileData("user-1", "testuser", "bio", "image.jpg", false);
-    ArticleData articleData = new ArticleData("article-1", "test-slug", "Test Title", "Description", "Body", false, 0, now, now, Arrays.asList("java"), profile);
+    ArticleData articleData =
+        new ArticleData(
+            "article-1",
+            "test-slug",
+            "Test Title",
+            "Description",
+            "Body",
+            false,
+            0,
+            now,
+            now,
+            Arrays.asList("java"),
+            profile);
     when(articleQueryService.findBySlug(anyString(), any())).thenReturn(Optional.of(articleData));
 
     User user = new User("test@example.com", "testuser", "password", "", "");
@@ -67,15 +76,18 @@ public class ArticleApiTest {
 
     User user = new User("test@example.com", "testuser", "password", "", "");
 
-    assertThrows(ResourceNotFoundException.class, () -> {
-      articleApi.article("nonexistent", user);
-    });
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> {
+          articleApi.article("nonexistent", user);
+        });
   }
 
   @Test
   public void should_delete_article() {
     User user = new User("test@example.com", "testuser", "password", "", "");
-    Article article = new Article("Test Title", "Description", "Body", Arrays.asList("java"), user.getId());
+    Article article =
+        new Article("Test Title", "Description", "Body", Arrays.asList("java"), user.getId());
     when(articleRepository.findBySlug("test-slug")).thenReturn(Mono.just(article));
     when(articleRepository.remove(any(Article.class))).thenReturn(Mono.empty());
 
@@ -90,22 +102,39 @@ public class ArticleApiTest {
 
     User user = new User("test@example.com", "testuser", "password", "", "");
 
-    assertThrows(ResourceNotFoundException.class, () -> {
-      articleApi.deleteArticle("nonexistent", user);
-    });
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> {
+          articleApi.deleteArticle("nonexistent", user);
+        });
   }
 
   @Test
   public void should_update_article() {
     User user = new User("test@example.com", "testuser", "password", "", "");
-    Article article = new Article("Test Title", "Description", "Body", Arrays.asList("java"), user.getId());
+    Article article =
+        new Article("Test Title", "Description", "Body", Arrays.asList("java"), user.getId());
     LocalDateTime now = LocalDateTime.now();
     ProfileData profile = new ProfileData("user-1", "testuser", "bio", "image.jpg", false);
-    ArticleData articleData = new ArticleData("article-1", "new-slug", "New Title", "New Description", "New Body", false, 0, now, now, Arrays.asList("java"), profile);
-    UpdateArticleParam updateParam = new UpdateArticleParam("New Title", "New Body", "New Description");
-    
+    ArticleData articleData =
+        new ArticleData(
+            "article-1",
+            "new-slug",
+            "New Title",
+            "New Description",
+            "New Body",
+            false,
+            0,
+            now,
+            now,
+            Arrays.asList("java"),
+            profile);
+    UpdateArticleParam updateParam =
+        new UpdateArticleParam("New Title", "New Body", "New Description");
+
     when(articleRepository.findBySlug("test-slug")).thenReturn(Mono.just(article));
-    when(articleCommandService.updateArticle(any(Article.class), any(UpdateArticleParam.class))).thenReturn(Mono.just(article));
+    when(articleCommandService.updateArticle(any(Article.class), any(UpdateArticleParam.class)))
+        .thenReturn(Mono.just(article));
     when(articleQueryService.findBySlug(anyString(), any())).thenReturn(Optional.of(articleData));
 
     ResponseEntity response = articleApi.updateArticle("test-slug", user, updateParam);

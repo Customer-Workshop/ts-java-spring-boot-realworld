@@ -14,13 +14,11 @@ import io.spring.application.data.CommentData;
 import io.spring.application.data.ProfileData;
 import io.spring.core.article.Article;
 import io.spring.core.article.ArticleRepository;
-import io.spring.core.comment.Comment;
 import io.spring.core.comment.CommentRepository;
 import io.spring.core.user.User;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -31,14 +29,11 @@ import reactor.core.publisher.Mono;
 
 public class CommentsApiTest {
 
-  @Mock
-  private ArticleRepository articleRepository;
+  @Mock private ArticleRepository articleRepository;
 
-  @Mock
-  private CommentRepository commentRepository;
+  @Mock private CommentRepository commentRepository;
 
-  @Mock
-  private CommentQueryService commentQueryService;
+  @Mock private CommentQueryService commentQueryService;
 
   private CommentsApi commentsApi;
 
@@ -50,13 +45,16 @@ public class CommentsApiTest {
 
   @Test
   public void should_get_comments() {
-    Article article = new Article("Test Title", "Description", "Body", Arrays.asList("java"), "user-1");
+    Article article =
+        new Article("Test Title", "Description", "Body", Arrays.asList("java"), "user-1");
     LocalDateTime now = LocalDateTime.now();
     ProfileData profile = new ProfileData("user-1", "testuser", "bio", "image.jpg", false);
-    CommentData comment = new CommentData("comment-1", "Test comment", article.getId(), now, now, profile);
-    
+    CommentData comment =
+        new CommentData("comment-1", "Test comment", article.getId(), now, now, profile);
+
     when(articleRepository.findBySlug("test-slug")).thenReturn(Mono.just(article));
-    when(commentQueryService.findByArticleId(anyString(), any())).thenReturn(Arrays.asList(comment));
+    when(commentQueryService.findByArticleId(anyString(), any()))
+        .thenReturn(Arrays.asList(comment));
 
     User user = new User("test@example.com", "testuser", "password", "", "");
     ResponseEntity response = commentsApi.getComments("test-slug", user);
@@ -67,10 +65,12 @@ public class CommentsApiTest {
 
   @Test
   public void should_return_empty_comments() {
-    Article article = new Article("Test Title", "Description", "Body", Arrays.asList("java"), "user-1");
-    
+    Article article =
+        new Article("Test Title", "Description", "Body", Arrays.asList("java"), "user-1");
+
     when(articleRepository.findBySlug("test-slug")).thenReturn(Mono.just(article));
-    when(commentQueryService.findByArticleId(anyString(), any())).thenReturn(Collections.emptyList());
+    when(commentQueryService.findByArticleId(anyString(), any()))
+        .thenReturn(Collections.emptyList());
 
     User user = new User("test@example.com", "testuser", "password", "", "");
     ResponseEntity response = commentsApi.getComments("test-slug", user);
@@ -84,8 +84,10 @@ public class CommentsApiTest {
 
     User user = new User("test@example.com", "testuser", "password", "", "");
 
-    assertThrows(ResourceNotFoundException.class, () -> {
-      commentsApi.getComments("nonexistent", user);
-    });
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> {
+          commentsApi.getComments("nonexistent", user);
+        });
   }
 }

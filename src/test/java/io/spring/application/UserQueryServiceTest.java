@@ -14,8 +14,7 @@ import org.mockito.MockitoAnnotations;
 
 public class UserQueryServiceTest {
 
-  @Mock
-  private UserReadService userReadService;
+  @Mock private UserReadService userReadService;
 
   private UserQueryService userQueryService;
 

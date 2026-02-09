@@ -30,30 +30,41 @@ import reactor.core.publisher.Mono;
 
 public class ArticleFavoriteApiTest {
 
-  @Mock
-  private ArticleFavoriteRepository articleFavoriteRepository;
+  @Mock private ArticleFavoriteRepository articleFavoriteRepository;
 
-  @Mock
-  private ArticleRepository articleRepository;
+  @Mock private ArticleRepository articleRepository;
 
-  @Mock
-  private ArticleQueryService articleQueryService;
+  @Mock private ArticleQueryService articleQueryService;
 
   private ArticleFavoriteApi articleFavoriteApi;
 
   @BeforeEach
   public void setUp() {
     MockitoAnnotations.openMocks(this);
-    articleFavoriteApi = new ArticleFavoriteApi(articleFavoriteRepository, articleRepository, articleQueryService);
+    articleFavoriteApi =
+        new ArticleFavoriteApi(articleFavoriteRepository, articleRepository, articleQueryService);
   }
 
   @Test
   public void should_favorite_article() {
-    Article article = new Article("Test Title", "Description", "Body", Arrays.asList("java"), "user-1");
+    Article article =
+        new Article("Test Title", "Description", "Body", Arrays.asList("java"), "user-1");
     LocalDateTime now = LocalDateTime.now();
     ProfileData profile = new ProfileData("user-1", "testuser", "bio", "image.jpg", false);
-    ArticleData articleData = new ArticleData(article.getId(), "test-slug", "Test Title", "Description", "Body", true, 1, now, now, Arrays.asList("java"), profile);
-    
+    ArticleData articleData =
+        new ArticleData(
+            article.getId(),
+            "test-slug",
+            "Test Title",
+            "Description",
+            "Body",
+            true,
+            1,
+            now,
+            now,
+            Arrays.asList("java"),
+            profile);
+
     when(articleRepository.findBySlug("test-slug")).thenReturn(Mono.just(article));
     when(articleFavoriteRepository.save(any(ArticleFavorite.class))).thenReturn(Mono.empty());
     when(articleQueryService.findBySlug(anyString(), any())).thenReturn(Optional.of(articleData));
@@ -71,19 +82,34 @@ public class ArticleFavoriteApiTest {
 
     User user = new User("test@example.com", "testuser", "password", "", "");
 
-    assertThrows(ResourceNotFoundException.class, () -> {
-      articleFavoriteApi.favoriteArticle("nonexistent", user);
-    });
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> {
+          articleFavoriteApi.favoriteArticle("nonexistent", user);
+        });
   }
 
   @Test
   public void should_unfavorite_article() {
-    Article article = new Article("Test Title", "Description", "Body", Arrays.asList("java"), "user-1");
+    Article article =
+        new Article("Test Title", "Description", "Body", Arrays.asList("java"), "user-1");
     ArticleFavorite favorite = new ArticleFavorite(article.getId(), "user-2");
     LocalDateTime now = LocalDateTime.now();
     ProfileData profile = new ProfileData("user-1", "testuser", "bio", "image.jpg", false);
-    ArticleData articleData = new ArticleData(article.getId(), "test-slug", "Test Title", "Description", "Body", false, 0, now, now, Arrays.asList("java"), profile);
-    
+    ArticleData articleData =
+        new ArticleData(
+            article.getId(),
+            "test-slug",
+            "Test Title",
+            "Description",
+            "Body",
+            false,
+            0,
+            now,
+            now,
+            Arrays.asList("java"),
+            profile);
+
     when(articleRepository.findBySlug("test-slug")).thenReturn(Mono.just(article));
     when(articleFavoriteRepository.find(anyString(), anyString())).thenReturn(Mono.just(favorite));
     when(articleFavoriteRepository.remove(any(ArticleFavorite.class))).thenReturn(Mono.empty());
@@ -102,8 +128,10 @@ public class ArticleFavoriteApiTest {
 
     User user = new User("test@example.com", "testuser", "password", "", "");
 
-    assertThrows(ResourceNotFoundException.class, () -> {
-      articleFavoriteApi.unfavoriteArticle("nonexistent", user);
-    });
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> {
+          articleFavoriteApi.unfavoriteArticle("nonexistent", user);
+        });
   }
 }

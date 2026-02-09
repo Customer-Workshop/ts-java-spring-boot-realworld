@@ -9,7 +9,8 @@ public class UpdateUserParamTest {
 
   @Test
   public void should_create_update_user_param() {
-    UpdateUserParam param = new UpdateUserParam("test@example.com", "password123", "testuser", "bio", "image.jpg");
+    UpdateUserParam param =
+        new UpdateUserParam("test@example.com", "password123", "testuser", "bio", "image.jpg");
 
     assertThat(param.getEmail(), is("test@example.com"));
     assertThat(param.getPassword(), is("password123"));
@@ -20,11 +21,12 @@ public class UpdateUserParamTest {
 
   @Test
   public void should_create_with_builder() {
-    UpdateUserParam param = UpdateUserParam.builder()
-        .email("test@example.com")
-        .username("testuser")
-        .bio("bio text")
-        .build();
+    UpdateUserParam param =
+        UpdateUserParam.builder()
+            .email("test@example.com")
+            .username("testuser")
+            .bio("bio text")
+            .build();
 
     assertThat(param.getEmail(), is("test@example.com"));
     assertThat(param.getUsername(), is("testuser"));

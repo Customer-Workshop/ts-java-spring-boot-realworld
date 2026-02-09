@@ -11,7 +11,8 @@ public class ErrorResourceTest {
 
   @Test
   public void should_create_error_resource() {
-    FieldErrorResource fieldError = new FieldErrorResource("user", "email", "invalid", "invalid email format");
+    FieldErrorResource fieldError =
+        new FieldErrorResource("user", "email", "invalid", "invalid email format");
     ErrorResource errorResource = new ErrorResource(Arrays.asList(fieldError));
 
     assertThat(errorResource.getFieldErrors().size(), is(1));
@@ -27,8 +28,10 @@ public class ErrorResourceTest {
 
   @Test
   public void should_create_with_multiple_errors() {
-    FieldErrorResource fieldError1 = new FieldErrorResource("user", "email", "invalid", "invalid email format");
-    FieldErrorResource fieldError2 = new FieldErrorResource("user", "username", "taken", "already taken");
+    FieldErrorResource fieldError1 =
+        new FieldErrorResource("user", "email", "invalid", "invalid email format");
+    FieldErrorResource fieldError2 =
+        new FieldErrorResource("user", "username", "taken", "already taken");
     ErrorResource errorResource = new ErrorResource(Arrays.asList(fieldError1, fieldError2));
 
     assertThat(errorResource.getFieldErrors().size(), is(2));

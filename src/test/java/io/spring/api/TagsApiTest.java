@@ -17,8 +17,7 @@ import org.springframework.http.ResponseEntity;
 
 public class TagsApiTest {
 
-  @Mock
-  private TagsQueryService tagsQueryService;
+  @Mock private TagsQueryService tagsQueryService;
 
   private TagsApi tagsApi;
 

@@ -17,11 +17,9 @@ import reactor.core.publisher.Mono;
 
 public class UserServiceTest {
 
-  @Mock
-  private UserRepository userRepository;
+  @Mock private UserRepository userRepository;
 
-  @Mock
-  private PasswordEncoder passwordEncoder;
+  @Mock private PasswordEncoder passwordEncoder;
 
   private UserService userService;
 
@@ -34,7 +32,8 @@ public class UserServiceTest {
   @Test
   public void should_create_user() {
     RegisterParam param = new RegisterParam("test@example.com", "testuser", "password123");
-    User savedUser = new User("test@example.com", "testuser", "encoded-password", "", "default-image.jpg");
+    User savedUser =
+        new User("test@example.com", "testuser", "encoded-password", "", "default-image.jpg");
     when(passwordEncoder.encode("password123")).thenReturn("encoded-password");
     when(userRepository.save(any(User.class))).thenReturn(Mono.just(savedUser));
 
@@ -47,8 +46,11 @@ public class UserServiceTest {
 
   @Test
   public void should_update_user() {
-    User existingUser = new User("old@example.com", "olduser", "password", "old bio", "old-image.jpg");
-    UpdateUserParam param = new UpdateUserParam("new@example.com", "newpassword", "newuser", "new bio", "new-image.jpg");
+    User existingUser =
+        new User("old@example.com", "olduser", "password", "old bio", "old-image.jpg");
+    UpdateUserParam param =
+        new UpdateUserParam(
+            "new@example.com", "newpassword", "newuser", "new bio", "new-image.jpg");
     UpdateUserCommand command = new UpdateUserCommand(existingUser, param);
     when(userRepository.save(any(User.class))).thenReturn(Mono.just(existingUser));
 

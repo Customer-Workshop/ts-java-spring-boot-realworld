@@ -11,7 +11,9 @@ public class NewArticleParamTest {
 
   @Test
   public void should_create_new_article_param() {
-    NewArticleParam param = new NewArticleParam("Test Title", "Test Description", "Test Body", Arrays.asList("java", "spring"));
+    NewArticleParam param =
+        new NewArticleParam(
+            "Test Title", "Test Description", "Test Body", Arrays.asList("java", "spring"));
 
     assertThat(param.getTitle(), is("Test Title"));
     assertThat(param.getDescription(), is("Test Description"));
@@ -21,12 +23,13 @@ public class NewArticleParamTest {
 
   @Test
   public void should_create_with_builder() {
-    NewArticleParam param = NewArticleParam.builder()
-        .title("Test Title")
-        .description("Test Description")
-        .body("Test Body")
-        .tagList(Arrays.asList("java"))
-        .build();
+    NewArticleParam param =
+        NewArticleParam.builder()
+            .title("Test Title")
+            .description("Test Description")
+            .body("Test Body")
+            .tagList(Arrays.asList("java"))
+            .build();
 
     assertThat(param.getTitle(), is("Test Title"));
     assertThat(param.getDescription(), is("Test Description"));
@@ -46,7 +49,8 @@ public class NewArticleParamTest {
 
   @Test
   public void should_handle_null_tag_list() {
-    NewArticleParam param = new NewArticleParam("Test Title", "Test Description", "Test Body", null);
+    NewArticleParam param =
+        new NewArticleParam("Test Title", "Test Description", "Test Body", null);
 
     assertThat(param.getTagList(), nullValue());
   }

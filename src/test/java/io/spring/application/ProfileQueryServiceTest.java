@@ -18,11 +18,9 @@ import org.mockito.MockitoAnnotations;
 
 public class ProfileQueryServiceTest {
 
-  @Mock
-  private UserReadService userReadService;
+  @Mock private UserReadService userReadService;
 
-  @Mock
-  private UserRelationshipQueryService userRelationshipQueryService;
+  @Mock private UserRelationshipQueryService userRelationshipQueryService;
 
   private ProfileQueryService profileQueryService;
 

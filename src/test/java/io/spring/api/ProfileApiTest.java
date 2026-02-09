@@ -3,6 +3,7 @@ package io.spring.api;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -22,15 +23,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import reactor.core.publisher.Mono;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 public class ProfileApiTest {
 
-  @Mock
-  private ProfileQueryService profileQueryService;
+  @Mock private ProfileQueryService profileQueryService;
 
-  @Mock
-  private UserRepository userRepository;
+  @Mock private UserRepository userRepository;
 
   private ProfileApi profileApi;
 
@@ -43,7 +40,8 @@ public class ProfileApiTest {
   @Test
   public void should_get_profile() {
     ProfileData profileData = new ProfileData("user-1", "testuser", "bio", "image.jpg", false);
-    when(profileQueryService.findByUsername(anyString(), any())).thenReturn(Optional.of(profileData));
+    when(profileQueryService.findByUsername(anyString(), any()))
+        .thenReturn(Optional.of(profileData));
 
     User currentUser = new User("current@example.com", "currentuser", "password", "", "");
     ResponseEntity response = profileApi.getProfile("testuser", currentUser);
@@ -58,9 +56,11 @@ public class ProfileApiTest {
 
     User currentUser = new User("current@example.com", "currentuser", "password", "", "");
 
-    assertThrows(ResourceNotFoundException.class, () -> {
-      profileApi.getProfile("nonexistent", currentUser);
-    });
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> {
+          profileApi.getProfile("nonexistent", currentUser);
+        });
   }
 
   @Test
@@ -69,7 +69,8 @@ public class ProfileApiTest {
     ProfileData profileData = new ProfileData("user-1", "targetuser", "bio", "image.jpg", true);
     when(userRepository.findByUsername("targetuser")).thenReturn(Mono.just(targetUser));
     when(userRepository.saveRelation(any(FollowRelation.class))).thenReturn(Mono.empty());
-    when(profileQueryService.findByUsername(anyString(), any())).thenReturn(Optional.of(profileData));
+    when(profileQueryService.findByUsername(anyString(), any()))
+        .thenReturn(Optional.of(profileData));
 
     User currentUser = new User("current@example.com", "currentuser", "password", "", "");
     ResponseEntity response = profileApi.follow("targetuser", currentUser);
@@ -83,9 +84,11 @@ public class ProfileApiTest {
 
     User currentUser = new User("current@example.com", "currentuser", "password", "", "");
 
-    assertThrows(ResourceNotFoundException.class, () -> {
-      profileApi.follow("nonexistent", currentUser);
-    });
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> {
+          profileApi.follow("nonexistent", currentUser);
+        });
   }
 
   @Test
@@ -96,7 +99,8 @@ public class ProfileApiTest {
     when(userRepository.findByUsername("targetuser")).thenReturn(Mono.just(targetUser));
     when(userRepository.findRelation(anyString(), anyString())).thenReturn(Mono.just(relation));
     when(userRepository.removeRelation(any(FollowRelation.class))).thenReturn(Mono.empty());
-    when(profileQueryService.findByUsername(anyString(), any())).thenReturn(Optional.of(profileData));
+    when(profileQueryService.findByUsername(anyString(), any()))
+        .thenReturn(Optional.of(profileData));
 
     User currentUser = new User("current@example.com", "currentuser", "password", "", "");
     ResponseEntity response = profileApi.unfollow("targetuser", currentUser);
@@ -110,8 +114,10 @@ public class ProfileApiTest {
 
     User currentUser = new User("current@example.com", "currentuser", "password", "", "");
 
-    assertThrows(ResourceNotFoundException.class, () -> {
-      profileApi.unfollow("nonexistent", currentUser);
-    });
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> {
+          profileApi.unfollow("nonexistent", currentUser);
+        });
   }
 }

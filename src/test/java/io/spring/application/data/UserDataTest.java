@@ -9,7 +9,8 @@ public class UserDataTest {
 
   @Test
   public void should_create_user_data() {
-    UserData userData = new UserData("user-1", "test@example.com", "testuser", "bio text", "image.jpg");
+    UserData userData =
+        new UserData("user-1", "test@example.com", "testuser", "bio text", "image.jpg");
 
     assertThat(userData.getId(), is("user-1"));
     assertThat(userData.getEmail(), is("test@example.com"));

@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-public class CursorPagerTest {
+public class CursorPagerMoreTest {
 
   @Test
   public void should_create_cursor_pager_with_next_direction() {
@@ -23,10 +23,10 @@ public class CursorPagerTest {
             "article-1",
             "test-slug",
             "Test Title",
-            "Test Description",
-            "Test Body",
+            "Description",
+            "Body",
             false,
-            5,
+            0,
             now,
             now,
             Arrays.asList("java"),
@@ -38,6 +38,8 @@ public class CursorPagerTest {
     assertThat(pager.getData().size(), is(1));
     assertThat(pager.hasNext(), is(true));
     assertThat(pager.hasPrevious(), is(false));
+    assertThat(pager.isNext(), is(true));
+    assertThat(pager.isPrevious(), is(false));
   }
 
   @Test
@@ -49,10 +51,10 @@ public class CursorPagerTest {
             "article-1",
             "test-slug",
             "Test Title",
-            "Test Description",
-            "Test Body",
+            "Description",
+            "Body",
             false,
-            5,
+            0,
             now,
             now,
             Arrays.asList("java"),
@@ -67,16 +69,7 @@ public class CursorPagerTest {
   }
 
   @Test
-  public void should_return_null_cursors_for_empty_data() {
-    CursorPager<ArticleData> pager =
-        new CursorPager<>(Collections.emptyList(), CursorPager.Direction.NEXT, false);
-
-    assertThat(pager.getStartCursor(), nullValue());
-    assertThat(pager.getEndCursor(), nullValue());
-  }
-
-  @Test
-  public void should_return_cursors_for_non_empty_data() {
+  public void should_get_start_cursor_from_non_empty_list() {
     LocalDateTime now = LocalDateTime.now();
     ProfileData profile = new ProfileData("user-1", "testuser", "bio", "image.jpg", false);
     ArticleData article =
@@ -84,10 +77,10 @@ public class CursorPagerTest {
             "article-1",
             "test-slug",
             "Test Title",
-            "Test Description",
-            "Test Body",
+            "Description",
+            "Body",
             false,
-            5,
+            0,
             now,
             now,
             Arrays.asList("java"),
@@ -101,6 +94,15 @@ public class CursorPagerTest {
   }
 
   @Test
+  public void should_get_null_cursor_from_empty_list() {
+    CursorPager<ArticleData> pager =
+        new CursorPager<>(Collections.emptyList(), CursorPager.Direction.NEXT, false);
+
+    assertThat(pager.getStartCursor(), nullValue());
+    assertThat(pager.getEndCursor(), nullValue());
+  }
+
+  @Test
   public void should_not_have_extra_when_false() {
     LocalDateTime now = LocalDateTime.now();
     ProfileData profile = new ProfileData("user-1", "testuser", "bio", "image.jpg", false);
@@ -109,10 +111,10 @@ public class CursorPagerTest {
             "article-1",
             "test-slug",
             "Test Title",
-            "Test Description",
-            "Test Body",
+            "Description",
+            "Body",
             false,
-            5,
+            0,
             now,
             now,
             Arrays.asList("java"),

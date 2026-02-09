@@ -18,8 +18,7 @@ import reactor.core.publisher.Mono;
 
 public class ArticleCommandServiceTest {
 
-  @Mock
-  private ArticleRepository articleRepository;
+  @Mock private ArticleRepository articleRepository;
 
   private ArticleCommandService articleCommandService;
 
@@ -31,9 +30,17 @@ public class ArticleCommandServiceTest {
 
   @Test
   public void should_create_article() {
-    NewArticleParam param = new NewArticleParam("Test Title", "Test Description", "Test Body", Arrays.asList("java", "spring"));
+    NewArticleParam param =
+        new NewArticleParam(
+            "Test Title", "Test Description", "Test Body", Arrays.asList("java", "spring"));
     User creator = new User("test@example.com", "testuser", "password", "", "");
-    Article savedArticle = new Article("Test Title", "Test Description", "Test Body", Arrays.asList("java", "spring"), creator.getId());
+    Article savedArticle =
+        new Article(
+            "Test Title",
+            "Test Description",
+            "Test Body",
+            Arrays.asList("java", "spring"),
+            creator.getId());
     when(articleRepository.save(any(Article.class))).thenReturn(Mono.just(savedArticle));
 
     Article result = articleCommandService.createArticle(param, creator).block();
@@ -44,7 +51,8 @@ public class ArticleCommandServiceTest {
 
   @Test
   public void should_update_article() {
-    Article existingArticle = new Article("Old Title", "Old Description", "Old Body", Arrays.asList("java"), "user-1");
+    Article existingArticle =
+        new Article("Old Title", "Old Description", "Old Body", Arrays.asList("java"), "user-1");
     UpdateArticleParam param = new UpdateArticleParam("New Title", "New Body", "New Description");
     when(articleRepository.save(any(Article.class))).thenReturn(Mono.just(existingArticle));
 
@@ -55,9 +63,12 @@ public class ArticleCommandServiceTest {
 
   @Test
   public void should_create_article_with_empty_tags() {
-    NewArticleParam param = new NewArticleParam("Test Title", "Test Description", "Test Body", Arrays.asList());
+    NewArticleParam param =
+        new NewArticleParam("Test Title", "Test Description", "Test Body", Arrays.asList());
     User creator = new User("test@example.com", "testuser", "password", "", "");
-    Article savedArticle = new Article("Test Title", "Test Description", "Test Body", Arrays.asList(), creator.getId());
+    Article savedArticle =
+        new Article(
+            "Test Title", "Test Description", "Test Body", Arrays.asList(), creator.getId());
     when(articleRepository.save(any(Article.class))).thenReturn(Mono.just(savedArticle));
 
     Article result = articleCommandService.createArticle(param, creator).block();

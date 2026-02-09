@@ -12,7 +12,9 @@ public class UpdateUserCommandTest {
   @Test
   public void should_create_update_user_command() {
     User user = new User("test@example.com", "testuser", "password123", "bio", "image.jpg");
-    UpdateUserParam param = new UpdateUserParam("new@example.com", "newpassword", "newuser", "new bio", "new-image.jpg");
+    UpdateUserParam param =
+        new UpdateUserParam(
+            "new@example.com", "newpassword", "newuser", "new bio", "new-image.jpg");
 
     UpdateUserCommand command = new UpdateUserCommand(user, param);
 

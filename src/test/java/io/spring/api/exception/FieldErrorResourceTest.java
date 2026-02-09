@@ -9,7 +9,8 @@ public class FieldErrorResourceTest {
 
   @Test
   public void should_create_field_error_resource() {
-    FieldErrorResource fieldError = new FieldErrorResource("user", "email", "invalid", "invalid email format");
+    FieldErrorResource fieldError =
+        new FieldErrorResource("user", "email", "invalid", "invalid email format");
 
     assertThat(fieldError.getResource(), is("user"));
     assertThat(fieldError.getField(), is("email"));
