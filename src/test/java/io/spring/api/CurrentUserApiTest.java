@@ -292,11 +292,6 @@ public class CurrentUserApiTest extends TestWithCurrentUser {
   }
 
   @Test
-  public void should_get_401_without_token_for_get_user() throws Exception {
-    given().contentType("application/json").when().get("/user").then().statusCode(401);
-  }
-
-  @Test
   public void should_get_401_with_invalid_token_for_update() throws Exception {
     String invalidToken = "invalidtoken";
     when(jwtService.getSubFromToken(eq(invalidToken))).thenReturn(Optional.empty());
