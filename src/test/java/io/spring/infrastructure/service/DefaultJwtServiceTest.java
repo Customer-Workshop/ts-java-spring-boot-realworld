@@ -14,7 +14,9 @@ public class DefaultJwtServiceTest {
   @BeforeEach
   public void setUp() {
     jwtService =
-        new DefaultJwtService("123123123123123123123123123123123123123123123123123123123123", 3600);
+        new DefaultJwtService(
+            "test-secret-key-for-unit-testing-only-must-be-at-least-sixty-four-bytes-long-for-hs512",
+            3600);
   }
 
   @Test
