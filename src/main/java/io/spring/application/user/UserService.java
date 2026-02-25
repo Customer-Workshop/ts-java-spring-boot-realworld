@@ -4,24 +4,27 @@ import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import javax.validation.Constraint;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-import javax.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Constraint;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+/**
+ * Write-path service for user operations (CQRS pattern). Handles user creation and profile updates
+ * with validation.
+ */
 @Service
 @Validated
 public class UserService {
-  private UserRepository userRepository;
-  private String defaultImage;
-  private PasswordEncoder passwordEncoder;
 
-  @Autowired
+  private final UserRepository userRepository;
+  private final String defaultImage;
+  private final PasswordEncoder passwordEncoder;
+
   public UserService(
       UserRepository userRepository,
       @Value("${image.default}") String defaultImage,
@@ -32,7 +35,7 @@ public class UserService {
   }
 
   public User createUser(@Valid RegisterParam registerParam) {
-    User user =
+    var user =
         new User(
             registerParam.getEmail(),
             registerParam.getUsername(),
@@ -44,8 +47,8 @@ public class UserService {
   }
 
   public void updateUser(@Valid UpdateUserCommand command) {
-    User user = command.getTargetUser();
-    UpdateUserParam updateUserParam = command.getParam();
+    var user = command.getTargetUser();
+    var updateUserParam = command.getParam();
     user.update(
         updateUserParam.getEmail(),
         updateUserParam.getUsername(),
@@ -62,24 +65,28 @@ public class UserService {
 
   String message() default "invalid update param";
 
-  Class[] groups() default {};
+  Class<?>[] groups() default {};
 
-  Class[] payload() default {};
+  Class<?>[] payload() default {};
 }
 
 class UpdateUserValidator implements ConstraintValidator<UpdateUserConstraint, UpdateUserCommand> {
 
-  @Autowired private UserRepository userRepository;
+  private final UserRepository userRepository;
+
+  UpdateUserValidator(UserRepository userRepository) {
+    this.userRepository = userRepository;
+  }
 
   @Override
   public boolean isValid(UpdateUserCommand value, ConstraintValidatorContext context) {
-    String inputEmail = value.getParam().getEmail();
-    String inputUsername = value.getParam().getUsername();
-    final User targetUser = value.getTargetUser();
+    var inputEmail = value.getParam().getEmail();
+    var inputUsername = value.getParam().getUsername();
+    final var targetUser = value.getTargetUser();
 
-    boolean isEmailValid =
+    var isEmailValid =
         userRepository.findByEmail(inputEmail).map(user -> user.equals(targetUser)).orElse(true);
-    boolean isUsernameValid =
+    var isUsernameValid =
         userRepository
             .findByUsername(inputUsername)
             .map(user -> user.equals(targetUser))
