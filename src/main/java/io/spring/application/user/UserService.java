@@ -4,10 +4,10 @@ import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import javax.validation.Constraint;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-import javax.validation.Valid;
+import jakarta.validation.Constraint;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,11 +17,10 @@ import org.springframework.validation.annotation.Validated;
 @Service
 @Validated
 public class UserService {
-  private UserRepository userRepository;
-  private String defaultImage;
-  private PasswordEncoder passwordEncoder;
+  private final UserRepository userRepository;
+  private final String defaultImage;
+  private final PasswordEncoder passwordEncoder;
 
-  @Autowired
   public UserService(
       UserRepository userRepository,
       @Value("${image.default}") String defaultImage,
@@ -32,7 +31,7 @@ public class UserService {
   }
 
   public User createUser(@Valid RegisterParam registerParam) {
-    User user =
+    var user =
         new User(
             registerParam.getEmail(),
             registerParam.getUsername(),
@@ -44,8 +43,8 @@ public class UserService {
   }
 
   public void updateUser(@Valid UpdateUserCommand command) {
-    User user = command.getTargetUser();
-    UpdateUserParam updateUserParam = command.getParam();
+    var user = command.getTargetUser();
+    var updateUserParam = command.getParam();
     user.update(
         updateUserParam.getEmail(),
         updateUserParam.getUsername(),
