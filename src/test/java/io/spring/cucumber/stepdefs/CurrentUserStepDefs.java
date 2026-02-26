@@ -45,6 +45,7 @@ public class CurrentUserStepDefs {
     when(jwtService.toToken(any())).thenReturn(token);
     when(jwtService.getSubFromToken(eq(token))).thenReturn(Optional.of(user.getId()));
     when(userRepository.findById(eq(user.getId()))).thenReturn(Optional.of(user));
+    when(userRepository.findByUsername(eq(username))).thenReturn(Optional.of(user));
     when(userRepository.findByEmail(eq(email))).thenReturn(Optional.of(user));
     when(userReadService.findById(eq(user.getId()))).thenReturn(userData);
     when(userReadService.findByUsername(eq(username))).thenReturn(userData);

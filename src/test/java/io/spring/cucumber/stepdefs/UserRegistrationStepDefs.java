@@ -41,9 +41,15 @@ public class UserRegistrationStepDefs {
     when(userReadService.findById(any())).thenReturn(userData);
     when(userService.createUser(any())).thenReturn(user);
 
-    // Default: no duplicates
-    when(userRepository.findByUsername(eq(username))).thenReturn(Optional.empty());
-    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.empty());
+    // Only set "no duplicates" stubs if they haven't been pre-stubbed by a preceding step.
+    // The aUserAlreadyExistsWithEmailAndUsername step marks emails/usernames as existing
+    // in the ScenarioContext so we know not to overwrite those stubs here.
+    if (!context.isUsernameMarkedAsExisting(username)) {
+      when(userRepository.findByUsername(eq(username))).thenReturn(Optional.empty());
+    }
+    if (!context.isEmailMarkedAsExisting(email)) {
+      when(userRepository.findByEmail(eq(email))).thenReturn(Optional.empty());
+    }
 
     context.setRequestBody(PayloadBuilder.registrationPayload(email, username, password));
   }
@@ -53,6 +59,8 @@ public class UserRegistrationStepDefs {
     User existingUser = new User(email, username, "existingpass", "bio", DEFAULT_AVATAR);
     when(userRepository.findByEmail(eq(email))).thenReturn(Optional.of(existingUser));
     when(userRepository.findByUsername(eq(username))).thenReturn(Optional.of(existingUser));
+    context.markEmailAsExisting(email);
+    context.markUsernameAsExisting(username);
   }
 
   @Given("I have a registration payload without email")

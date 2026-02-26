@@ -14,11 +14,17 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import io.restassured.module.mockmvc.response.MockMvcResponse;
+import io.spring.application.user.UserService;
+import io.spring.core.service.JwtService;
+import io.spring.core.user.UserRepository;
 import io.spring.cucumber.ScenarioContext;
+import io.spring.infrastructure.mybatis.readservice.UserReadService;
+import io.spring.infrastructure.mybatis.readservice.UserRelationshipQueryService;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -28,10 +34,23 @@ public class CommonStepDefs {
 
   @Autowired private ScenarioContext context;
 
+  @Autowired private UserRepository userRepository;
+
+  @Autowired private JwtService jwtService;
+
+  @Autowired private UserReadService userReadService;
+
+  @Autowired private UserService userService;
+
+  @Autowired private UserRelationshipQueryService userRelationshipQueryService;
+
   @Before
   public void setUp() {
     RestAssuredMockMvc.mockMvc(mvc);
     context.reset();
+    // Reset all mocks to prevent state leakage between scenarios
+    Mockito.reset(
+        userRepository, jwtService, userReadService, userService, userRelationshipQueryService);
   }
 
   @Given("the API is available")

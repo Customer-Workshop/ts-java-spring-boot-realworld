@@ -25,7 +25,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
   UserQueryService.class,
   ProfileQueryService.class,
   BCryptPasswordEncoder.class,
-  JacksonCustomizations.class
+  JacksonCustomizations.class,
+  ScenarioContext.class
 })
 public class CucumberSpringConfiguration {
 

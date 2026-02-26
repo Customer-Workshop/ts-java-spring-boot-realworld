@@ -1,7 +1,9 @@
 package io.spring.cucumber;
 
 import io.restassured.module.mockmvc.response.MockMvcResponse;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.stereotype.Component;
 
 /**
@@ -16,6 +18,8 @@ public class ScenarioContext {
   private String authToken;
   private String authenticatedUserId;
   private String authenticatedUsername;
+  private final Set<String> existingEmails = new HashSet<>();
+  private final Set<String> existingUsernames = new HashSet<>();
 
   public void reset() {
     this.response = null;
@@ -23,6 +27,24 @@ public class ScenarioContext {
     this.authToken = null;
     this.authenticatedUserId = null;
     this.authenticatedUsername = null;
+    this.existingEmails.clear();
+    this.existingUsernames.clear();
+  }
+
+  public void markEmailAsExisting(String email) {
+    existingEmails.add(email);
+  }
+
+  public void markUsernameAsExisting(String username) {
+    existingUsernames.add(username);
+  }
+
+  public boolean isEmailMarkedAsExisting(String email) {
+    return existingEmails.contains(email);
+  }
+
+  public boolean isUsernameMarkedAsExisting(String username) {
+    return existingUsernames.contains(username);
   }
 
   public MockMvcResponse getResponse() {
