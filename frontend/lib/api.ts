@@ -45,7 +45,7 @@ export async function addToCart(
   const res = await fetch(`${API_BASE}/cart/items`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ productId, quantity }),
+    body: JSON.stringify({ item: { productId, quantity } }),
   });
   if (!res.ok) throw new Error("Failed to add to cart");
   return res.json();
@@ -58,7 +58,7 @@ export async function updateCartItem(
   const res = await fetch(`${API_BASE}/cart/items/${cartItemId}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ quantity }),
+    body: JSON.stringify({ item: { quantity } }),
   });
   if (!res.ok) throw new Error("Failed to update cart item");
   return res.json();

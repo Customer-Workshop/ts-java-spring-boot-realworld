@@ -5,7 +5,6 @@ import io.spring.shopping.model.CartItem;
 import io.spring.shopping.service.CartService;
 import java.util.HashMap;
 import java.util.Map;
-import javax.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,14 +36,14 @@ public class CartController {
   }
 
   @PostMapping("/items")
-  public ResponseEntity<CartItem> addToCart(@Valid @RequestBody AddToCartRequest request) {
+  public ResponseEntity<CartItem> addToCart(@RequestBody AddToCartRequest request) {
     CartItem item = cartService.addToCart(request.getProductId(), request.getQuantity());
     return ResponseEntity.ok(item);
   }
 
   @PutMapping("/items/{id}")
   public ResponseEntity<Map<String, Object>> updateCartItem(
-      @PathVariable Long id, @Valid @RequestBody UpdateQuantityRequest request) {
+      @PathVariable Long id, @RequestBody UpdateQuantityRequest request) {
     cartService.updateQuantity(id, request.getQuantity());
     Cart cart = cartService.getCart();
     Map<String, Object> response = new HashMap<>();

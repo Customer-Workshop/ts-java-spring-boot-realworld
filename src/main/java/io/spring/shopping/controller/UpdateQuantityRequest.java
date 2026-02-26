@@ -1,10 +1,10 @@
 package io.spring.shopping.controller;
 
-import javax.validation.constraints.Min;
+import com.fasterxml.jackson.annotation.JsonRootName;
 import lombok.Data;
 
 @Data
+@JsonRootName("item")
 public class UpdateQuantityRequest {
-  @Min(0)
   private int quantity;
 }
