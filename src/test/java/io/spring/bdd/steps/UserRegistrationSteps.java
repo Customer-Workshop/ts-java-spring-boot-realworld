@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/** Step definitions for the User Registration API (POST /api/users) feature. */
+/** Step definitions for the User Registration API (POST /users) feature. */
 public class UserRegistrationSteps {
 
   @Autowired private HttpClientHelper http;

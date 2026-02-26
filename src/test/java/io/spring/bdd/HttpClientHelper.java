@@ -33,7 +33,7 @@ public class HttpClientHelper {
   /**
    * Sends an HTTP POST request with a JSON body to the given path and stores the response.
    *
-   * @param path the request path (e.g. {@code /api/users})
+   * @param path the request path (e.g. {@code /users})
    * @param body the request body as a Java object that will be serialised to JSON
    */
   public void post(String path, Object body) throws IOException, InterruptedException {
