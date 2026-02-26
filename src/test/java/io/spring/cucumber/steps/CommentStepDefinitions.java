@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.en.Given;
@@ -34,6 +35,9 @@ public class CommentStepDefinitions {
   @Autowired private MockMvc mockMvc;
 
   @Autowired private ObjectMapper objectMapper;
+
+  private final ObjectMapper responseMapper =
+      new ObjectMapper().disable(DeserializationFeature.UNWRAP_ROOT_VALUE);
 
   @Autowired private ArticleRepository articleRepository;
 
@@ -71,7 +75,7 @@ public class CommentStepDefinitions {
     // Store comment ID if response was successful
     if (result.getResponse().getStatus() == 201) {
       String responseBody = result.getResponse().getContentAsString();
-      JsonNode jsonNode = objectMapper.readTree(responseBody);
+      JsonNode jsonNode = responseMapper.readTree(responseBody);
       if (jsonNode.has("comment") && jsonNode.get("comment").has("id")) {
         String commentId = jsonNode.get("comment").get("id").asText();
         // Store for potential later use in delete operations
@@ -102,7 +106,7 @@ public class CommentStepDefinitions {
   @Then("the response should contain a {string} wrapper object")
   public void theResponseShouldContainASingleWrapperObject(String wrapperName) throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     assertThat(
         "Response should contain '" + wrapperName + "' wrapper",
         jsonNode.has(wrapperName),
@@ -116,7 +120,7 @@ public class CommentStepDefinitions {
   @Then("the response should contain a {string} wrapper array")
   public void theResponseShouldContainASingleWrapperArray(String wrapperName) throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     assertThat(
         "Response should contain '" + wrapperName + "' wrapper",
         jsonNode.has(wrapperName),
@@ -128,7 +132,7 @@ public class CommentStepDefinitions {
   @Then("the comment body should be {string}")
   public void theCommentBodyShouldBe(String expectedBody) throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     JsonNode comment = jsonNode.get("comment");
     assertThat("comment should not be null", comment, notNullValue());
     assertThat(comment.get("body").asText(), equalTo(expectedBody));
@@ -137,7 +141,7 @@ public class CommentStepDefinitions {
   @Then("the comment should have a valid ISO 8601 createdAt date")
   public void theCommentShouldHaveAValidISO8601CreatedAtDate() throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     JsonNode comment = jsonNode.get("comment");
     String createdAt = comment.get("createdAt").asText();
     assertThat("createdAt should not be null", createdAt, notNullValue());
@@ -150,7 +154,7 @@ public class CommentStepDefinitions {
   @Then("the comment should have a valid ISO 8601 updatedAt date")
   public void theCommentShouldHaveAValidISO8601UpdatedAtDate() throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     JsonNode comment = jsonNode.get("comment");
     String updatedAt = comment.get("updatedAt").asText();
     assertThat("updatedAt should not be null", updatedAt, notNullValue());
@@ -163,7 +167,7 @@ public class CommentStepDefinitions {
   @Then("the comment author username should be {string}")
   public void theCommentAuthorUsernameShouldBe(String username) throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     JsonNode comment = jsonNode.get("comment");
     JsonNode author = comment.get("author");
     assertThat("author should not be null", author, notNullValue());
@@ -173,7 +177,7 @@ public class CommentStepDefinitions {
   @Then("the comments list should contain at least {int} comments")
   public void theCommentsListShouldContainAtLeastComments(int count) throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     JsonNode comments = jsonNode.get("comments");
     assertThat("comments should not be null", comments, notNullValue());
     assertThat(
@@ -185,7 +189,8 @@ public class CommentStepDefinitions {
       throws Exception {
     Article article = articleRepository.findBySlug(slug).orElseThrow();
     User author = userRepository.findByUsername(authorUsername).orElseThrow();
-    Comment comment = new Comment(commentBody, author.getId(), article.getId());
+    Comment comment =
+        new Comment(commentBody + " " + System.nanoTime(), author.getId(), article.getId());
     commentRepository.save(comment);
     sharedState.setLastCreatedComment(comment);
   }

@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.datatable.DataTable;
@@ -29,7 +30,8 @@ public class TagStepDefinitions {
 
   @Autowired private MockMvc mockMvc;
 
-  @Autowired private ObjectMapper objectMapper;
+  private final ObjectMapper responseMapper =
+      new ObjectMapper().disable(DeserializationFeature.UNWRAP_ROOT_VALUE);
 
   @Autowired private ArticleRepository articleRepository;
 
@@ -60,9 +62,10 @@ public class TagStepDefinitions {
 
     // Create an article with each tag to ensure tags exist
     for (String tag : tags) {
+      String title = "Tag Article " + tag + "-" + System.nanoTime();
       Article article =
           new Article(
-              "Tag Article " + tag,
+              title,
               "Description for " + tag,
               "Body for " + tag,
               Collections.singletonList(tag),
@@ -92,7 +95,7 @@ public class TagStepDefinitions {
 
     Article article =
         new Article(
-            "Tagged Article " + System.currentTimeMillis(),
+            "Tagged Article " + System.nanoTime(),
             "Description",
             "Body",
             tags,
@@ -124,7 +127,7 @@ public class TagStepDefinitions {
   @Then("the tags list should contain {string}")
   public void theTagsListShouldContain(String tag) throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     JsonNode tags = jsonNode.get("tags");
     assertThat("tags should not be null", tags, notNullValue());
     boolean found = false;
@@ -140,7 +143,7 @@ public class TagStepDefinitions {
   @Then("the tags list should not be empty")
   public void theTagsListShouldNotBeEmpty() throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     JsonNode tags = jsonNode.get("tags");
     assertThat("tags should not be null", tags, notNullValue());
     assertThat("tags list should not be empty", tags.size(), greaterThan(0));

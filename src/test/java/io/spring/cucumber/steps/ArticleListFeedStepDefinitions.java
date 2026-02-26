@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.datatable.DataTable;
@@ -34,6 +35,9 @@ public class ArticleListFeedStepDefinitions {
   @Autowired private MockMvc mockMvc;
 
   @Autowired private ObjectMapper objectMapper;
+
+  private final ObjectMapper responseMapper =
+      new ObjectMapper().disable(DeserializationFeature.UNWRAP_ROOT_VALUE);
 
   @Autowired private UserRepository userRepository;
 
@@ -76,9 +80,12 @@ public class ArticleListFeedStepDefinitions {
         userRepository.save(author);
       }
 
-      Article article =
-          new Article(title, "Description for " + title, "Body of " + title, tags, author.getId());
-      articleRepository.save(article);
+      String slug = Article.toSlug(title);
+      if (!articleRepository.findBySlug(slug).isPresent()) {
+        Article article =
+            new Article(title, "Description for " + title, "Body of " + title, tags, author.getId());
+        articleRepository.save(article);
+      }
     }
   }
 
@@ -101,7 +108,7 @@ public class ArticleListFeedStepDefinitions {
   @Then("the response should contain an {string} wrapper array")
   public void theResponseShouldContainAWrapperArray(String wrapperName) throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     assertThat(
         "Response should contain '" + wrapperName + "' wrapper",
         jsonNode.has(wrapperName),
@@ -113,7 +120,7 @@ public class ArticleListFeedStepDefinitions {
   @Then("the response should contain an {string} field")
   public void theResponseShouldContainAnField(String fieldName) throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     assertThat(
         "Response should contain '" + fieldName + "' field", jsonNode.has(fieldName), is(true));
   }
@@ -138,7 +145,7 @@ public class ArticleListFeedStepDefinitions {
   @Then("all returned articles should contain the tag {string}")
   public void allReturnedArticlesShouldContainTheTag(String tag) throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     JsonNode articles = jsonNode.get("articles");
     assertThat("articles should not be null", articles, notNullValue());
     for (JsonNode article : articles) {
@@ -177,7 +184,7 @@ public class ArticleListFeedStepDefinitions {
   @Then("all returned articles should have author {string}")
   public void allReturnedArticlesShouldHaveAuthor(String authorUsername) throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     JsonNode articles = jsonNode.get("articles");
     assertThat("articles should not be null", articles, notNullValue());
     for (JsonNode article : articles) {
@@ -216,7 +223,7 @@ public class ArticleListFeedStepDefinitions {
   @Then("the returned articles should include {string}")
   public void theReturnedArticlesShouldInclude(String articleTitle) throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     JsonNode articles = jsonNode.get("articles");
     assertThat("articles should not be null", articles, notNullValue());
     boolean found = false;
@@ -246,10 +253,11 @@ public class ArticleListFeedStepDefinitions {
       userRepository.save(author);
     }
 
+    String uniqueSuffix = String.valueOf(System.nanoTime());
     for (int i = 0; i < count; i++) {
       Article article =
           new Article(
-              "Bulk Article " + i,
+              "Bulk Article " + uniqueSuffix + "-" + i,
               "Description " + i,
               "Body " + i,
               Collections.singletonList("bulk"),
@@ -285,7 +293,7 @@ public class ArticleListFeedStepDefinitions {
   @Then("the returned articles count should be at most {int}")
   public void theReturnedArticlesCountShouldBeAtMost(int maxCount) throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     JsonNode articles = jsonNode.get("articles");
     assertThat("articles should not be null", articles, notNullValue());
     assertThat(
@@ -315,9 +323,10 @@ public class ArticleListFeedStepDefinitions {
   @Given("{string} has published articles")
   public void hasPublishedArticles(String authorUsername) {
     User author = userRepository.findByUsername(authorUsername).orElseThrow();
+    String title = "Article by " + authorUsername + "-" + System.nanoTime();
     Article article =
         new Article(
-            "Article by " + authorUsername,
+            title,
             "Description",
             "Body content",
             Collections.singletonList("feed"),
@@ -339,7 +348,7 @@ public class ArticleListFeedStepDefinitions {
   @Then("the feed articles should be from followed users")
   public void theFeedArticlesShouldBeFromFollowedUsers() throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     JsonNode articles = jsonNode.get("articles");
     assertThat("articles should not be null", articles, notNullValue());
     // Feed may be empty if no followed users have articles; we just verify the structure

@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.datatable.DataTable;
@@ -25,6 +26,9 @@ public class EdgeCaseStepDefinitions {
   @Autowired private MockMvc mockMvc;
 
   @Autowired private ObjectMapper objectMapper;
+
+  private final ObjectMapper responseMapper =
+      new ObjectMapper().disable(DeserializationFeature.UNWRAP_ROOT_VALUE);
 
   private SharedState sharedState;
 
@@ -59,7 +63,7 @@ public class EdgeCaseStepDefinitions {
   @Then("the article slug should not contain special characters")
   public void theArticleSlugShouldNotContainSpecialCharacters() throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     JsonNode article = jsonNode.get("article");
     String slug = article.get("slug").asText();
     // Slug should only contain lowercase alphanumeric characters and hyphens
@@ -72,7 +76,7 @@ public class EdgeCaseStepDefinitions {
   @Then("the article slug should use hyphens as separators")
   public void theArticleSlugShouldUseHyphensAsSeparators() throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     JsonNode article = jsonNode.get("article");
     String slug = article.get("slug").asText();
     assertThat("Slug should contain hyphens", slug.contains("-"), is(true));
@@ -82,7 +86,7 @@ public class EdgeCaseStepDefinitions {
   @Then("the article tagList should be an array")
   public void theArticleTagListShouldBeAnArray() throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     JsonNode article = jsonNode.get("article");
     JsonNode tagList = article.get("tagList");
     assertThat("tagList should not be null", tagList, notNullValue());
@@ -146,7 +150,7 @@ public class EdgeCaseStepDefinitions {
       "the article response should have fields: slug, title, description, body, tagList, createdAt, updatedAt, favorited, favoritesCount, author")
   public void theArticleResponseShouldHaveAllRequiredFields() throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     JsonNode article = jsonNode.get("article");
     assertThat("article should not be null", article, notNullValue());
 
@@ -170,7 +174,7 @@ public class EdgeCaseStepDefinitions {
   @Then("the article author should have fields: username, bio, image, following")
   public void theArticleAuthorShouldHaveAllRequiredFields() throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     JsonNode author = jsonNode.get("article").get("author");
     assertThat("author should not be null", author, notNullValue());
 

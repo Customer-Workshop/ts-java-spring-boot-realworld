@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.datatable.DataTable;
@@ -38,6 +39,9 @@ public class ArticleCrudStepDefinitions {
   @Autowired private MockMvc mockMvc;
 
   @Autowired private ObjectMapper objectMapper;
+
+  private final ObjectMapper responseMapper =
+      new ObjectMapper().disable(DeserializationFeature.UNWRAP_ROOT_VALUE);
 
   @Autowired private UserRepository userRepository;
 
@@ -88,6 +92,8 @@ public class ArticleCrudStepDefinitions {
 
     if (data.containsKey("tagList")) {
       articleMap.put("tagList", Arrays.asList(data.get("tagList").split(",")));
+    } else {
+      articleMap.put("tagList", Collections.emptyList());
     }
 
     Map<String, Object> requestBody = new HashMap<>();
@@ -122,10 +128,17 @@ public class ArticleCrudStepDefinitions {
       userRepository.save(author);
     }
 
-    Article article =
-        new Article(
-            title, "Test description", "Test body", Collections.emptyList(), author.getId());
-    articleRepository.save(article);
+    String slug = Article.toSlug(title);
+    Optional<Article> existingArticle = articleRepository.findBySlug(slug);
+    Article article;
+    if (existingArticle.isPresent()) {
+      article = existingArticle.get();
+    } else {
+      article =
+          new Article(
+              title, "Test description", "Test body", Collections.emptyList(), author.getId());
+      articleRepository.save(article);
+    }
     sharedState.setLastCreatedArticle(article);
   }
 
@@ -254,7 +267,7 @@ public class ArticleCrudStepDefinitions {
   @Then("the response should contain an {string} wrapper object")
   public void theResponseShouldContainAWrapperObject(String wrapperName) throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     assertThat(
         "Response should contain '" + wrapperName + "' wrapper",
         jsonNode.has(wrapperName),
@@ -356,7 +369,7 @@ public class ArticleCrudStepDefinitions {
 
   private JsonNode getArticleFromResponse() throws Exception {
     String responseBody = sharedState.getLastResponse().getResponse().getContentAsString();
-    JsonNode jsonNode = objectMapper.readTree(responseBody);
+    JsonNode jsonNode = responseMapper.readTree(responseBody);
     return jsonNode.get("article");
   }
 }

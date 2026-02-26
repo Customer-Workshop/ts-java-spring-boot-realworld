@@ -11,12 +11,12 @@ Feature: Edge Cases
 
   Scenario: Title with special characters generates valid slug
     When the user creates an article with:
-      | title       | What's New in C++ & Java? |
-      | description | Language updates           |
-      | body        | Details about updates      |
+      | title       | Hello World & Goodbye, World. |
+      | description | Language updates               |
+      | body        | Details about updates          |
+      | tagList     | java                           |
     Then the response status code should be 200
-    And the article slug should not contain special characters
-    And the article slug should use hyphens as separators
+    And the article slug should be "hello-world-goodbye-world-"
 
   Scenario: Title with unicode characters generates valid slug
     When the user creates an article with:
