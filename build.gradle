@@ -87,6 +87,12 @@ dependencies {
     testImplementation 'org.testng:testng:7.8.0'
     testImplementation 'com.aventstack:extentreports:5.1.1'
     testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
+
+    // Cucumber BDD testing
+    testImplementation 'io.cucumber:cucumber-java:7.11.1'
+    testImplementation 'io.cucumber:cucumber-spring:7.11.1'
+    testImplementation 'io.cucumber:cucumber-junit-platform-engine:7.11.1'
+    testImplementation 'org.junit.platform:junit-platform-suite:1.9.2'
 }
 
 tasks.named('test') {
@@ -94,6 +100,7 @@ tasks.named('test') {
 	// Exclude Selenium tests from JUnit test task
 	exclude 'io/spring/selenium/**'
 	finalizedBy jacocoTestReport
+	systemProperty 'cucumber.junit-platform.naming-strategy', 'long'
 }
 
 // Separate task for Selenium E2E tests using TestNG
