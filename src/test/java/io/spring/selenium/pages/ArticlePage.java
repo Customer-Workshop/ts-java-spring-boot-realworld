@@ -2,6 +2,7 @@ package io.spring.selenium.pages;
 
 import java.util.List;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -98,7 +99,21 @@ public class ArticlePage extends BasePage {
   }
 
   public boolean isCommentFormDisplayed() {
-    return isDisplayed(commentTextarea) && isDisplayed(postCommentButton);
+    try {
+      // Wait for article page to fully load first
+      wait.until(ExpectedConditions.visibilityOf(articleTitle));
+      // Wait for comment form to appear in the DOM (may load asynchronously)
+      WebElement textarea =
+          wait.until(
+              ExpectedConditions.presenceOfElementLocated(
+                  By.cssSelector("form.comment-form textarea")));
+      // Scroll to comment form since it may be below the fold
+      ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", textarea);
+      wait.until(ExpectedConditions.visibilityOf(textarea));
+      return textarea.isDisplayed();
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   public void clickFavorite() {

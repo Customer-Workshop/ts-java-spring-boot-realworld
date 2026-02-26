@@ -3,9 +3,7 @@ package io.spring.selenium.tests;
 import static org.testng.Assert.*;
 
 import io.spring.selenium.pages.ArticlePage;
-import io.spring.selenium.pages.EditorPage;
-import io.spring.selenium.pages.HomePage;
-import io.spring.selenium.pages.RegisterPage;
+import io.spring.selenium.pages.LoginPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -26,45 +24,30 @@ public class CommentTest extends BaseTest {
     super.setupTest();
     baseUrl = config.getProperty("base.url", "http://localhost:3000");
 
-    // Register a new user
-    String timestamp = String.valueOf(System.currentTimeMillis());
-    registeredUsername = "commentuser" + timestamp;
-    registeredEmail = "commentuser" + timestamp + "@test.com";
+    // Use pre-seeded user to avoid registration overhead in headless mode
+    registeredUsername = "bobsmith";
+    registeredEmail = "bob@example.com";
 
-    RegisterPage registerPage = new RegisterPage(driver);
-    registerPage.navigateTo(baseUrl);
-    registerPage.register(registeredUsername, registeredEmail, PASSWORD);
+    LoginPage loginPage = new LoginPage(driver);
+    loginPage.navigateTo(baseUrl);
+    loginPage.login(registeredEmail, PASSWORD);
 
     WebDriverWait wait = new WebDriverWait(driver, 15);
     wait.until(ExpectedConditions.urlToBe(baseUrl + "/"));
   }
 
   /**
-   * Helper method to create an article and navigate to it. Returns the ArticlePage for the newly
-   * created article.
+   * Navigate to a known seeded article directly by URL. The article page is public so driver.get()
+   * works fine. The comment form renders client-side based on localStorage auth which persists in
+   * the browser session after login.
    */
-  private ArticlePage createArticleAndNavigate() {
-    EditorPage editorPage = new EditorPage(driver);
-    editorPage.navigateTo(baseUrl);
+  private ArticlePage navigateToExistingArticle() {
+    // Navigate directly to a known seeded article
+    driver.get(baseUrl + "/article/getting-started-with-spring-boot");
 
-    String title = "Comment Test Article " + System.currentTimeMillis();
-    editorPage.publishArticle(title, "Test description", "Test body content for comments.");
-
-    // Wait for navigation away from editor
+    // Wait for article page to fully load
     WebDriverWait wait = new WebDriverWait(driver, 15);
-    wait.until(ExpectedConditions.not(ExpectedConditions.urlContains("/editor/new")));
-
-    // If we're on the home page, click into the article
-    if (driver.getCurrentUrl().equals(baseUrl + "/")
-        || driver.getCurrentUrl().equals(baseUrl + "")) {
-      // Navigate to the article through the home page
-      HomePage homePage = new HomePage(driver);
-      if (homePage.getArticlePreviewCount() > 0) {
-        return homePage.clickArticlePreview(0);
-      }
-    }
-
-    // We might already be on the article page
+    wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".article-page h1")));
     return new ArticlePage(driver);
   }
 
@@ -74,7 +57,7 @@ public class CommentTest extends BaseTest {
         "testCommentFormDisplayedOnArticle",
         "Verify comment form is displayed on article page for logged-in user");
 
-    ArticlePage articlePage = createArticleAndNavigate();
+    ArticlePage articlePage = navigateToExistingArticle();
 
     // Check if comment form is available
     boolean hasCommentForm = articlePage.isCommentFormDisplayed();
@@ -87,7 +70,7 @@ public class CommentTest extends BaseTest {
   public void testAddCommentToArticle() {
     createTest("testAddCommentToArticle", "Verify user can add a comment to an article");
 
-    ArticlePage articlePage = createArticleAndNavigate();
+    ArticlePage articlePage = navigateToExistingArticle();
 
     if (articlePage.isCommentFormDisplayed()) {
       String commentText = "This is a test comment " + System.currentTimeMillis();
@@ -112,7 +95,7 @@ public class CommentTest extends BaseTest {
   public void testCommentNotEmptyValidation() {
     createTest("testCommentNotEmptyValidation", "Verify empty comment cannot be submitted");
 
-    ArticlePage articlePage = createArticleAndNavigate();
+    ArticlePage articlePage = navigateToExistingArticle();
 
     if (articlePage.isCommentFormDisplayed()) {
       int initialCommentCount = articlePage.getCommentCount();

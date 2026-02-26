@@ -3,8 +3,8 @@ package io.spring.selenium.tests;
 import static org.testng.Assert.*;
 
 import io.spring.selenium.pages.HomePage;
+import io.spring.selenium.pages.LoginPage;
 import io.spring.selenium.pages.ProfilePage;
-import io.spring.selenium.pages.RegisterPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -25,14 +25,13 @@ public class ProfileTest extends BaseTest {
     super.setupTest();
     baseUrl = config.getProperty("base.url", "http://localhost:3000");
 
-    // Register a new user
-    String timestamp = String.valueOf(System.currentTimeMillis());
-    registeredUsername = "profileuser" + timestamp;
-    registeredEmail = "profileuser" + timestamp + "@test.com";
+    // Use pre-seeded user to avoid registration overhead in headless mode
+    registeredUsername = "johndoe";
+    registeredEmail = "john@example.com";
 
-    RegisterPage registerPage = new RegisterPage(driver);
-    registerPage.navigateTo(baseUrl);
-    registerPage.register(registeredUsername, registeredEmail, PASSWORD);
+    LoginPage loginPage = new LoginPage(driver);
+    loginPage.navigateTo(baseUrl);
+    loginPage.login(registeredEmail, PASSWORD);
 
     WebDriverWait wait = new WebDriverWait(driver, 15);
     wait.until(ExpectedConditions.urlToBe(baseUrl + "/"));

@@ -2,6 +2,7 @@ package io.spring.selenium.pages;
 
 import java.util.List;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -118,6 +119,10 @@ public class HomePage extends BasePage {
     if (index < articlePreviews.size()) {
       WebElement preview = articlePreviews.get(index);
       WebElement readMoreLink = preview.findElement(By.cssSelector("a.preview-link"));
+      // Scroll element into view before clicking (needed for headless mode)
+      ((JavascriptExecutor) driver)
+          .executeScript("arguments[0].scrollIntoView(true);", readMoreLink);
+      wait.until(ExpectedConditions.elementToBeClickable(readMoreLink));
       readMoreLink.click();
       return new ArticlePage(driver);
     }

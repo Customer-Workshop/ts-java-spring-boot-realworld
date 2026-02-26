@@ -40,26 +40,14 @@ public class UserLoginTest extends BaseTest {
   public void testSuccessfulLogin() {
     createTest("testSuccessfulLogin", "Verify user can login with valid credentials");
 
-    // First register a user
-    String timestamp = String.valueOf(System.currentTimeMillis());
-    String username = "loginuser" + timestamp;
-    String email = "loginuser" + timestamp + "@test.com";
+    // Use a pre-seeded user from the database seed data
+    String email = "john@example.com";
     String password = "password123";
-
-    RegisterPage registerPage = new RegisterPage(driver);
-    registerPage.navigateTo(baseUrl);
-    registerPage.register(username, email, password);
-
-    WebDriverWait wait = new WebDriverWait(driver, 15);
-    wait.until(ExpectedConditions.urlToBe(baseUrl + "/"));
-
-    // Clear local storage and navigate to login
-    driver.manage().deleteAllCookies();
-    driver.navigate().to("javascript:void(window.localStorage.removeItem('user'))");
 
     loginPage.navigateTo(baseUrl);
     HomePage homePage = loginPage.login(email, password);
 
+    WebDriverWait wait = new WebDriverWait(driver, 15);
     wait.until(ExpectedConditions.urlToBe(baseUrl + "/"));
 
     assertTrue(

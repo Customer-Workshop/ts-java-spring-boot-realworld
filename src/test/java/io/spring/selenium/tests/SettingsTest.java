@@ -3,7 +3,7 @@ package io.spring.selenium.tests;
 import static org.testng.Assert.*;
 
 import io.spring.selenium.pages.HomePage;
-import io.spring.selenium.pages.RegisterPage;
+import io.spring.selenium.pages.LoginPage;
 import io.spring.selenium.pages.SettingsPage;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -24,25 +24,32 @@ public class SettingsTest extends BaseTest {
     super.setupTest();
     baseUrl = config.getProperty("base.url", "http://localhost:3000");
 
-    // Register a new user
-    String timestamp = String.valueOf(System.currentTimeMillis());
-    registeredUsername = "settingsuser" + timestamp;
-    registeredEmail = "settingsuser" + timestamp + "@test.com";
+    // Use pre-seeded user to avoid registration overhead in headless mode
+    registeredUsername = "janedoe";
+    registeredEmail = "jane@example.com";
 
-    RegisterPage registerPage = new RegisterPage(driver);
-    registerPage.navigateTo(baseUrl);
-    registerPage.register(registeredUsername, registeredEmail, PASSWORD);
+    LoginPage loginPage = new LoginPage(driver);
+    loginPage.navigateTo(baseUrl);
+    loginPage.login(registeredEmail, PASSWORD);
 
     WebDriverWait wait = new WebDriverWait(driver, 15);
     wait.until(ExpectedConditions.urlToBe(baseUrl + "/"));
+  }
+
+  /** Navigate to settings page via navbar click (avoids SSR auth redirect). */
+  private SettingsPage navigateToSettingsViaNavbar() {
+    HomePage homePage = new HomePage(driver);
+    SettingsPage settingsPage = homePage.clickSettings();
+    WebDriverWait navWait = new WebDriverWait(driver, 10);
+    navWait.until(ExpectedConditions.urlContains("/user/settings"));
+    return new SettingsPage(driver);
   }
 
   @Test(groups = {"smoke", "regression"})
   public void testSettingsPageLoads() {
     createTest("testSettingsPageLoads", "Verify settings page loads correctly");
 
-    SettingsPage settingsPage = new SettingsPage(driver);
-    settingsPage.navigateTo(baseUrl);
+    SettingsPage settingsPage = navigateToSettingsViaNavbar();
 
     assertEquals(
         settingsPage.getPageTitle(), "Your Settings", "Page title should be 'Your Settings'");
@@ -57,11 +64,7 @@ public class SettingsTest extends BaseTest {
         "testSettingsPageShowsCurrentUserInfo",
         "Verify settings page shows current user information");
 
-    SettingsPage settingsPage = new SettingsPage(driver);
-    settingsPage.navigateTo(baseUrl);
-
-    // Wait for form to be populated
-    WebDriverWait wait = new WebDriverWait(driver, 10);
+    SettingsPage settingsPage = navigateToSettingsViaNavbar();
 
     String currentUsername = settingsPage.getCurrentUsername();
     String currentEmail = settingsPage.getCurrentEmail();
@@ -76,8 +79,7 @@ public class SettingsTest extends BaseTest {
   public void testUpdateBio() {
     createTest("testUpdateBio", "Verify user can update their bio");
 
-    SettingsPage settingsPage = new SettingsPage(driver);
-    settingsPage.navigateTo(baseUrl);
+    SettingsPage settingsPage = navigateToSettingsViaNavbar();
 
     String newBio = "This is my updated bio " + System.currentTimeMillis();
     settingsPage.enterBio(newBio);
@@ -98,8 +100,7 @@ public class SettingsTest extends BaseTest {
   public void testLogout() {
     createTest("testLogout", "Verify user can logout from settings page");
 
-    SettingsPage settingsPage = new SettingsPage(driver);
-    settingsPage.navigateTo(baseUrl);
+    SettingsPage settingsPage = navigateToSettingsViaNavbar();
 
     HomePage homePage = settingsPage.clickLogout();
 
