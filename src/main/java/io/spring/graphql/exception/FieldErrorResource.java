@@ -1,4 +1,4 @@
-package io.spring.api.exception;
+package io.spring.graphql.exception;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
