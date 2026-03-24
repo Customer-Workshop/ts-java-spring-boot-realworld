@@ -1,6 +1,7 @@
 package io.spring.api;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -267,5 +268,208 @@ public class UsersApiTest {
         .then()
         .statusCode(422)
         .body("message", equalTo("invalid email or password"));
+  }
+
+  @Test
+  public void should_fail_login_with_nonexistent_email() throws Exception {
+    String email = "nonexistent@example.com";
+
+    when(userRepository.findByEmail(eq(email))).thenReturn(Optional.empty());
+
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("email", email);
+                    put("password", "somepassword");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users/login")
+        .then()
+        .statusCode(422)
+        .body("message", equalTo("invalid email or password"));
+  }
+
+  @Test
+  public void should_show_error_for_blank_email_on_login() throws Exception {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("email", "");
+                    put("password", "somepassword");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users/login")
+        .then()
+        .statusCode(422);
+  }
+
+  @Test
+  public void should_show_error_for_blank_password_on_login() throws Exception {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("email", "john@jacob.com");
+                    put("password", "");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users/login")
+        .then()
+        .statusCode(422);
+  }
+
+  @Test
+  public void should_show_error_for_invalid_email_format_on_login() throws Exception {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("email", "not-an-email");
+                    put("password", "somepassword");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users/login")
+        .then()
+        .statusCode(422);
+  }
+
+  @Test
+  public void should_show_error_for_blank_email_on_register() throws Exception {
+    String email = "";
+    String username = "johnjacob";
+
+    Map<String, Object> param = prepareRegisterParameter(email, username);
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users")
+        .then()
+        .statusCode(422)
+        .body("errors.email", notNullValue());
+  }
+
+  @Test
+  public void should_show_error_for_blank_password_on_register() throws Exception {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put(
+                "user",
+                new HashMap<String, Object>() {
+                  {
+                    put("email", "john@jacob.com");
+                    put("password", "");
+                    put("username", "johnjacob");
+                  }
+                });
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users")
+        .then()
+        .statusCode(422)
+        .body("errors.password[0]", equalTo("can't be empty"));
+  }
+
+  @Test
+  public void should_show_error_for_duplicated_email_and_username() throws Exception {
+    String email = "john@jacob.com";
+    String username = "johnjacob";
+
+    when(userRepository.findByEmail(eq(email)))
+        .thenReturn(Optional.of(new User(email, "other", "123", "bio", "")));
+    when(userRepository.findByUsername(eq(username)))
+        .thenReturn(Optional.of(new User("other@mail.com", username, "123", "bio", "")));
+
+    Map<String, Object> param = prepareRegisterParameter(email, username);
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users")
+        .then()
+        .statusCode(422);
+  }
+
+  @Test
+  public void should_show_error_when_register_body_has_missing_fields() throws Exception {
+    Map<String, Object> param =
+        new HashMap<String, Object>() {
+          {
+            put("user", new HashMap<String, Object>());
+          }
+        };
+
+    given()
+        .contentType("application/json")
+        .body(param)
+        .when()
+        .post("/users")
+        .then()
+        .statusCode(422);
+  }
+
+  private Map<String, Object> prepareLoginParameter(final String email, final String password) {
+    return new HashMap<String, Object>() {
+      {
+        put(
+            "user",
+            new HashMap<String, Object>() {
+              {
+                put("email", email);
+                put("password", password);
+              }
+            });
+      }
+    };
   }
 }
