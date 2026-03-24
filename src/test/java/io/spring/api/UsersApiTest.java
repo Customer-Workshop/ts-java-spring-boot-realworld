@@ -457,19 +457,4 @@ public class UsersApiTest {
         .then()
         .statusCode(422);
   }
-
-  private Map<String, Object> prepareLoginParameter(final String email, final String password) {
-    return new HashMap<String, Object>() {
-      {
-        put(
-            "user",
-            new HashMap<String, Object>() {
-              {
-                put("email", email);
-                put("password", password);
-              }
-            });
-      }
-    };
-  }
 }
