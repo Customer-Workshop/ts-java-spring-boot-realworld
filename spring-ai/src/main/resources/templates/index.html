@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring AI Chat</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Spring AI Chat</h1>
+            <p class="subtitle">Powered by Spring AI &amp; OpenAI</p>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab active" data-tab="chat">Chat</button>
+            <button class="tab" data-tab="summarize">Summarize</button>
+            <button class="tab" data-tab="translate">Translate</button>
+            <button class="tab" data-tab="code">Code Analysis</button>
+            <button class="tab" data-tab="image">Image Generation</button>
+        </nav>
+
+        <!-- Chat Tab -->
+        <div id="chat" class="tab-content active">
+            <div id="chat-messages" class="messages"></div>
+            <div class="input-group">
+                <textarea id="chat-input" placeholder="Type your message..." rows="2"></textarea>
+                <div class="controls">
+                    <label>
+                        <input type="checkbox" id="stream-toggle"> Stream
+                    </label>
+                    <button id="chat-send" class="btn-primary">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summarize Tab -->
+        <div id="summarize" class="tab-content">
+            <textarea id="summarize-input" placeholder="Paste text to summarize..." rows="6"></textarea>
+            <button id="summarize-send" class="btn-primary">Summarize</button>
+            <div id="summarize-result" class="result"></div>
+        </div>
+
+        <!-- Translate Tab -->
+        <div id="translate" class="tab-content">
+            <textarea id="translate-input" placeholder="Enter text to translate..." rows="4"></textarea>
+            <select id="translate-lang">
+                <option value="Spanish">Spanish</option>
+                <option value="French">French</option>
+                <option value="German">German</option>
+                <option value="Japanese">Japanese</option>
+                <option value="Chinese">Chinese</option>
+                <option value="Korean">Korean</option>
+                <option value="Portuguese">Portuguese</option>
+                <option value="Italian">Italian</option>
+                <option value="Hindi">Hindi</option>
+                <option value="Arabic">Arabic</option>
+            </select>
+            <button id="translate-send" class="btn-primary">Translate</button>
+            <div id="translate-result" class="result"></div>
+        </div>
+
+        <!-- Code Analysis Tab -->
+        <div id="code" class="tab-content">
+            <textarea id="code-input" placeholder="Paste code to analyze..." rows="8" class="code-area"></textarea>
+            <button id="code-send" class="btn-primary">Analyze Code</button>
+            <div id="code-result" class="result"></div>
+        </div>
+
+        <!-- Image Generation Tab -->
+        <div id="image" class="tab-content">
+            <textarea id="image-input" placeholder="Describe the image you want to generate..." rows="3"></textarea>
+            <button id="image-send" class="btn-primary">Generate Image</button>
+            <div id="image-result" class="result">
+                <img id="generated-image" style="display:none; max-width:100%;" alt="Generated image">
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/app.js}"></script>
+</body>
+</html>
