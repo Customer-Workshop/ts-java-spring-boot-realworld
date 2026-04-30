@@ -26,10 +26,12 @@ const ExchangeRateCalculator: React.FC<ExchangeRateCalculatorProps> = ({
   const handleCalculate = async () => {
     if (!fromCurrency || !toCurrency) {
       setError("Please select both currencies.");
+      setResult(null);
       return;
     }
     if (fromCurrency === toCurrency) {
       setError("Please select different currencies.");
+      setResult(null);
       return;
     }
 
