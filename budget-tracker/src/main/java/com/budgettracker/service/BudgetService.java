@@ -26,7 +26,10 @@ public class BudgetService {
         }
         Transaction transaction = new Transaction(TransactionType.INCOME, "", description.trim(), amount);
         transactions.add(transaction);
-        storageService.save(transactions);
+        if (!storageService.save(transactions)) {
+            transactions.remove(transactions.size() - 1);
+            throw new RuntimeException("Failed to save transaction to disk.");
+        }
         return transaction;
     }
 
@@ -43,7 +46,10 @@ public class BudgetService {
         Transaction transaction = new Transaction(
                 TransactionType.EXPENSE, category.trim(), description.trim(), amount);
         transactions.add(transaction);
-        storageService.save(transactions);
+        if (!storageService.save(transactions)) {
+            transactions.remove(transactions.size() - 1);
+            throw new RuntimeException("Failed to save transaction to disk.");
+        }
         return transaction;
     }
 

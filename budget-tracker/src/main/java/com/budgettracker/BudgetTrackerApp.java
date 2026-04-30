@@ -71,7 +71,7 @@ public class BudgetTrackerApp {
         try {
             budgetService.addIncome(description, amount);
             System.out.printf("Income added: %s - $%.2f%n", description.trim(), amount);
-        } catch (IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             System.out.println("Error: " + e.getMessage());
         }
     }
@@ -92,7 +92,7 @@ public class BudgetTrackerApp {
             budgetService.addExpense(category, description, amount);
             System.out.printf("Expense added: [%s] %s - $%.2f%n",
                     category.trim(), description.trim(), amount);
-        } catch (IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             System.out.println("Error: " + e.getMessage());
         }
     }
