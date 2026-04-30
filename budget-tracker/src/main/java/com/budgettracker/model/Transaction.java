@@ -49,7 +49,7 @@ public class Transaction {
     @Override
     public String toString() {
         String typeStr = type == TransactionType.INCOME ? "INCOME " : "EXPENSE";
-        String categoryStr = category.isEmpty() ? "N/A" : category;
+        String categoryStr = (category == null || category.isEmpty()) ? "N/A" : category;
         return String.format("[%s] %s | %-12s | %-25s | $%.2f",
                 timestamp, typeStr, categoryStr, description, amount);
     }
