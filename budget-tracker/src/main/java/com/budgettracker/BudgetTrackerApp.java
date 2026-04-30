@@ -102,7 +102,7 @@ public class BudgetTrackerApp {
         String input = scanner.nextLine().trim();
         try {
             double amount = Double.parseDouble(input);
-            if (amount <= 0) {
+            if (amount <= 0 || !Double.isFinite(amount)) {
                 System.out.println("Error: Amount must be a positive number.");
                 return -1;
             }

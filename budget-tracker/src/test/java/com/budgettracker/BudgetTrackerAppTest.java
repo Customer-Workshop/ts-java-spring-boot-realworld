@@ -32,6 +32,7 @@ class BudgetTrackerAppTest {
         System.setOut(new PrintStream(outputStream));
     }
 
+    @org.junit.jupiter.api.AfterEach
     void tearDown() {
         System.setOut(originalOut);
     }
@@ -51,7 +52,7 @@ class BudgetTrackerAppTest {
         assertTrue(output.contains("Income added: Salary - $5000.00"));
         assertEquals(1, budgetService.getTransactions().size());
         assertEquals(5000.0, budgetService.getTotalIncome(), 0.01);
-        tearDown();
+
     }
 
     @Test
@@ -64,7 +65,7 @@ class BudgetTrackerAppTest {
         assertTrue(output.contains("Expense added: [Food] Groceries - $150.50"));
         assertEquals(1, budgetService.getTransactions().size());
         assertEquals(150.50, budgetService.getTotalExpenses(), 0.01);
-        tearDown();
+
     }
 
     @Test
@@ -78,7 +79,7 @@ class BudgetTrackerAppTest {
 
         String output = outputStream.toString();
         assertTrue(output.contains("BUDGET SUMMARY"));
-        tearDown();
+
     }
 
     @Test
@@ -94,7 +95,7 @@ class BudgetTrackerAppTest {
         assertTrue(output.contains("ALL TRANSACTIONS"));
         assertTrue(output.contains("Salary"));
         assertTrue(output.contains("Monthly"));
-        tearDown();
+
     }
 
     @Test
@@ -105,7 +106,7 @@ class BudgetTrackerAppTest {
 
         String output = outputStream.toString();
         assertTrue(output.contains("Invalid option"));
-        tearDown();
+
     }
 
     @Test
@@ -117,7 +118,7 @@ class BudgetTrackerAppTest {
         String output = outputStream.toString();
         assertTrue(output.contains("Invalid amount"));
         assertEquals(0, budgetService.getTransactions().size());
-        tearDown();
+
     }
 
     @Test
@@ -129,7 +130,7 @@ class BudgetTrackerAppTest {
         String output = outputStream.toString();
         assertTrue(output.contains("must be a positive number"));
         assertEquals(0, budgetService.getTransactions().size());
-        tearDown();
+
     }
 
     @Test
@@ -140,7 +141,7 @@ class BudgetTrackerAppTest {
 
         String output = outputStream.toString();
         assertTrue(output.contains("must be a positive number"));
-        tearDown();
+
     }
 
     @Test
@@ -151,7 +152,7 @@ class BudgetTrackerAppTest {
 
         String output = outputStream.toString();
         assertTrue(output.contains("Description cannot be empty"));
-        tearDown();
+
     }
 
     @Test
@@ -162,7 +163,7 @@ class BudgetTrackerAppTest {
 
         String output = outputStream.toString();
         assertTrue(output.contains("Category cannot be empty"));
-        tearDown();
+
     }
 
     @Test
@@ -172,7 +173,7 @@ class BudgetTrackerAppTest {
         app.run();
 
         assertTrue(outputStream.toString().contains("Goodbye!"));
-        tearDown();
+
     }
 
     @Test
@@ -187,7 +188,7 @@ class BudgetTrackerAppTest {
         assertTrue(output.contains("BUDGET SUMMARY"));
         assertTrue(output.contains("ALL TRANSACTIONS"));
         assertEquals(2, budgetService.getTransactions().size());
-        tearDown();
+
     }
 
     @Test
@@ -198,7 +199,7 @@ class BudgetTrackerAppTest {
 
         String output = outputStream.toString();
         assertTrue(output.contains("Income added: Test Income - $250.75"));
-        tearDown();
+
     }
 
     @Test
@@ -209,7 +210,7 @@ class BudgetTrackerAppTest {
 
         String output = outputStream.toString();
         assertTrue(output.contains("Expense added: [Transport] Bus fare - $3.50"));
-        tearDown();
+
     }
 
     @Test
@@ -218,7 +219,7 @@ class BudgetTrackerAppTest {
         BudgetTrackerApp app = createApp(input);
         double amount = app.readAmount();
         assertEquals(42.99, amount, 0.01);
-        tearDown();
+
     }
 
     @Test
@@ -227,7 +228,7 @@ class BudgetTrackerAppTest {
         BudgetTrackerApp app = createApp(input);
         double amount = app.readAmount();
         assertEquals(-1, amount, 0.01);
-        tearDown();
+
     }
 
     @Test
@@ -236,6 +237,22 @@ class BudgetTrackerAppTest {
         BudgetTrackerApp app = createApp(input);
         double amount = app.readAmount();
         assertEquals(-1, amount, 0.01);
-        tearDown();
+
+    }
+
+    @Test
+    void readAmountRejectsNaN() {
+        String input = "NaN\n";
+        BudgetTrackerApp app = createApp(input);
+        double amount = app.readAmount();
+        assertEquals(-1, amount, 0.01);
+    }
+
+    @Test
+    void readAmountRejectsInfinity() {
+        String input = "Infinity\n";
+        BudgetTrackerApp app = createApp(input);
+        double amount = app.readAmount();
+        assertEquals(-1, amount, 0.01);
     }
 }

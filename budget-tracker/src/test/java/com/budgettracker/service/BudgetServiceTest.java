@@ -3,6 +3,7 @@ package com.budgettracker.service;
 import com.budgettracker.model.Transaction;
 import com.budgettracker.model.TransactionType;
 import com.budgettracker.storage.StorageService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -20,12 +21,19 @@ class BudgetServiceTest {
     Path tempDir;
 
     private BudgetService budgetService;
+    private PrintStream originalOut;
 
     @BeforeEach
     void setUp() {
         String filePath = tempDir.resolve("test_budget.json").toString();
         StorageService storageService = new StorageService(filePath);
         budgetService = new BudgetService(storageService);
+        originalOut = System.out;
+    }
+
+    @AfterEach
+    void tearDown() {
+        System.setOut(originalOut);
     }
 
     @Test
@@ -161,8 +169,6 @@ class BudgetServiceTest {
         assertTrue(output.contains("5000.00"));
         assertTrue(output.contains("200.00"));
         assertTrue(output.contains("4800.00"));
-
-        System.setOut(System.out);
     }
 
     @Test
@@ -173,8 +179,6 @@ class BudgetServiceTest {
         budgetService.printTransactions();
 
         assertTrue(out.toString().contains("No transactions recorded yet."));
-
-        System.setOut(System.out);
     }
 
     @Test
@@ -192,8 +196,6 @@ class BudgetServiceTest {
         assertTrue(output.contains("Salary"));
         assertTrue(output.contains("Groceries"));
         assertTrue(output.contains("2 transaction(s)"));
-
-        System.setOut(System.out);
     }
 
     @Test
