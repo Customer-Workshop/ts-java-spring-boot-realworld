@@ -199,6 +199,84 @@ class BudgetServiceTest {
     }
 
     @Test
+    void getCategoriesReturnsDistinctSortedCategories() {
+        budgetService.addExpense("Food", "Lunch", 10);
+        budgetService.addExpense("Transport", "Bus", 5);
+        budgetService.addExpense("Food", "Dinner", 20);
+        budgetService.addIncome("Salary", 5000);
+
+        java.util.Set<String> categories = budgetService.getCategories();
+        assertEquals(2, categories.size());
+        assertTrue(categories.contains("Food"));
+        assertTrue(categories.contains("Transport"));
+    }
+
+    @Test
+    void getCategoriesEmptyWhenNoExpenses() {
+        budgetService.addIncome("Salary", 5000);
+        assertTrue(budgetService.getCategories().isEmpty());
+    }
+
+    @Test
+    void filterByCategoryReturnMatchingTransactions() {
+        budgetService.addExpense("Food", "Lunch", 10);
+        budgetService.addExpense("Transport", "Bus", 5);
+        budgetService.addExpense("Food", "Dinner", 20);
+
+        List<Transaction> filtered = budgetService.filterByCategory("Food");
+        assertEquals(2, filtered.size());
+        assertTrue(filtered.stream().allMatch(t -> "Food".equals(t.getCategory())));
+    }
+
+    @Test
+    void filterByCategoryIsCaseInsensitive() {
+        budgetService.addExpense("Food", "Lunch", 10);
+        List<Transaction> filtered = budgetService.filterByCategory("food");
+        assertEquals(1, filtered.size());
+    }
+
+    @Test
+    void filterByCategoryReturnsEmptyForNoMatch() {
+        budgetService.addExpense("Food", "Lunch", 10);
+        List<Transaction> filtered = budgetService.filterByCategory("Rent");
+        assertTrue(filtered.isEmpty());
+    }
+
+    @Test
+    void filterByCategoryThrowsOnEmptyCategory() {
+        assertThrows(IllegalArgumentException.class, () -> budgetService.filterByCategory(""));
+        assertThrows(IllegalArgumentException.class, () -> budgetService.filterByCategory(null));
+    }
+
+    @Test
+    void printFilteredTransactionsShowsMatchingEntries() {
+        budgetService.addExpense("Food", "Lunch", 10);
+        budgetService.addExpense("Transport", "Bus", 5);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(out));
+
+        budgetService.printFilteredTransactions("Food");
+
+        String output = out.toString();
+        assertTrue(output.contains("TRANSACTIONS: FOOD"));
+        assertTrue(output.contains("Lunch"));
+        assertFalse(output.contains("Bus"));
+    }
+
+    @Test
+    void printFilteredTransactionsShowsNoMatchMessage() {
+        budgetService.addExpense("Food", "Lunch", 10);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(out));
+
+        budgetService.printFilteredTransactions("Rent");
+
+        assertTrue(out.toString().contains("No transactions found for category: Rent"));
+    }
+
+    @Test
     void dataPersistsAcrossServiceInstances() {
         String filePath = tempDir.resolve("persist_test.json").toString();
         StorageService storage = new StorageService(filePath);

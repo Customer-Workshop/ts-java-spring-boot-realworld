@@ -6,6 +6,9 @@ import com.budgettracker.storage.StorageService;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 public class BudgetService {
 
@@ -73,6 +76,44 @@ public class BudgetService {
 
     public List<Transaction> getTransactions() {
         return Collections.unmodifiableList(transactions);
+    }
+
+    public Set<String> getCategories() {
+        return transactions.stream()
+                .map(Transaction::getCategory)
+                .filter(c -> c != null && !c.isEmpty())
+                .collect(Collectors.toCollection(TreeSet::new));
+    }
+
+    public List<Transaction> filterByCategory(String category) {
+        if (category == null || category.trim().isEmpty()) {
+            throw new IllegalArgumentException("Category cannot be empty.");
+        }
+        String target = category.trim().toLowerCase();
+        return transactions.stream()
+                .filter(t -> t.getCategory() != null
+                        && t.getCategory().toLowerCase().equals(target))
+                .collect(Collectors.toList());
+    }
+
+    public void printFilteredTransactions(String category) {
+        List<Transaction> filtered = filterByCategory(category);
+        System.out.println();
+        if (filtered.isEmpty()) {
+            System.out.printf("No transactions found for category: %s%n", category.trim());
+            System.out.println();
+            return;
+        }
+        System.out.printf("============ TRANSACTIONS: %s ============%n", category.trim().toUpperCase());
+        System.out.printf("%-22s %-8s %-14s %-25s %s%n",
+                "Date/Time", "Type", "Category", "Description", "Amount");
+        System.out.println("--------------------------------------------------------");
+        for (Transaction t : filtered) {
+            System.out.println(t);
+        }
+        System.out.println("========================================================");
+        System.out.printf("Total: %d transaction(s)%n", filtered.size());
+        System.out.println();
     }
 
     public void printSummary() {

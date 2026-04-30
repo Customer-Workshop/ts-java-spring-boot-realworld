@@ -44,7 +44,7 @@ class BudgetTrackerAppTest {
 
     @Test
     void addIncomeFlow() {
-        String input = "1\nSalary\n5000\n5\n";
+        String input = "1\nSalary\n5000\n6\n";
         BudgetTrackerApp app = createApp(input);
         app.run();
 
@@ -57,7 +57,7 @@ class BudgetTrackerAppTest {
 
     @Test
     void addExpenseFlow() {
-        String input = "2\nFood\nGroceries\n150.50\n5\n";
+        String input = "2\nFood\nGroceries\n150.50\n6\n";
         BudgetTrackerApp app = createApp(input);
         app.run();
 
@@ -73,7 +73,7 @@ class BudgetTrackerAppTest {
         budgetService.addIncome("Salary", 5000);
         budgetService.addExpense("Food", "Lunch", 25);
 
-        String input = "3\n5\n";
+        String input = "3\n6\n";
         BudgetTrackerApp app = createApp(input);
         app.run();
 
@@ -87,7 +87,7 @@ class BudgetTrackerAppTest {
         budgetService.addIncome("Salary", 3000);
         budgetService.addExpense("Rent", "Monthly", 1200);
 
-        String input = "4\n5\n";
+        String input = "4\n6\n";
         BudgetTrackerApp app = createApp(input);
         app.run();
 
@@ -100,7 +100,7 @@ class BudgetTrackerAppTest {
 
     @Test
     void invalidMenuOption() {
-        String input = "9\n5\n";
+        String input = "9\n6\n";
         BudgetTrackerApp app = createApp(input);
         app.run();
 
@@ -111,7 +111,7 @@ class BudgetTrackerAppTest {
 
     @Test
     void invalidAmountShowsError() {
-        String input = "1\nSalary\nabc\n5\n";
+        String input = "1\nSalary\nabc\n6\n";
         BudgetTrackerApp app = createApp(input);
         app.run();
 
@@ -123,7 +123,7 @@ class BudgetTrackerAppTest {
 
     @Test
     void negativeAmountShowsError() {
-        String input = "1\nSalary\n-100\n5\n";
+        String input = "1\nSalary\n-100\n6\n";
         BudgetTrackerApp app = createApp(input);
         app.run();
 
@@ -135,7 +135,7 @@ class BudgetTrackerAppTest {
 
     @Test
     void zeroAmountShowsError() {
-        String input = "2\nFood\nLunch\n0\n5\n";
+        String input = "2\nFood\nLunch\n0\n6\n";
         BudgetTrackerApp app = createApp(input);
         app.run();
 
@@ -146,7 +146,7 @@ class BudgetTrackerAppTest {
 
     @Test
     void emptyDescriptionForIncomeShowsError() {
-        String input = "1\n\n100\n5\n";
+        String input = "1\n\n100\n6\n";
         BudgetTrackerApp app = createApp(input);
         app.run();
 
@@ -157,7 +157,7 @@ class BudgetTrackerAppTest {
 
     @Test
     void emptyFieldsForExpenseShowsError() {
-        String input = "2\n\nGroceries\n100\n5\n";
+        String input = "2\n\nGroceries\n100\n6\n";
         BudgetTrackerApp app = createApp(input);
         app.run();
 
@@ -168,7 +168,7 @@ class BudgetTrackerAppTest {
 
     @Test
     void exitShowsGoodbye() {
-        String input = "5\n";
+        String input = "6\n";
         BudgetTrackerApp app = createApp(input);
         app.run();
 
@@ -178,7 +178,7 @@ class BudgetTrackerAppTest {
 
     @Test
     void multipleOperationsInSequence() {
-        String input = "1\nSalary\n5000\n2\nFood\nGroceries\n200\n3\n4\n5\n";
+        String input = "1\nSalary\n5000\n2\nFood\nGroceries\n200\n3\n4\n6\n";
         BudgetTrackerApp app = createApp(input);
         app.run();
 
@@ -254,5 +254,59 @@ class BudgetTrackerAppTest {
         BudgetTrackerApp app = createApp(input);
         double amount = app.readAmount();
         assertEquals(-1, amount, 0.01);
+    }
+
+    @Test
+    void filterByCategoryFlow() {
+        budgetService.addExpense("Food", "Lunch", 15);
+        budgetService.addExpense("Food", "Dinner", 30);
+        budgetService.addExpense("Transport", "Bus", 5);
+
+        String input = "5\nFood\n6\n";
+        BudgetTrackerApp app = createApp(input);
+        app.run();
+
+        String output = outputStream.toString();
+        assertTrue(output.contains("TRANSACTIONS: FOOD"));
+        assertTrue(output.contains("Lunch"));
+        assertTrue(output.contains("Dinner"));
+        assertFalse(output.contains("Bus"));
+    }
+
+    @Test
+    void filterByCategoryNoMatch() {
+        budgetService.addExpense("Food", "Lunch", 15);
+
+        String input = "5\nRent\n6\n";
+        BudgetTrackerApp app = createApp(input);
+        app.run();
+
+        String output = outputStream.toString();
+        assertTrue(output.contains("No transactions found for category: Rent"));
+    }
+
+    @Test
+    void filterByCategoryNoCategories() {
+        String input = "5\n6\n";
+        BudgetTrackerApp app = createApp(input);
+        app.run();
+
+        String output = outputStream.toString();
+        assertTrue(output.contains("No categories found"));
+    }
+
+    @Test
+    void handleFilterByCategoryDirectly() {
+        budgetService.addExpense("Food", "Lunch", 15);
+        budgetService.addExpense("Transport", "Bus", 5);
+
+        String input = "Food\n";
+        BudgetTrackerApp app = createApp(input);
+        app.handleFilterByCategory();
+
+        String output = outputStream.toString();
+        assertTrue(output.contains("Available categories: Food, Transport"));
+        assertTrue(output.contains("TRANSACTIONS: FOOD"));
+        assertTrue(output.contains("Lunch"));
     }
 }
