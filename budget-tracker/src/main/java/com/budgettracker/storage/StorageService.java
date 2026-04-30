@@ -3,6 +3,7 @@ package com.budgettracker.storage;
 import com.budgettracker.model.Transaction;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
@@ -40,6 +41,9 @@ public class StorageService {
         } catch (com.google.gson.JsonSyntaxException e) {
             System.err.println("Error: Data file is corrupted. Starting with empty data.");
             return new ArrayList<>();
+        } catch (JsonIOException e) {
+            System.err.println("Error reading data file: " + e.getMessage());
+            return new ArrayList<>();
         }
     }
 
@@ -54,6 +58,9 @@ public class StorageService {
             }
             return true;
         } catch (IOException e) {
+            System.err.println("Error saving data: " + e.getMessage());
+            return false;
+        } catch (JsonIOException e) {
             System.err.println("Error saving data: " + e.getMessage());
             return false;
         }
