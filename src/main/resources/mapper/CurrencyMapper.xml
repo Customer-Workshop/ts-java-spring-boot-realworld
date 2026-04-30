@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.CurrencyMapper">
+
+    <resultMap id="currency" type="io.spring.core.currency.Currency">
+        <id column="id" property="id"/>
+        <result column="currency_code" property="currencyCode"/>
+        <result column="currency_name" property="currencyName"/>
+        <result column="country_name" property="countryName"/>
+    </resultMap>
+
+    <resultMap id="currencyRate" type="io.spring.core.currency.CurrencyRate">
+        <result column="currency_code_from" property="currencyCodeFrom"/>
+        <result column="currency_code_to" property="currencyCodeTo"/>
+        <result column="exchange_rate" property="exchangeRate"/>
+    </resultMap>
+
+    <select id="findAllCurrencies" resultMap="currency">
+        SELECT id, currency_code, currency_name, country_name FROM currency
+    </select>
+
+    <select id="findExchangeRate" resultMap="currencyRate">
+        SELECT currency_code_from, currency_code_to, exchange_rate
+        FROM currency_rate
+        WHERE currency_code_from = #{from} AND currency_code_to = #{to}
+    </select>
+
+</mapper>
