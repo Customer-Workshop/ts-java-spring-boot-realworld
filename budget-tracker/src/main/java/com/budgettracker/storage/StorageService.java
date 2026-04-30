@@ -12,6 +12,7 @@ import java.io.Writer;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,21 +49,34 @@ public class StorageService {
     }
 
     public boolean save(List<Transaction> transactions) {
+        Path tmpPath = Path.of(filePath + ".tmp");
         try {
             Path parent = filePath.getParent();
             if (parent != null && !Files.exists(parent)) {
                 Files.createDirectories(parent);
             }
-            try (Writer writer = Files.newBufferedWriter(filePath)) {
+            try (Writer writer = Files.newBufferedWriter(tmpPath)) {
                 gson.toJson(transactions, writer);
             }
+            Files.move(tmpPath, filePath,
+                    StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             return true;
         } catch (IOException e) {
             System.err.println("Error saving data: " + e.getMessage());
+            deleteTmpFile(tmpPath);
             return false;
         } catch (JsonIOException e) {
             System.err.println("Error saving data: " + e.getMessage());
+            deleteTmpFile(tmpPath);
             return false;
+        }
+    }
+
+    private void deleteTmpFile(Path tmpPath) {
+        try {
+            Files.deleteIfExists(tmpPath);
+        } catch (IOException ignored) {
+            // best-effort cleanup
         }
     }
 }
