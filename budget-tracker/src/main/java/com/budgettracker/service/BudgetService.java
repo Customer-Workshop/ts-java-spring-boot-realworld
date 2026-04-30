@@ -21,7 +21,7 @@ public class BudgetService {
         if (description == null || description.trim().isEmpty()) {
             throw new IllegalArgumentException("Description cannot be empty.");
         }
-        if (amount <= 0) {
+        if (amount <= 0 || !Double.isFinite(amount)) {
             throw new IllegalArgumentException("Amount must be a positive number.");
         }
         Transaction transaction = new Transaction(TransactionType.INCOME, "", description.trim(), amount);
@@ -40,7 +40,7 @@ public class BudgetService {
         if (description == null || description.trim().isEmpty()) {
             throw new IllegalArgumentException("Description cannot be empty.");
         }
-        if (amount <= 0) {
+        if (amount <= 0 || !Double.isFinite(amount)) {
             throw new IllegalArgumentException("Amount must be a positive number.");
         }
         Transaction transaction = new Transaction(
