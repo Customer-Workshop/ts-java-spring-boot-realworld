@@ -32,3 +32,9 @@ frontend/.next/
 frontend/out/
 frontend/.env*.local
 frontend/.git/
+
+### Campaign Admin (Nx React) ###
+campaign-admin/node_modules/
+campaign-admin/dist/
+campaign-admin/.nx/
+campaign-admin/.env*.local

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.UserEntitlementMapper">
+    <select id="hasEntitlement" resultType="boolean">
+        select count(*) > 0 from user_entitlements
+        where user_id = #{userId} and entitlement = #{entitlement}
+    </select>
+
+    <select id="findEntitlementsByUserId" resultType="java.lang.String">
+        select entitlement from user_entitlements where user_id = #{userId}
+    </select>
+
+    <insert id="insertEntitlement">
+        insert into user_entitlements (id, user_id, entitlement)
+        values (#{id}, #{userId}, #{entitlement})
+    </insert>
+</mapper>

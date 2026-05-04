@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.CampaignDecisionMapper">
+    <resultMap id="decisionResult" type="io.spring.core.campaign.CampaignDecision">
+        <id property="id" column="id"/>
+        <result property="campaignId" column="campaign_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="decision" column="decision"
+                typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="userSegment" column="user_segment"/>
+        <result property="userAgeGroup" column="user_age_group"/>
+        <result property="userRegion" column="user_region"/>
+        <result property="decidedAt" column="decided_at"
+                typeHandler="io.spring.infrastructure.mybatis.DateTimeHandler"/>
+    </resultMap>
+
+    <insert id="insert">
+        insert into campaign_decisions (id, campaign_id, user_id, decision, user_segment,
+            user_age_group, user_region, decided_at)
+        values (#{decision.id}, #{decision.campaignId}, #{decision.userId}, #{decision.decision},
+            #{decision.userSegment}, #{decision.userAgeGroup}, #{decision.userRegion},
+            #{decision.decidedAt, typeHandler=io.spring.infrastructure.mybatis.DateTimeHandler})
+    </insert>
+
+    <select id="findByCampaignId" resultMap="decisionResult">
+        select * from campaign_decisions where campaign_id = #{campaignId} order by decided_at desc
+    </select>
+
+    <select id="countByCampaignId" resultType="int">
+        select count(*) from campaign_decisions where campaign_id = #{campaignId}
+    </select>
+
+    <select id="countByCampaignIdAndDecision" resultType="int">
+        select count(*) from campaign_decisions
+        where campaign_id = #{campaignId} and decision = #{decision}
+    </select>
+</mapper>

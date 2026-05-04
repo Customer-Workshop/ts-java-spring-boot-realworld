@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.CampaignMapper">
+    <resultMap id="campaignResult" type="io.spring.core.campaign.Campaign">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="status" column="status"
+                typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="targetAudienceSegment" column="target_audience_segment"/>
+        <result property="startDate" column="start_date"
+                typeHandler="io.spring.infrastructure.mybatis.DateTimeHandler"/>
+        <result property="endDate" column="end_date"
+                typeHandler="io.spring.infrastructure.mybatis.DateTimeHandler"/>
+        <result property="messageTitle" column="message_title"/>
+        <result property="messageBody" column="message_body"/>
+        <result property="messageImageUrl" column="message_image_url"/>
+        <result property="messageCtaText" column="message_cta_text"/>
+        <result property="fulfillmentActionType" column="fulfillment_action_type"
+                typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="archived" column="archived"/>
+        <result property="createdAt" column="created_at"
+                typeHandler="io.spring.infrastructure.mybatis.DateTimeHandler"/>
+        <result property="updatedAt" column="updated_at"
+                typeHandler="io.spring.infrastructure.mybatis.DateTimeHandler"/>
+    </resultMap>
+
+    <insert id="insert">
+        insert into campaigns (id, name, status, target_audience_segment, start_date, end_date,
+            message_title, message_body, message_image_url, message_cta_text,
+            fulfillment_action_type, created_by, archived, created_at, updated_at)
+        values (#{campaign.id}, #{campaign.name}, #{campaign.status},
+            #{campaign.targetAudienceSegment},
+            #{campaign.startDate, typeHandler=io.spring.infrastructure.mybatis.DateTimeHandler},
+            #{campaign.endDate, typeHandler=io.spring.infrastructure.mybatis.DateTimeHandler},
+            #{campaign.messageTitle}, #{campaign.messageBody}, #{campaign.messageImageUrl},
+            #{campaign.messageCtaText}, #{campaign.fulfillmentActionType},
+            #{campaign.createdBy}, #{campaign.archived},
+            #{campaign.createdAt, typeHandler=io.spring.infrastructure.mybatis.DateTimeHandler},
+            #{campaign.updatedAt, typeHandler=io.spring.infrastructure.mybatis.DateTimeHandler})
+    </insert>
+
+    <select id="findById" resultMap="campaignResult">
+        select * from campaigns where id = #{id}
+    </select>
+
+    <select id="findAll" resultMap="campaignResult">
+        select * from campaigns
+        <where>
+            <if test="!includeArchived">
+                archived = 0
+            </if>
+        </where>
+        order by created_at desc
+    </select>
+
+    <select id="findByStatus" resultMap="campaignResult">
+        select * from campaigns where status = #{status} and archived = 0 order by created_at desc
+    </select>
+
+    <update id="update">
+        update campaigns set
+            name = #{campaign.name},
+            status = #{campaign.status},
+            target_audience_segment = #{campaign.targetAudienceSegment},
+            start_date = #{campaign.startDate, typeHandler=io.spring.infrastructure.mybatis.DateTimeHandler},
+            end_date = #{campaign.endDate, typeHandler=io.spring.infrastructure.mybatis.DateTimeHandler},
+            message_title = #{campaign.messageTitle},
+            message_body = #{campaign.messageBody},
+            message_image_url = #{campaign.messageImageUrl},
+            message_cta_text = #{campaign.messageCtaText},
+            fulfillment_action_type = #{campaign.fulfillmentActionType},
+            archived = #{campaign.archived},
+            updated_at = #{campaign.updatedAt, typeHandler=io.spring.infrastructure.mybatis.DateTimeHandler}
+        where id = #{campaign.id}
+    </update>
+
+    <delete id="delete">
+        delete from campaigns where id = #{id}
+    </delete>
+</mapper>
