@@ -358,7 +358,12 @@ public class CampaignService {
   // Bulk status update
   @org.springframework.transaction.annotation.Transactional
   public int bulkUpdateStatus(List<String> campaignIds, String newStatus, String userId) {
-    CampaignStatus targetStatus = CampaignStatus.valueOf(newStatus);
+    CampaignStatus targetStatus;
+    try {
+      targetStatus = CampaignStatus.valueOf(newStatus);
+    } catch (IllegalArgumentException e) {
+      throw new InvalidCampaignStateException("Invalid status: " + newStatus);
+    }
     int updated = 0;
     for (String id : campaignIds) {
       Optional<Campaign> opt = campaignRepository.findById(id);
