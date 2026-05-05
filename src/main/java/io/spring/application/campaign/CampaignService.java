@@ -125,18 +125,16 @@ public class CampaignService {
             param.getDeclineSuppression(),
             param.getConfirmationMessage(),
             param.getAudienceRules());
+        campaign.updateIndustryFields(
+            param.getChannel(), param.getPriority(), param.getTags(), param.getAbTestEnabled());
+        if (param.getTags() != null) {
+          saveTags(campaign.getId(), param.getTags());
+        }
       } else if (campaign.getStatus() == CampaignStatus.ACTIVE) {
         campaign.updateMessageCopy(
             param.getMessageTitle(), param.getMessageBody(), param.getMessageCtaText());
       } else {
         throw new InvalidCampaignStateException("ENDED campaigns cannot be edited");
-      }
-
-      campaign.updateIndustryFields(
-          param.getChannel(), param.getPriority(), param.getTags(), param.getAbTestEnabled());
-
-      if (param.getTags() != null) {
-        saveTags(campaign.getId(), param.getTags());
       }
 
       if (param.getStatus() != null) {
@@ -177,10 +175,10 @@ public class CampaignService {
   @org.springframework.transaction.annotation.Transactional
   public void deleteCampaign(Campaign campaign, String userId) {
     if (campaign.isDeletable()) {
-      auditLogRepository.save(CampaignAuditLog.deleted(campaign.getId(), userId));
       abTestVariantRepository.deleteByCampaignId(campaign.getId());
       tagRepository.deleteByCampaignId(campaign.getId());
       decisionRepository.deleteByCampaignId(campaign.getId());
+      auditLogRepository.deleteByCampaignId(campaign.getId());
       campaignRepository.remove(campaign);
     } else {
       campaign.archive();

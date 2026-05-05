@@ -23,4 +23,8 @@
     <select id="findByCampaignId" resultMap="auditLogResult">
         select * from campaign_audit_log where campaign_id = #{campaignId} order by timestamp desc
     </select>
+
+    <delete id="deleteByCampaignId">
+        delete from campaign_audit_log where campaign_id = #{campaignId}
+    </delete>
 </mapper>

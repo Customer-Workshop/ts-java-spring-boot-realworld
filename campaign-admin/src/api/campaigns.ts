@@ -82,7 +82,7 @@ export async function createABTestVariant(
 ): Promise<ABTestVariant> {
   const response = await apiClient.post(
     `/api/campaigns/${campaignId}/variants`,
-    variant
+    { variant }
   );
   return response.data.variant;
 }

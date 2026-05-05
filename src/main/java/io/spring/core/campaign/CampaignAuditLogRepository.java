@@ -6,4 +6,6 @@ public interface CampaignAuditLogRepository {
   void save(CampaignAuditLog log);
 
   List<CampaignAuditLog> findByCampaignId(String campaignId);
+
+  void deleteByCampaignId(String campaignId);
 }

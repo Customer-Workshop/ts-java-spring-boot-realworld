@@ -10,4 +10,6 @@ public interface CampaignAuditLogMapper {
   void insert(@Param("log") CampaignAuditLog log);
 
   List<CampaignAuditLog> findByCampaignId(@Param("campaignId") String campaignId);
+
+  void deleteByCampaignId(@Param("campaignId") String campaignId);
 }

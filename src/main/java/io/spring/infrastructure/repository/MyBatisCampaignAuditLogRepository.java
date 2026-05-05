@@ -23,4 +23,9 @@ public class MyBatisCampaignAuditLogRepository implements CampaignAuditLogReposi
   public List<CampaignAuditLog> findByCampaignId(String campaignId) {
     return mapper.findByCampaignId(campaignId);
   }
+
+  @Override
+  public void deleteByCampaignId(String campaignId) {
+    mapper.deleteByCampaignId(campaignId);
+  }
 }
