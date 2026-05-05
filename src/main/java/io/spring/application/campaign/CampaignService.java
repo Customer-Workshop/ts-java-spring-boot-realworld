@@ -9,6 +9,7 @@ import io.spring.core.campaign.CampaignStatus;
 import io.spring.core.campaign.DecisionType;
 import io.spring.core.campaign.FulfillmentActionType;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.joda.time.DateTime;
 import org.joda.time.format.ISODateTimeFormat;
@@ -150,21 +151,12 @@ public class CampaignService {
     int endedCampaigns =
         (int) allCampaigns.stream().filter(c -> c.getStatus() == CampaignStatus.ENDED).count();
 
-    int totalTargeted = 0;
-    int totalAccepted = 0;
-    int totalDeclined = 0;
-    int totalClickedUnfinished = 0;
-
-    for (Campaign campaign : allCampaigns) {
-      totalTargeted += decisionRepository.countByCampaignId(campaign.getId());
-      totalAccepted +=
-          decisionRepository.countByCampaignIdAndDecision(campaign.getId(), DecisionType.ACCEPTED);
-      totalDeclined +=
-          decisionRepository.countByCampaignIdAndDecision(campaign.getId(), DecisionType.DECLINED);
-      totalClickedUnfinished +=
-          decisionRepository.countByCampaignIdAndDecision(
-              campaign.getId(), DecisionType.CLICKED_UNFINISHED);
-    }
+    Map<String, Integer> decisionCounts = decisionRepository.countAllByDecisionForNonArchived();
+    int totalAccepted = decisionCounts.getOrDefault(DecisionType.ACCEPTED.name(), 0);
+    int totalDeclined = decisionCounts.getOrDefault(DecisionType.DECLINED.name(), 0);
+    int totalClickedUnfinished =
+        decisionCounts.getOrDefault(DecisionType.CLICKED_UNFINISHED.name(), 0);
+    int totalTargeted = totalAccepted + totalDeclined + totalClickedUnfinished;
 
     return new DashboardSummary(
         totalCampaigns,

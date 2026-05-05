@@ -34,4 +34,12 @@
         select count(*) from campaign_decisions
         where campaign_id = #{campaignId} and decision = #{decision}
     </select>
+
+    <select id="countAllByDecisionForNonArchived" resultType="map">
+        select cd.decision as decision, count(*) as cnt
+        from campaign_decisions cd
+        join campaigns c on cd.campaign_id = c.id
+        where c.archived = 0
+        group by cd.decision
+    </select>
 </mapper>

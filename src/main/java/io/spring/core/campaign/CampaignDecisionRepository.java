@@ -1,6 +1,7 @@
 package io.spring.core.campaign;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CampaignDecisionRepository {
   void save(CampaignDecision decision);
@@ -10,4 +11,6 @@ public interface CampaignDecisionRepository {
   int countByCampaignId(String campaignId);
 
   int countByCampaignIdAndDecision(String campaignId, DecisionType decision);
+
+  Map<String, Integer> countAllByDecisionForNonArchived();
 }

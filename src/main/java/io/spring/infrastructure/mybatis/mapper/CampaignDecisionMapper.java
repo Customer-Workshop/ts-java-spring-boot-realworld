@@ -2,6 +2,7 @@ package io.spring.infrastructure.mybatis.mapper;
 
 import io.spring.core.campaign.CampaignDecision;
 import java.util.List;
+import java.util.Map;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -15,4 +16,6 @@ public interface CampaignDecisionMapper {
 
   int countByCampaignIdAndDecision(
       @Param("campaignId") String campaignId, @Param("decision") String decision);
+
+  List<Map<String, Object>> countAllByDecisionForNonArchived();
 }
