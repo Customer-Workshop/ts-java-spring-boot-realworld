@@ -176,7 +176,20 @@ async def scrape_page(url: str, client: httpx.AsyncClient) -> ScrapedPage:
                 links=[], images=[], pricing_sections=[], testimonials=[],
                 cta_buttons=[], status_code=0, error="Blocked: URL resolves to private/internal address",
             )
-        resp = await client.get(url, headers=HEADERS, follow_redirects=True, timeout=15)
+        resp = await client.get(url, headers=HEADERS, follow_redirects=False, timeout=15)
+        redirects = 0
+        while resp.is_redirect and redirects < 5:
+            location = resp.headers.get("location", "")
+            redirect_url = urljoin(str(resp.url), location)
+            if not _is_safe_url(redirect_url):
+                return ScrapedPage(
+                    url=url, title="", meta_description="", headings=[], paragraphs=[],
+                    links=[], images=[], pricing_sections=[], testimonials=[],
+                    cta_buttons=[], status_code=0,
+                    error="Blocked: redirect target resolves to private/internal address",
+                )
+            resp = await client.get(redirect_url, headers=HEADERS, follow_redirects=False, timeout=15)
+            redirects += 1
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "lxml")
 
