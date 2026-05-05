@@ -156,9 +156,9 @@ public class CampaignsApi {
       csv.append(escapeCsv(c.getName())).append(',');
       csv.append(c.getStatus().name()).append(',');
       csv.append(escapeCsv(c.getTargetAudienceSegment())).append(',');
-      csv.append(c.getStartDate() != null ? c.getStartDate().toString("yyyy-MM-dd") : "")
+      csv.append(c.getStartDate() != null ? c.getStartDate().toDateTime(org.joda.time.DateTimeZone.UTC).toString("yyyy-MM-dd") : "")
           .append(',');
-      csv.append(c.getEndDate() != null ? c.getEndDate().toString("yyyy-MM-dd") : "").append(',');
+      csv.append(c.getEndDate() != null ? c.getEndDate().toDateTime(org.joda.time.DateTimeZone.UTC).toString("yyyy-MM-dd") : "").append(',');
       csv.append(c.getFulfillmentActionType().name()).append(',');
       csv.append(escapeCsv(c.getDisplayPlacement())).append(',');
       csv.append(escapeCsv(c.getFrequencyCapType())).append(',');
@@ -171,7 +171,7 @@ public class CampaignsApi {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.parseMediaType("text/csv"));
     headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=campaigns_export.csv");
-    return new ResponseEntity<>(csv.toString().getBytes(), headers, HttpStatus.OK);
+    return new ResponseEntity<>(csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8), headers, HttpStatus.OK);
   }
 
   private String escapeCsv(String value) {
