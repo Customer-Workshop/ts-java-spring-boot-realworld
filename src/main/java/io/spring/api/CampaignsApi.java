@@ -178,7 +178,10 @@ public class CampaignsApi {
     if (value == null) {
       return "";
     }
-    if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+    if (value.length() > 0 && "=+-@\t\r".indexOf(value.charAt(0)) >= 0) {
+      value = "'" + value;
+    }
+    if (value.contains(",") || value.contains("\"") || value.contains("\n") || value.contains("'")) {
       return "\"" + value.replace("\"", "\"\"") + "\"";
     }
     return value;
