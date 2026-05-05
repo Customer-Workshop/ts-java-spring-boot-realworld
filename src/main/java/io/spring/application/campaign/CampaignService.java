@@ -42,6 +42,7 @@ public class CampaignService {
     this.tagRepository = tagRepository;
   }
 
+  @org.springframework.transaction.annotation.Transactional
   public Campaign createCampaign(NewCampaignParam param, String userId) {
     try {
       Campaign campaign =
@@ -218,6 +219,7 @@ public class CampaignService {
     }
   }
 
+  @org.springframework.transaction.annotation.Transactional
   public Campaign cloneCampaign(Campaign source, String newName, String userId) {
     Campaign clone = source.cloneCampaign(newName, userId);
     campaignRepository.save(clone);

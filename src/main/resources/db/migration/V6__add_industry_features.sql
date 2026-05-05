@@ -68,11 +68,11 @@ INSERT INTO campaign_tags (id, campaign_id, tag) VALUES
 ('tag-10', 'campaign-5', 'engagement');
 
 -- Update existing campaigns with channel and priority
-UPDATE campaigns SET channel = 'IN_APP', priority = 8 WHERE id = 'campaign-1';
-UPDATE campaigns SET channel = 'EMAIL', priority = 9 WHERE id = 'campaign-2';
-UPDATE campaigns SET channel = 'PUSH', priority = 5 WHERE id = 'campaign-3';
-UPDATE campaigns SET channel = 'SMS', priority = 7 WHERE id = 'campaign-4';
-UPDATE campaigns SET channel = 'IN_APP', priority = 10 WHERE id = 'campaign-5';
+UPDATE campaigns SET channel = 'IN_APP', priority = 8, tags = 'rewards,premium' WHERE id = 'campaign-1';
+UPDATE campaigns SET channel = 'EMAIL', priority = 9, tags = 'onboarding,welcome' WHERE id = 'campaign-2';
+UPDATE campaigns SET channel = 'PUSH', priority = 5, tags = 'seasonal,promotion' WHERE id = 'campaign-3';
+UPDATE campaigns SET channel = 'SMS', priority = 7, tags = 'loyalty,retention' WHERE id = 'campaign-4';
+UPDATE campaigns SET channel = 'IN_APP', priority = 10, tags = 'flash-sale,engagement' WHERE id = 'campaign-5';
 
 -- Seed A/B test variant for campaign-1
 UPDATE campaigns SET ab_test_enabled = 1 WHERE id = 'campaign-1';
