@@ -57,6 +57,7 @@ export function CampaignFormPage() {
   }, [id]);
 
   const isActiveOnly = campaignStatus === 'ACTIVE';
+  const isEnded = campaignStatus === 'ENDED';
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -94,6 +95,43 @@ export function CampaignFormPage() {
 
   if (loading)
     return <p style={{ color: '#64748b' }}>Loading campaign...</p>;
+
+  if (isEnded) {
+    return (
+      <div style={{ maxWidth: '720px' }}>
+        <div
+          style={{
+            background: '#fee2e2',
+            color: '#991b1b',
+            padding: '24px',
+            borderRadius: '12px',
+            textAlign: 'center',
+          }}
+        >
+          <h2 style={{ margin: '0 0 8px', fontSize: '20px' }}>Cannot Edit</h2>
+          <p style={{ margin: '0 0 16px' }}>
+            ENDED campaigns cannot be edited. They are preserved for reporting
+            history.
+          </p>
+          <button
+            onClick={() => navigate(`/campaigns/${id}`)}
+            style={{
+              padding: '10px 24px',
+              border: 'none',
+              borderRadius: '8px',
+              background: '#2563eb',
+              color: '#fff',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 600,
+            }}
+          >
+            Back to Campaign
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ maxWidth: '720px' }}>

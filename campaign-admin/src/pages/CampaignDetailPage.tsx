@@ -67,20 +67,22 @@ export function CampaignDetailPage() {
       </div>
 
       <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-        <Link
-          to={`/campaigns/${campaign.id}/edit`}
-          style={{
-            padding: '10px 20px',
-            background: '#2563eb',
-            color: '#fff',
-            borderRadius: '8px',
-            textDecoration: 'none',
-            fontSize: '14px',
-            fontWeight: 600,
-          }}
-        >
-          Edit Campaign
-        </Link>
+        {campaign.status !== 'ENDED' && (
+          <Link
+            to={`/campaigns/${campaign.id}/edit`}
+            style={{
+              padding: '10px 20px',
+              background: '#2563eb',
+              color: '#fff',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontSize: '14px',
+              fontWeight: 600,
+            }}
+          >
+            Edit Campaign
+          </Link>
+        )}
         <Link
           to={`/campaigns/${campaign.id}/analytics`}
           style={{

@@ -1,5 +1,6 @@
 package io.spring.application.campaign;
 
+import io.spring.api.exception.InvalidCampaignStateException;
 import io.spring.core.campaign.Campaign;
 import io.spring.core.campaign.CampaignDecision;
 import io.spring.core.campaign.CampaignDecisionRepository;
@@ -71,23 +72,27 @@ public class CampaignService {
       campaign.updateMessageCopy(
           param.getMessageTitle(), param.getMessageBody(), param.getMessageCtaText());
     } else {
-      throw new IllegalStateException("ENDED campaigns cannot be edited");
+      throw new InvalidCampaignStateException("ENDED campaigns cannot be edited");
     }
 
     if (param.getStatus() != null) {
       CampaignStatus newStatus = CampaignStatus.valueOf(param.getStatus());
-      switch (newStatus) {
-        case ACTIVE:
-          campaign.activate();
-          break;
-        case PAUSED:
-          campaign.pause();
-          break;
-        case ENDED:
-          campaign.end();
-          break;
-        default:
-          break;
+      try {
+        switch (newStatus) {
+          case ACTIVE:
+            campaign.activate();
+            break;
+          case PAUSED:
+            campaign.pause();
+            break;
+          case ENDED:
+            campaign.end();
+            break;
+          default:
+            break;
+        }
+      } catch (IllegalStateException e) {
+        throw new InvalidCampaignStateException(e.getMessage());
       }
     }
 
