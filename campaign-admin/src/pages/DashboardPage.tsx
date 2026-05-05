@@ -93,9 +93,12 @@ export function DashboardPage() {
         .includes(filterSegment.toLowerCase())
     )
       return false;
-    if (filterDateFrom && c.startDate && c.startDate < filterDateFrom)
+    if (filterDecision && c.fulfillmentActionType !== filterDecision)
       return false;
-    if (filterDateTo && c.endDate && c.endDate > filterDateTo) return false;
+    if (filterDateFrom && c.startDate && c.startDate.slice(0, 10) < filterDateFrom)
+      return false;
+    if (filterDateTo && c.endDate && c.endDate.slice(0, 10) > filterDateTo)
+      return false;
     return true;
   });
 
@@ -172,14 +175,13 @@ export function DashboardPage() {
           onChange={setFilterSegment}
         />
         <FilterSelect
-          label="Decision Type"
+          label="Fulfillment Type"
           value={filterDecision}
           onChange={setFilterDecision}
           options={[
             { label: 'All', value: '' },
-            { label: 'Accepted', value: 'ACCEPTED' },
-            { label: 'Declined', value: 'DECLINED' },
-            { label: 'Unfinished', value: 'CLICKED_UNFINISHED' },
+            { label: 'Accept', value: 'ACCEPT' },
+            { label: 'Decline', value: 'DECLINE' },
             { label: 'Remind Later', value: 'REMIND_LATER' },
           ]}
         />
@@ -410,7 +412,7 @@ export function DashboardPage() {
           }}
         >
           Recent Campaigns
-          {(filterName || filterSegment || filterDateFrom || filterDateTo) && (
+          {(filterName || filterSegment || filterDecision || filterDateFrom || filterDateTo) && (
             <span
               style={{ fontSize: '12px', color: '#6b7280', fontWeight: 400 }}
             >
