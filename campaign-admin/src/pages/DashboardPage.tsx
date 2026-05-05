@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { fetchDashboard, fetchCampaigns } from '../api/campaigns';
 import {
   PieChart,
@@ -198,9 +198,9 @@ export function DashboardPage() {
             {campaigns.slice(0, 5).map((c) => (
               <tr key={c.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                 <td style={tdStyle}>
-                  <a href={`/campaigns/${c.id}`} style={{ color: '#2563eb', textDecoration: 'none' }}>
+                  <Link to={`/campaigns/${c.id}`} style={{ color: '#2563eb', textDecoration: 'none' }}>
                     {c.name}
-                  </a>
+                  </Link>
                 </td>
                 <td style={tdStyle}>
                   <span

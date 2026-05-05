@@ -125,6 +125,9 @@ public class Campaign {
   }
 
   public void end() {
+    if (this.status != CampaignStatus.ACTIVE && this.status != CampaignStatus.PAUSED) {
+      throw new IllegalStateException("Campaign can only be ended from ACTIVE or PAUSED status");
+    }
     this.status = CampaignStatus.ENDED;
     this.updatedAt = new DateTime();
   }
