@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getResearch, getReport, EvidencePack } from '../api';
+import { getResearch, getReport } from '../api';
+import type { EvidencePack } from '../api';
 
 interface Props {
   packId: string;

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { listResearch, deleteResearch, PackSummary } from '../api';
+import { listResearch, deleteResearch } from '../api';
+import type { PackSummary } from '../api';
 
 interface Props {
   onSelect: (id: string) => void;
