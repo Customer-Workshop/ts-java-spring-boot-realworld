@@ -62,11 +62,11 @@ export function CampaignFormPage() {
             fulfillmentActionType: c.fulfillmentActionType,
             displayPlacement: c.displayPlacement || 'POST_LOGIN',
             frequencyCapType: c.frequencyCapType || 'ONCE_PER_CAMPAIGN',
-            frequencyCapMaxImpressions: c.frequencyCapMaxImpressions || 1,
+            frequencyCapMaxImpressions: c.frequencyCapMaxImpressions ?? 1,
             deliveryStartTime: c.deliveryStartTime || '',
             deliveryEndTime: c.deliveryEndTime || '',
             personalizationTokens: c.personalizationTokens || '',
-            remindLaterDeferralDays: c.remindLaterDeferralDays || 1,
+            remindLaterDeferralDays: c.remindLaterDeferralDays ?? 1,
             fulfillmentWorkflowUrl: c.fulfillmentWorkflowUrl || '',
             declineSuppression: c.declineSuppression ?? true,
             confirmationMessage:
