@@ -320,7 +320,7 @@ export function CampaignCalendarPage() {
             if (!start) return false;
             return start <= monthEnd && (!end || end >= monthStart);
           })
-          .sort((a, b) => (a.priority > b.priority ? -1 : 1))
+          .sort((a, b) => b.priority - a.priority)
           .map((c) => (
             <div
               key={c.id}
