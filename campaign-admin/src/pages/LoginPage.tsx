@@ -43,38 +43,26 @@ export function LoginPage() {
           gap: '12px',
         }}
       >
+        <img
+          src="/fiserv-logo-white.svg"
+          alt="Fiserv"
+          style={{ height: '28px' }}
+        />
         <div
           style={{
-            width: '32px',
-            height: '32px',
-            background: '#fff',
-            borderRadius: '6px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            width: '1px',
+            height: '28px',
+            background: 'rgba(255,255,255,0.3)',
+          }}
+        />
+        <span
+          style={{
+            color: '#fff',
             fontSize: '16px',
+            fontWeight: 600,
           }}
         >
-          {'\u{1F3E6}'}
-        </div>
-        <span
-          style={{
-            color: '#fff',
-            fontSize: '18px',
-            fontWeight: 700,
-            fontStyle: 'italic',
-          }}
-        >
-          Campaign
-        </span>
-        <span
-          style={{
-            color: '#fff',
-            fontSize: '18px',
-            fontWeight: 400,
-          }}
-        >
-          Admin Tool
+          Campaign Admin Tool
         </span>
       </div>
 
@@ -98,6 +86,13 @@ export function LoginPage() {
             border: '1px solid #e5e7eb',
           }}
         >
+          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <img
+              src="/fiserv-logo.svg"
+              alt="Fiserv"
+              style={{ height: '36px' }}
+            />
+          </div>
           <h1
             style={{
               fontSize: '22px',

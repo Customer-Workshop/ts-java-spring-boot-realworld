@@ -34,39 +34,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
           zIndex: 10,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <img
+            src="/fiserv-logo-white.svg"
+            alt="Fiserv"
+            style={{ height: '28px' }}
+          />
           <div
             style={{
-              width: '32px',
-              height: '32px',
-              background: '#fff',
-              borderRadius: '6px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              width: '1px',
+              height: '28px',
+              background: 'rgba(255,255,255,0.3)',
+            }}
+          />
+          <span
+            style={{
               fontSize: '16px',
-            }}
-          >
-            {'\u{1F3E6}'}
-          </div>
-          <span
-            style={{
-              fontSize: '18px',
-              fontWeight: 700,
+              fontWeight: 600,
               letterSpacing: '-0.02em',
-              fontStyle: 'italic',
             }}
           >
-            Campaign
-          </span>
-          <span
-            style={{
-              fontSize: '18px',
-              fontWeight: 400,
-              marginLeft: '4px',
-            }}
-          >
-            Admin Tool
+            Campaign Admin Tool
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
