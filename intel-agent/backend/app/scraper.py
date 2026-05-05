@@ -149,46 +149,79 @@ def _extract_cta_buttons(soup: BeautifulSoup) -> list[str]:
     return list(set(ctas))[:15]
 
 
-def _is_safe_url(url: str) -> bool:
-    """Validate URL is public HTTP(S) and does not resolve to a private/internal IP."""
+def _check_ip(ip_str: str) -> bool:
+    """Return True if the IP is public (safe to connect to)."""
+    ip = ipaddress.ip_address(ip_str)
+    return not (ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved)
+
+
+async def _resolve_safe(url: str) -> tuple[bool, str]:
+    """Resolve URL, validate IPs, return (safe, resolved_ip).
+
+    Returns the first safe IP or ("", False) if blocked.
+    Uses asyncio.to_thread to avoid blocking the event loop.
+    """
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        return False, ""
+    hostname = parsed.hostname
+    if not hostname:
+        return False, ""
     try:
-        parsed = urlparse(url)
-        if parsed.scheme not in ("http", "https"):
-            return False
-        hostname = parsed.hostname
-        if not hostname:
-            return False
-        resolved = socket.getaddrinfo(hostname, None, socket.AF_UNSPEC, socket.SOCK_STREAM)
-        for _, _, _, _, addr in resolved:
-            ip = ipaddress.ip_address(addr[0])
-            if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
-                return False
-        return True
-    except Exception:
-        return False
+        resolved = await asyncio.to_thread(
+            socket.getaddrinfo, hostname, None, socket.AF_UNSPEC, socket.SOCK_STREAM,
+        )
+    except socket.gaierror:
+        return False, ""
+    first_safe_ip = ""
+    for _, _, _, _, addr in resolved:
+        if not _check_ip(addr[0]):
+            return False, ""
+        if not first_safe_ip:
+            first_safe_ip = addr[0]
+    return (True, first_safe_ip) if first_safe_ip else (False, "")
+
+
+def _pin_url(url: str, ip: str) -> tuple[str, str]:
+    """Rewrite URL to connect to the resolved IP and return (pinned_url, hostname)."""
+    parsed = urlparse(url)
+    hostname = parsed.hostname or ""
+    port_suffix = f":{parsed.port}" if parsed.port else ""
+    if ":" in ip:
+        host_part = f"[{ip}]"
+    else:
+        host_part = ip
+    pinned = parsed._replace(netloc=f"{host_part}{port_suffix}").geturl()
+    return pinned, hostname
 
 
 async def scrape_page(url: str, client: httpx.AsyncClient) -> ScrapedPage:
     try:
-        if not _is_safe_url(url):
+        safe, ip = await _resolve_safe(url)
+        if not safe:
             return ScrapedPage(
                 url=url, title="", meta_description="", headings=[], paragraphs=[],
                 links=[], images=[], pricing_sections=[], testimonials=[],
                 cta_buttons=[], status_code=0, error="Blocked: URL resolves to private/internal address",
             )
-        resp = await client.get(url, headers=HEADERS, follow_redirects=False, timeout=15)
+        pinned_url, hostname = _pin_url(url, ip)
+        pinned_headers = {**HEADERS, "Host": hostname}
+        resp = await client.get(pinned_url, headers=pinned_headers, follow_redirects=False, timeout=15)
         redirects = 0
         while resp.is_redirect and redirects < 5:
             location = resp.headers.get("location", "")
             redirect_url = urljoin(str(resp.url), location)
-            if not _is_safe_url(redirect_url):
+            safe, redir_ip = await _resolve_safe(redirect_url)
+            if not safe:
                 return ScrapedPage(
                     url=url, title="", meta_description="", headings=[], paragraphs=[],
                     links=[], images=[], pricing_sections=[], testimonials=[],
                     cta_buttons=[], status_code=0,
                     error="Blocked: redirect target resolves to private/internal address",
                 )
-            resp = await client.get(redirect_url, headers=HEADERS, follow_redirects=False, timeout=15)
+            pinned_redir, redir_host = _pin_url(redirect_url, redir_ip)
+            redir_headers = {**HEADERS, "Host": redir_host}
+            resp = await client.get(pinned_redir, headers=redir_headers, follow_redirects=False, timeout=15)
             redirects += 1
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "lxml")
