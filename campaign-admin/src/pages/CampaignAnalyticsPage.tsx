@@ -61,15 +61,15 @@ export function CampaignAnalyticsPage() {
       <Link
         to={`/campaigns/${id}`}
         style={{
-          color: '#64748b',
+          color: '#6b7280',
           textDecoration: 'none',
-          fontSize: '14px',
+          fontSize: '13px',
         }}
       >
         &larr; Back to Campaign
       </Link>
       <h2
-        style={{ fontSize: '24px', fontWeight: 700, margin: '8px 0 24px' }}
+        style={{ fontSize: '22px', fontWeight: 600, margin: '8px 0 24px', color: '#1a2744' }}
       >
         Analytics: {campaign.name}
       </h2>
@@ -86,7 +86,7 @@ export function CampaignAnalyticsPage() {
         <KpiCard
           label="Total Targeted"
           value={analytics.totalTargetedPopulation}
-          color="#2563eb"
+          color="#1d4ed8"
         />
         <KpiCard
           label="Accepted / Fulfilled"
@@ -222,16 +222,17 @@ function KpiCard({
     <div
       style={{
         background: '#fff',
-        borderRadius: '12px',
+        borderRadius: '8px',
         padding: '24px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        borderTop: `4px solid ${color}`,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+        border: '1px solid #e5e7eb',
+        borderTop: `3px solid ${color}`,
       }}
     >
       <p
         style={{
           fontSize: '12px',
-          color: '#64748b',
+          color: '#6b7280',
           margin: '0 0 8px',
           textTransform: 'uppercase',
           fontWeight: 600,
@@ -244,7 +245,7 @@ function KpiCard({
         style={{
           fontSize: '32px',
           fontWeight: 700,
-          color: '#1e293b',
+          color: '#1a2744',
           margin: 0,
         }}
       >
@@ -265,16 +266,17 @@ function ChartCard({
     <div
       style={{
         background: '#fff',
-        borderRadius: '12px',
+        borderRadius: '8px',
         padding: '24px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+        border: '1px solid #e5e7eb',
       }}
     >
       <h3
         style={{
           fontSize: '16px',
           fontWeight: 600,
-          color: '#1e293b',
+          color: '#1a2744',
           margin: '0 0 16px',
         }}
       >

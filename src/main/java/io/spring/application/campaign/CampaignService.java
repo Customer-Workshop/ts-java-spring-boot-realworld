@@ -69,6 +69,12 @@ public class CampaignService {
           param.getFulfillmentActionType() != null
               ? FulfillmentActionType.valueOf(param.getFulfillmentActionType())
               : null);
+      if (param.getStartDate() != null && param.getStartDate().isEmpty()) {
+        campaign.clearStartDate();
+      }
+      if (param.getEndDate() != null && param.getEndDate().isEmpty()) {
+        campaign.clearEndDate();
+      }
     } else if (campaign.getStatus() == CampaignStatus.ACTIVE) {
       campaign.updateMessageCopy(
           param.getMessageTitle(), param.getMessageBody(), param.getMessageCtaText());
@@ -103,6 +109,7 @@ public class CampaignService {
 
   public void deleteCampaign(Campaign campaign) {
     if (campaign.isDeletable()) {
+      decisionRepository.deleteByCampaignId(campaign.getId());
       campaignRepository.remove(campaign);
     } else {
       campaign.archive();

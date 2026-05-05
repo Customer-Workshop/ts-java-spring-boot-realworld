@@ -64,16 +64,16 @@ export function CampaignListPage() {
           marginBottom: '24px',
         }}
       >
-        <h2 style={{ fontSize: '24px', fontWeight: 700, margin: 0 }}>
+        <h2 style={{ fontSize: '22px', fontWeight: 600, margin: 0, color: '#1a2744' }}>
           Campaigns
         </h2>
         <Link
           to="/campaigns/new"
           style={{
-            background: '#2563eb',
+            background: '#1d4ed8',
             color: '#fff',
             padding: '10px 20px',
-            borderRadius: '8px',
+            borderRadius: '6px',
             textDecoration: 'none',
             fontSize: '14px',
             fontWeight: 600,
@@ -92,11 +92,11 @@ export function CampaignListPage() {
               padding: '8px 16px',
               border:
                 statusFilter === f.value
-                  ? '2px solid #2563eb'
+                  ? '2px solid #1d4ed8'
                   : '1px solid #d1d5db',
-              borderRadius: '8px',
+              borderRadius: '6px',
               background: statusFilter === f.value ? '#eff6ff' : '#fff',
-              color: statusFilter === f.value ? '#2563eb' : '#374151',
+              color: statusFilter === f.value ? '#1d4ed8' : '#374151',
               cursor: 'pointer',
               fontSize: '13px',
               fontWeight: statusFilter === f.value ? 600 : 400,
@@ -115,10 +115,11 @@ export function CampaignListPage() {
             textAlign: 'center',
             padding: '60px',
             background: '#fff',
-            borderRadius: '12px',
+            borderRadius: '8px',
+            border: '1px solid #e5e7eb',
           }}
         >
-          <p style={{ color: '#64748b', fontSize: '16px' }}>
+          <p style={{ color: '#6b7280', fontSize: '16px' }}>
             No campaigns found. Create your first campaign to get started.
           </p>
         </div>
@@ -126,9 +127,10 @@ export function CampaignListPage() {
         <div
           style={{
             background: '#fff',
-            borderRadius: '12px',
+            borderRadius: '8px',
             overflow: 'hidden',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+            border: '1px solid #e5e7eb',
           }}
         >
           <table
@@ -159,7 +161,7 @@ export function CampaignListPage() {
                     <Link
                       to={`/campaigns/${c.id}`}
                       style={{
-                        color: '#2563eb',
+                        color: '#1d4ed8',
                         textDecoration: 'none',
                         fontWeight: 500,
                       }}
@@ -197,7 +199,7 @@ export function CampaignListPage() {
                       <Link
                         to={`/campaigns/${c.id}/analytics`}
                         style={{
-                          color: '#7c3aed',
+                          color: '#6366f1',
                           textDecoration: 'none',
                           fontSize: '13px',
                         }}
@@ -233,7 +235,7 @@ const thStyle: React.CSSProperties = {
   textAlign: 'left',
   padding: '12px 16px',
   fontWeight: 600,
-  color: '#64748b',
+  color: '#6b7280',
   fontSize: '12px',
   textTransform: 'uppercase',
   letterSpacing: '0.05em',

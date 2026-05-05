@@ -18,4 +18,6 @@ public interface CampaignDecisionMapper {
       @Param("campaignId") String campaignId, @Param("decision") String decision);
 
   List<Map<String, Object>> countAllByDecisionForNonArchived();
+
+  void deleteByCampaignId(@Param("campaignId") String campaignId);
 }

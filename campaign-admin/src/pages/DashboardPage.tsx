@@ -61,7 +61,7 @@ export function DashboardPage() {
 
   return (
     <div>
-      <h2 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 24px' }}>
+      <h2 style={{ fontSize: '22px', fontWeight: 600, margin: '0 0 24px', color: '#1a2744' }}>
         Campaign &amp; Promotion Dashboard
       </h2>
 
@@ -74,8 +74,8 @@ export function DashboardPage() {
           marginBottom: '32px',
         }}
       >
-        <KpiCard label="Total Campaigns" value={summary.totalCampaigns} color="#2563eb" />
-        <KpiCard label="Total Targeted" value={summary.totalTargetedPopulation} color="#7c3aed" />
+        <KpiCard label="Total Campaigns" value={summary.totalCampaigns} color="#1d4ed8" />
+        <KpiCard label="Total Targeted" value={summary.totalTargetedPopulation} color="#6366f1" />
         <KpiCard label="Accepted" value={summary.totalAccepted} color="#22c55e" />
         <KpiCard label="Declined" value={summary.totalDeclined} color="#ef4444" />
         <KpiCard label="Unfinished" value={summary.totalClickedUnfinished} color="#f59e0b" />
@@ -133,13 +133,14 @@ export function DashboardPage() {
       <div
         style={{
           background: '#fff',
-          borderRadius: '12px',
+          borderRadius: '8px',
           padding: '32px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+          border: '1px solid #e5e7eb',
           marginBottom: '32px',
         }}
       >
-        <h3 style={{ fontSize: '16px', fontWeight: 600, margin: '0 0 20px', color: '#1e293b' }}>
+        <h3 style={{ fontSize: '15px', fontWeight: 600, margin: '0 0 20px', color: '#1a2744' }}>
           Performance Metrics
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
@@ -177,12 +178,13 @@ export function DashboardPage() {
       <div
         style={{
           background: '#fff',
-          borderRadius: '12px',
+          borderRadius: '8px',
           padding: '24px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+          border: '1px solid #e5e7eb',
         }}
       >
-        <h3 style={{ fontSize: '16px', fontWeight: 600, margin: '0 0 16px', color: '#1e293b' }}>
+        <h3 style={{ fontSize: '15px', fontWeight: 600, margin: '0 0 16px', color: '#1a2744' }}>
           Recent Campaigns
         </h3>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
@@ -198,7 +200,7 @@ export function DashboardPage() {
             {campaigns.slice(0, 5).map((c) => (
               <tr key={c.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                 <td style={tdStyle}>
-                  <Link to={`/campaigns/${c.id}`} style={{ color: '#2563eb', textDecoration: 'none' }}>
+                  <Link to={`/campaigns/${c.id}`} style={{ color: '#1d4ed8', textDecoration: 'none' }}>
                     {c.name}
                   </Link>
                 </td>
@@ -233,16 +235,17 @@ function KpiCard({ label, value, color }: { label: string; value: number; color:
     <div
       style={{
         background: '#fff',
-        borderRadius: '12px',
+        borderRadius: '8px',
         padding: '20px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        borderTop: `4px solid ${color}`,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+        border: '1px solid #e5e7eb',
+        borderTop: `3px solid ${color}`,
       }}
     >
-      <p style={{ fontSize: '11px', color: '#64748b', margin: '0 0 6px', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>
+      <p style={{ fontSize: '11px', color: '#6b7280', margin: '0 0 6px', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>
         {label}
       </p>
-      <p style={{ fontSize: '28px', fontWeight: 700, color: '#1e293b', margin: 0 }}>
+      <p style={{ fontSize: '28px', fontWeight: 700, color: '#1a2744', margin: 0 }}>
         {value.toLocaleString()}
       </p>
     </div>
@@ -251,8 +254,8 @@ function KpiCard({ label, value, color }: { label: string; value: number; color:
 
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ background: '#fff', borderRadius: '12px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-      <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#1e293b', margin: '0 0 16px' }}>{title}</h3>
+    <div style={{ background: '#fff', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', border: '1px solid #e5e7eb' }}>
+      <h3 style={{ fontSize: '15px', fontWeight: 600, color: '#1a2744', margin: '0 0 16px' }}>{title}</h3>
       {children}
     </div>
   );
@@ -263,7 +266,7 @@ function MetricBar({ label, value, color }: { label: string; value: number; colo
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
         <span style={{ fontSize: '13px', color: '#475569', fontWeight: 500 }}>{label}</span>
-        <span style={{ fontSize: '13px', color: '#1e293b', fontWeight: 700 }}>{value.toFixed(1)}%</span>
+        <span style={{ fontSize: '13px', color: '#1a2744', fontWeight: 700 }}>{value.toFixed(1)}%</span>
       </div>
       <div style={{ background: '#e2e8f0', borderRadius: '4px', height: '8px', overflow: 'hidden' }}>
         <div style={{ width: `${Math.min(value, 100)}%`, background: color, height: '100%', borderRadius: '4px', transition: 'width 0.5s ease' }} />
@@ -276,7 +279,7 @@ const thStyle: React.CSSProperties = {
   textAlign: 'left',
   padding: '10px 14px',
   fontWeight: 600,
-  color: '#64748b',
+  color: '#6b7280',
   fontSize: '12px',
   textTransform: 'uppercase',
   letterSpacing: '0.05em',

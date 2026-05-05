@@ -47,15 +47,15 @@ export function CampaignDetailPage() {
     <div style={{ maxWidth: '800px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <Link to="/campaigns" style={{ color: '#64748b', textDecoration: 'none', fontSize: '14px' }}>
+          <Link to="/campaigns" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '13px' }}>
             &larr; Back to Campaigns
           </Link>
-          <h2 style={{ fontSize: '24px', fontWeight: 700, margin: '8px 0 0' }}>{campaign.name}</h2>
+          <h2 style={{ fontSize: '22px', fontWeight: 600, margin: '8px 0 0', color: '#1a2744' }}>{campaign.name}</h2>
         </div>
         <StatusBadge status={campaign.status} />
       </div>
 
-      <div style={{ background: '#fff', borderRadius: '12px', padding: '32px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: '24px' }}>
+      <div style={{ background: '#fff', borderRadius: '8px', padding: '32px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', border: '1px solid #e5e7eb', marginBottom: '24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
           <DetailField label="Target Audience" value={campaign.targetAudienceSegment} />
           <DetailField label="Fulfillment Action" value={campaign.fulfillmentActionType} />
@@ -67,7 +67,7 @@ export function CampaignDetailPage() {
 
         <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '24px 0' }} />
 
-        <h3 style={{ fontSize: '16px', fontWeight: 600, margin: '0 0 16px', color: '#1e293b' }}>Message Content</h3>
+        <h3 style={{ fontSize: '15px', fontWeight: 600, margin: '0 0 16px', color: '#1a2744' }}>Message Content</h3>
         <DetailField label="Title" value={campaign.messageTitle} />
         <DetailField label="Body" value={campaign.messageBody} />
         {campaign.messageImageUrl && <DetailField label="Image URL" value={campaign.messageImageUrl} />}
@@ -80,9 +80,9 @@ export function CampaignDetailPage() {
             to={`/campaigns/${campaign.id}/edit`}
             style={{
               padding: '10px 20px',
-              background: '#2563eb',
+              background: '#1d4ed8',
               color: '#fff',
-              borderRadius: '8px',
+              borderRadius: '6px',
               textDecoration: 'none',
               fontSize: '14px',
               fontWeight: 600,
@@ -95,9 +95,9 @@ export function CampaignDetailPage() {
           to={`/campaigns/${campaign.id}/analytics`}
           style={{
             padding: '10px 20px',
-            background: '#7c3aed',
+            background: '#6366f1',
             color: '#fff',
-            borderRadius: '8px',
+            borderRadius: '6px',
             textDecoration: 'none',
             fontSize: '14px',
             fontWeight: 600,
@@ -132,10 +132,10 @@ export function CampaignDetailPage() {
 function DetailField({ label, value }: { label: string; value: string | null | undefined }) {
   return (
     <div style={{ marginBottom: '12px' }}>
-      <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+      <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
         {label}
       </span>
-      <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#1e293b' }}>{value || '-'}</p>
+      <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#1a2744' }}>{value || '-'}</p>
     </div>
   );
 }
@@ -146,7 +146,7 @@ function actionBtn(bg: string): React.CSSProperties {
     background: bg,
     color: '#fff',
     border: 'none',
-    borderRadius: '8px',
+    borderRadius: '6px',
     cursor: 'pointer',
     fontSize: '14px',
     fontWeight: 600,

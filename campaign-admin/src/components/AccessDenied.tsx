@@ -15,7 +15,7 @@ export function AccessDenied() {
           width: '80px',
           height: '80px',
           borderRadius: '50%',
-          background: '#fee2e2',
+          background: '#fef2f2',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -27,9 +27,9 @@ export function AccessDenied() {
       </div>
       <h2
         style={{
-          fontSize: '24px',
-          fontWeight: 700,
-          color: '#1e293b',
+          fontSize: '22px',
+          fontWeight: 600,
+          color: '#1a2744',
           margin: '0 0 8px',
         }}
       >
@@ -38,7 +38,7 @@ export function AccessDenied() {
       <p
         style={{
           fontSize: '16px',
-          color: '#64748b',
+          color: '#6b7280',
           maxWidth: '400px',
           lineHeight: 1.5,
         }}

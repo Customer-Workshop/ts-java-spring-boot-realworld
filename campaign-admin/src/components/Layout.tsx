@@ -2,9 +2,16 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const navItems = [
-  { path: '/dashboard', label: 'Dashboard' },
-  { path: '/campaigns', label: 'Campaigns' },
+const navSections = [
+  {
+    label: 'Marketing',
+    icon: '\u{1F4E2}',
+    items: [
+      { path: '/dashboard', label: 'Dashboard', icon: '\u{1F4CA}' },
+      { path: '/campaigns/new', label: 'Create campaign', icon: '\u2795' },
+      { path: '/campaigns', label: 'Campaigns', icon: '\u{1F4CB}' },
+    ],
+  },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -12,102 +19,201 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { username, logout } = useAuth();
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <aside
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      {/* Top Header Bar - Fiserv style */}
+      <header
         style={{
-          width: '240px',
-          background: '#1e293b',
-          color: '#f8fafc',
-          padding: '24px 0',
+          background: 'linear-gradient(90deg, #1a2744 0%, #243b6e 100%)',
+          color: '#fff',
+          padding: '0 24px',
+          height: '56px',
           display: 'flex',
-          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexShrink: 0,
+          zIndex: 10,
         }}
       >
-        <div
-          style={{
-            padding: '0 24px 24px',
-            borderBottom: '1px solid #334155',
-            marginBottom: '16px',
-          }}
-        >
-          <h1 style={{ fontSize: '20px', fontWeight: 700, margin: 0 }}>
-            Campaign Manager
-          </h1>
-          <p
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div
             style={{
-              fontSize: '12px',
-              color: '#94a3b8',
-              margin: '4px 0 0',
+              width: '32px',
+              height: '32px',
+              background: '#fff',
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '16px',
             }}
           >
-            Marketing Admin Tool
-          </p>
+            {'\u{1F3E6}'}
+          </div>
+          <span
+            style={{
+              fontSize: '18px',
+              fontWeight: 700,
+              letterSpacing: '-0.02em',
+              fontStyle: 'italic',
+            }}
+          >
+            Campaign
+          </span>
+          <span
+            style={{
+              fontSize: '18px',
+              fontWeight: 400,
+              marginLeft: '4px',
+            }}
+          >
+            Admin Tool
+          </span>
         </div>
-        <nav>
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              style={{
-                display: 'block',
-                padding: '12px 24px',
-                color:
-                  location.pathname === item.path ? '#38bdf8' : '#cbd5e1',
-                textDecoration: 'none',
-                fontSize: '14px',
-                fontWeight: location.pathname === item.path ? 600 : 400,
-                background:
-                  location.pathname === item.path
-                    ? 'rgba(56,189,248,0.1)'
-                    : 'transparent',
-                borderLeft:
-                  location.pathname === item.path
-                    ? '3px solid #38bdf8'
-                    : '3px solid transparent',
-              }}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <div style={{ marginTop: 'auto', padding: '16px 24px' }}>
-          <p
-            style={{
-              fontSize: '13px',
-              color: '#94a3b8',
-              margin: '0 0 8px',
-            }}
-          >
-            {username}
-          </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <span style={{ fontSize: '13px', color: '#cbd5e1' }}>{username}</span>
           <button
             onClick={logout}
             style={{
-              background: 'none',
-              border: '1px solid #475569',
-              color: '#94a3b8',
-              padding: '6px 16px',
-              borderRadius: '6px',
+              background: 'rgba(255,255,255,0.15)',
+              border: '1px solid rgba(255,255,255,0.3)',
+              color: '#fff',
+              padding: '5px 14px',
+              borderRadius: '4px',
               cursor: 'pointer',
               fontSize: '12px',
-              width: '100%',
+              fontWeight: 500,
             }}
           >
             Sign Out
           </button>
         </div>
-      </aside>
+      </header>
 
-      <main
-        style={{
-          flex: 1,
-          background: '#f1f5f9',
-          padding: '32px',
-          overflow: 'auto',
-        }}
-      >
-        {children}
-      </main>
+      <div style={{ display: 'flex', flex: 1 }}>
+        {/* Left Sidebar - White with navigation */}
+        <aside
+          style={{
+            width: '260px',
+            background: '#fff',
+            borderRight: '1px solid #e5e7eb',
+            display: 'flex',
+            flexDirection: 'column',
+            flexShrink: 0,
+            overflowY: 'auto',
+          }}
+        >
+          {/* Search */}
+          <div style={{ padding: '16px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 12px',
+                background: '#f9fafb',
+                border: '1px solid #e5e7eb',
+                borderRadius: '6px',
+                fontSize: '13px',
+                color: '#9ca3af',
+              }}
+            >
+              {'\u{1F50D}'} Search navigation
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <nav style={{ flex: 1 }}>
+            {navSections.map((section) => (
+              <div key={section.label}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '10px 20px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: '#1f2937',
+                    cursor: 'default',
+                  }}
+                >
+                  <span style={{ fontSize: '16px' }}>{section.icon}</span>
+                  {section.label}
+                </div>
+                {section.items.map((item) => {
+                  const isActive =
+                    item.path === '/campaigns'
+                      ? location.pathname === '/campaigns'
+                      : location.pathname.startsWith(item.path);
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '9px 20px 9px 44px',
+                        color: isActive ? '#1d4ed8' : '#4b5563',
+                        textDecoration: 'none',
+                        fontSize: '13px',
+                        fontWeight: isActive ? 600 : 400,
+                        background: isActive ? '#eff6ff' : 'transparent',
+                        borderRight: isActive
+                          ? '3px solid #1d4ed8'
+                          : '3px solid transparent',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <span style={{ fontSize: '14px' }}>{item.icon}</span>
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
+          </nav>
+        </aside>
+
+        {/* Main Content */}
+        <main
+          style={{
+            flex: 1,
+            background: '#f3f4f6',
+            padding: '24px 32px',
+            overflow: 'auto',
+          }}
+        >
+          {/* Breadcrumb */}
+          <div
+            style={{
+              fontSize: '12px',
+              color: '#6b7280',
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            {'\u{1F3E0}'}{' '}
+            <span>
+              Marketing &gt;{' '}
+              {location.pathname === '/dashboard'
+                ? 'Dashboard'
+                : location.pathname === '/campaigns/new'
+                  ? 'Create campaign'
+                  : location.pathname.includes('/analytics')
+                    ? 'Analytics'
+                    : location.pathname.includes('/edit')
+                      ? 'Edit campaign'
+                      : location.pathname.startsWith('/campaigns/')
+                        ? 'Campaign detail'
+                        : 'Campaigns'}
+            </span>
+          </div>
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

@@ -42,4 +42,7 @@
         where c.archived = 0
         group by cd.decision
     </select>
+    <delete id="deleteByCampaignId">
+        delete from campaign_decisions where campaign_id = #{campaignId}
+    </delete>
 </mapper>

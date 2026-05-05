@@ -101,10 +101,11 @@ export function CampaignFormPage() {
       <div style={{ maxWidth: '720px' }}>
         <div
           style={{
-            background: '#fee2e2',
+            background: '#fef2f2',
             color: '#991b1b',
             padding: '24px',
-            borderRadius: '12px',
+            borderRadius: '8px',
+            border: '1px solid #fecaca',
             textAlign: 'center',
           }}
         >
@@ -119,7 +120,7 @@ export function CampaignFormPage() {
               padding: '10px 24px',
               border: 'none',
               borderRadius: '8px',
-              background: '#2563eb',
+              background: '#1d4ed8',
               color: '#fff',
               cursor: 'pointer',
               fontSize: '14px',
@@ -135,7 +136,7 @@ export function CampaignFormPage() {
 
   return (
     <div style={{ maxWidth: '720px' }}>
-      <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '24px' }}>
+      <h2 style={{ fontSize: '22px', fontWeight: 600, marginBottom: '24px', color: '#1a2744' }}>
         {isEditing ? 'Edit Campaign' : 'Create New Campaign'}
       </h2>
 
@@ -174,8 +175,9 @@ export function CampaignFormPage() {
         style={{
           background: '#fff',
           padding: '32px',
-          borderRadius: '12px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          borderRadius: '8px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+          border: '1px solid #e5e7eb',
         }}
       >
         <div style={fieldGroup}>
@@ -229,7 +231,7 @@ export function CampaignFormPage() {
         </div>
 
         <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '24px 0' }} />
-        <h3 style={{ fontSize: '16px', fontWeight: 600, margin: '0 0 16px', color: '#1e293b' }}>
+        <h3 style={{ fontSize: '15px', fontWeight: 600, margin: '0 0 16px', color: '#1a2744' }}>
           Message Content
         </h3>
 
@@ -308,7 +310,7 @@ export function CampaignFormPage() {
             style={{
               padding: '10px 24px',
               border: '1px solid #d1d5db',
-              borderRadius: '8px',
+              borderRadius: '6px',
               background: '#fff',
               cursor: 'pointer',
               fontSize: '14px',
@@ -322,8 +324,8 @@ export function CampaignFormPage() {
             style={{
               padding: '10px 24px',
               border: 'none',
-              borderRadius: '8px',
-              background: '#2563eb',
+              borderRadius: '6px',
+              background: '#1d4ed8',
               color: '#fff',
               cursor: saving ? 'not-allowed' : 'pointer',
               fontSize: '14px',
@@ -357,7 +359,7 @@ const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: '10px 12px',
   border: '1px solid #d1d5db',
-  borderRadius: '8px',
+  borderRadius: '6px',
   fontSize: '14px',
   boxSizing: 'border-box',
 };

@@ -137,6 +137,16 @@ public class Campaign {
     this.updatedAt = new DateTime();
   }
 
+  public void clearStartDate() {
+    this.startDate = null;
+    this.updatedAt = new DateTime();
+  }
+
+  public void clearEndDate() {
+    this.endDate = null;
+    this.updatedAt = new DateTime();
+  }
+
   public boolean isEditable() {
     return this.status == CampaignStatus.DRAFT || this.status == CampaignStatus.PAUSED;
   }

@@ -13,4 +13,6 @@ public interface CampaignDecisionRepository {
   int countByCampaignIdAndDecision(String campaignId, DecisionType decision);
 
   Map<String, Integer> countAllByDecisionForNonArchived();
+
+  void deleteByCampaignId(String campaignId);
 }

@@ -48,4 +48,9 @@ public class MyBatisCampaignDecisionRepository implements CampaignDecisionReposi
     }
     return result;
   }
+
+  @Override
+  public void deleteByCampaignId(String campaignId) {
+    decisionMapper.deleteByCampaignId(campaignId);
+  }
 }
