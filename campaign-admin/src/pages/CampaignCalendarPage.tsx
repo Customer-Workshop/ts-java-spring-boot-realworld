@@ -65,8 +65,7 @@ export function CampaignCalendarPage() {
     setCurrentMonth(new Date(year, month + 1, 1));
 
   const getCampaignsForDay = (day: number): Campaign[] => {
-    const date = new Date(year, month, day);
-    const dateStr = date.toISOString().slice(0, 10);
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     return campaigns.filter((c) => {
       const start = c.startDate ? c.startDate.slice(0, 10) : null;
       const end = c.endDate ? c.endDate.slice(0, 10) : null;

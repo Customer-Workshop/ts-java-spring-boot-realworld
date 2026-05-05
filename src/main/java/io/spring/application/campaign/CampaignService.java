@@ -94,6 +94,7 @@ public class CampaignService {
   public Campaign updateCampaign(Campaign campaign, UpdateCampaignParam param, String userId) {
     try {
       String oldStatus = campaign.getStatus().name();
+      boolean fieldsModified = false;
       if (campaign.isEditable()) {
         campaign.update(
             param.getName(),
@@ -130,9 +131,11 @@ public class CampaignService {
         if (param.getTags() != null) {
           saveTags(campaign.getId(), param.getTags());
         }
+        fieldsModified = true;
       } else if (campaign.getStatus() == CampaignStatus.ACTIVE) {
         campaign.updateMessageCopy(
             param.getMessageTitle(), param.getMessageBody(), param.getMessageCtaText());
+        fieldsModified = true;
       } else {
         throw new InvalidCampaignStateException("ENDED campaigns cannot be edited");
       }
@@ -162,8 +165,10 @@ public class CampaignService {
         }
       }
 
-      auditLogRepository.save(
-          CampaignAuditLog.fieldUpdate(campaign.getId(), userId, "campaign", null, "updated"));
+      if (fieldsModified) {
+        auditLogRepository.save(
+            CampaignAuditLog.fieldUpdate(campaign.getId(), userId, "campaign", null, "updated"));
+      }
 
       campaignRepository.save(campaign);
       return campaign;
