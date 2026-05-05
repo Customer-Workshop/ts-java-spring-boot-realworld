@@ -201,7 +201,7 @@ public class CampaignsApiTest extends TestWithCurrentUser {
 
   @Test
   public void should_get_dashboard_summary() throws Exception {
-    DashboardSummary summary = new DashboardSummary(5, 2, 1, 1, 1, 100, 50, 30, 20);
+    DashboardSummary summary = new DashboardSummary(5, 2, 1, 1, 1, 100, 50, 30, 20, 5, "2026-05-05T00:00:00.000Z");
     when(campaignService.getDashboardSummary()).thenReturn(summary);
 
     given()
@@ -235,7 +235,7 @@ public class CampaignsApiTest extends TestWithCurrentUser {
 
     when(campaignService.findById(eq(campaign.getId()))).thenReturn(Optional.of(campaign));
 
-    CampaignAnalytics analytics = new CampaignAnalytics(10, 5, 3, 2, Collections.emptyList());
+    CampaignAnalytics analytics = new CampaignAnalytics(10, 5, 3, 2, 1, Collections.emptyList());
     when(campaignService.getAnalytics(eq(campaign.getId()))).thenReturn(analytics);
 
     given()
