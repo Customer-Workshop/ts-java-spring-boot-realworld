@@ -164,17 +164,24 @@ public class Campaign {
     this.updatedAt = new DateTime();
   }
 
-  public void updateMessageCopy(String messageTitle, String messageBody, String messageCtaText) {
+  public boolean updateMessageCopy(String messageTitle, String messageBody, String messageCtaText) {
+    boolean changed = false;
     if (!Util.isEmpty(messageTitle)) {
       this.messageTitle = messageTitle;
+      changed = true;
     }
     if (!Util.isEmpty(messageBody)) {
       this.messageBody = messageBody;
+      changed = true;
     }
     if (messageCtaText != null) {
       this.messageCtaText = messageCtaText;
+      changed = true;
     }
-    this.updatedAt = new DateTime();
+    if (changed) {
+      this.updatedAt = new DateTime();
+    }
+    return changed;
   }
 
   public void activate() {

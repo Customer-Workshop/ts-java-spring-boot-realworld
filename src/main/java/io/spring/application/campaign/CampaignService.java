@@ -160,9 +160,8 @@ public class CampaignService {
         }
         fieldsModified = true;
       } else if (campaign.getStatus() == CampaignStatus.ACTIVE && hasFieldParams) {
-        campaign.updateMessageCopy(
+        fieldsModified = campaign.updateMessageCopy(
             param.getMessageTitle(), param.getMessageBody(), param.getMessageCtaText());
-        fieldsModified = true;
       } else if (param.getStatus() == null && !campaign.isEditable() && campaign.getStatus() != CampaignStatus.ACTIVE) {
         throw new InvalidCampaignStateException("ENDED campaigns cannot be edited");
       }
