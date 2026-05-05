@@ -54,6 +54,7 @@ app.add_middleware(
 async def _run_research(pack_id: str, request: ResearchRequest) -> None:
     try:
         def on_status(p: EvidencePack):
+            p.id = pack_id
             save_pack(p)
 
         pack = await agent.run(request, on_status=on_status)
