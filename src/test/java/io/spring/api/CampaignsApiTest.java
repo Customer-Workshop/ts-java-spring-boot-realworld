@@ -266,6 +266,7 @@ public class CampaignsApiTest extends TestWithCurrentUser {
             FulfillmentActionType.ACCEPT,
             user.getId());
 
+    campaign.activate();
     when(campaignService.findById(eq(campaign.getId()))).thenReturn(Optional.of(campaign));
 
     CampaignDecision decision =
