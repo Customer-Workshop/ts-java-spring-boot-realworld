@@ -13,6 +13,13 @@ const navSections = [
       { path: '/calendar', label: 'Calendar', icon: '\u{1F4C5}' },
     ],
   },
+  {
+    label: 'Intelligence',
+    icon: '\u{1F50D}',
+    items: [
+      { path: '/intelligence', label: 'Market Research', icon: '\u{1F9E0}' },
+    ],
+  },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
