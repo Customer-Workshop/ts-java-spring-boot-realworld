@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+import ipaddress
 import logging
 import re
+import socket
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
@@ -147,8 +149,33 @@ def _extract_cta_buttons(soup: BeautifulSoup) -> list[str]:
     return list(set(ctas))[:15]
 
 
+def _is_safe_url(url: str) -> bool:
+    """Validate URL is public HTTP(S) and does not resolve to a private/internal IP."""
+    try:
+        parsed = urlparse(url)
+        if parsed.scheme not in ("http", "https"):
+            return False
+        hostname = parsed.hostname
+        if not hostname:
+            return False
+        resolved = socket.getaddrinfo(hostname, None, socket.AF_UNSPEC, socket.SOCK_STREAM)
+        for _, _, _, _, addr in resolved:
+            ip = ipaddress.ip_address(addr[0])
+            if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
+                return False
+        return True
+    except Exception:
+        return False
+
+
 async def scrape_page(url: str, client: httpx.AsyncClient) -> ScrapedPage:
     try:
+        if not _is_safe_url(url):
+            return ScrapedPage(
+                url=url, title="", meta_description="", headings=[], paragraphs=[],
+                links=[], images=[], pricing_sections=[], testimonials=[],
+                cta_buttons=[], status_code=0, error="Blocked: URL resolves to private/internal address",
+            )
         resp = await client.get(url, headers=HEADERS, follow_redirects=True, timeout=15)
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "lxml")

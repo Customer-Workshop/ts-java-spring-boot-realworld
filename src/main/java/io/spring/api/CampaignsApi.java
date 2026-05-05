@@ -267,7 +267,7 @@ public class CampaignsApi {
       csv.append(escapeCsv(c.getTags())).append('\n');
     }
     HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.parseMediaType("text/csv"));
+    headers.setContentType(MediaType.parseMediaType("text/csv; charset=UTF-8"));
     headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=campaigns_export.csv");
     return new ResponseEntity<>(csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8), headers, HttpStatus.OK);
   }
