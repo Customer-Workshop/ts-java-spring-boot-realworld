@@ -106,7 +106,20 @@ public class CampaignService {
               || param.getMessageCtaText() != null
               || param.getFulfillmentActionType() != null
               || param.getChannel() != null
-              || param.getTags() != null;
+              || param.getTags() != null
+              || param.getDisplayPlacement() != null
+              || param.getFrequencyCapType() != null
+              || param.getFrequencyCapMaxImpressions() != null
+              || param.getDeliveryStartTime() != null
+              || param.getDeliveryEndTime() != null
+              || param.getPersonalizationTokens() != null
+              || param.getRemindLaterDeferralDays() != null
+              || param.getFulfillmentWorkflowUrl() != null
+              || param.getDeclineSuppression() != null
+              || param.getConfirmationMessage() != null
+              || param.getAudienceRules() != null
+              || param.getPriority() != null
+              || param.getAbTestEnabled() != null;
       if (campaign.isEditable() && hasFieldParams) {
         campaign.update(
             param.getName(),
