@@ -61,7 +61,7 @@ class IntelligenceAgent:
         )
 
         if on_status:
-            on_status(pack)
+            await on_status(pack)
 
         async with httpx.AsyncClient() as client:
             # Phase 1: Initial scraping
@@ -75,7 +75,7 @@ class IntelligenceAgent:
             for iteration in range(1, request.max_iterations + 1):
                 pack.status = ResearchStatus.ANALYZING
                 if on_status:
-                    on_status(pack)
+                    await on_status(pack)
 
                 gaps = analyze_gaps(pack)
                 if not gaps:
@@ -88,7 +88,7 @@ class IntelligenceAgent:
                 )
                 pack.status = ResearchStatus.ITERATING
                 if on_status:
-                    on_status(pack)
+                    await on_status(pack)
 
                 evidence_before = len(pack.evidence)
                 resolved = 0
@@ -117,7 +117,7 @@ class IntelligenceAgent:
             pack.completed_at = datetime.utcnow()
 
             if on_status:
-                on_status(pack)
+                await on_status(pack)
 
         return pack
 

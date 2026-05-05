@@ -279,7 +279,7 @@ public class CampaignsApi {
     if (value.length() > 0 && "=+-@\t\r".indexOf(value.charAt(0)) >= 0) {
       value = "'" + value;
     }
-    if (value.contains(",") || value.contains("\"") || value.contains("\n") || value.contains("'")) {
+    if (value.contains(",") || value.contains("\"") || value.contains("\n") || value.contains("\r") || value.contains("'")) {
       return "\"" + value.replace("\"", "\"\"") + "\"";
     }
     return value;

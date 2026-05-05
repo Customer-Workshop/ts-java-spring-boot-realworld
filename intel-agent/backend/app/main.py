@@ -53,13 +53,13 @@ app.add_middleware(
 
 async def _run_research(pack_id: str, request: ResearchRequest) -> None:
     try:
-        def on_status(p: EvidencePack):
+        async def on_status(p: EvidencePack):
             p.id = pack_id
-            save_pack(p)
+            await asyncio.to_thread(save_pack, p)
 
         pack = await agent.run(request, on_status=on_status)
         pack.id = pack_id
-        save_pack(pack)
+        await asyncio.to_thread(save_pack, pack)
         logger.info("Research %s completed with %d evidence items", pack_id, len(pack.evidence))
     except Exception as e:
         logger.error("Research %s failed: %s", pack_id, e)
