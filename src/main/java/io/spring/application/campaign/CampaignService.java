@@ -40,6 +40,18 @@ public class CampaignService {
               param.getMessageCtaText(),
               FulfillmentActionType.valueOf(param.getFulfillmentActionType()),
               userId);
+      campaign.updateTargeting(
+          param.getDisplayPlacement(),
+          param.getFrequencyCapType(),
+          param.getFrequencyCapMaxImpressions(),
+          param.getDeliveryStartTime(),
+          param.getDeliveryEndTime(),
+          param.getPersonalizationTokens(),
+          param.getRemindLaterDeferralDays(),
+          param.getFulfillmentWorkflowUrl(),
+          param.getDeclineSuppression(),
+          param.getConfirmationMessage(),
+          param.getAudienceRules());
       campaignRepository.save(campaign);
       return campaign;
     } catch (IllegalArgumentException e) {
@@ -61,57 +73,69 @@ public class CampaignService {
 
   public Campaign updateCampaign(Campaign campaign, UpdateCampaignParam param) {
     try {
-    if (campaign.isEditable()) {
-      campaign.update(
-          param.getName(),
-          param.getTargetAudienceSegment(),
-          parseDate(param.getStartDate()),
-          parseDate(param.getEndDate()),
-          param.getMessageTitle(),
-          param.getMessageBody(),
-          param.getMessageImageUrl(),
-          param.getMessageCtaText(),
-          param.getFulfillmentActionType() != null
-              ? FulfillmentActionType.valueOf(param.getFulfillmentActionType())
-              : null);
-      if (param.getStartDate() != null && param.getStartDate().isEmpty()) {
-        campaign.clearStartDate();
-      }
-      if (param.getEndDate() != null && param.getEndDate().isEmpty()) {
-        campaign.clearEndDate();
-      }
-    } else if (campaign.getStatus() == CampaignStatus.ACTIVE) {
-      campaign.updateMessageCopy(
-          param.getMessageTitle(), param.getMessageBody(), param.getMessageCtaText());
-    } else {
-      throw new InvalidCampaignStateException("ENDED campaigns cannot be edited");
-    }
-
-    if (param.getStatus() != null) {
-      try {
-        CampaignStatus newStatus = CampaignStatus.valueOf(param.getStatus());
-        switch (newStatus) {
-          case ACTIVE:
-            campaign.activate();
-            break;
-          case PAUSED:
-            campaign.pause();
-            break;
-          case ENDED:
-            campaign.end();
-            break;
-          default:
-            break;
+      if (campaign.isEditable()) {
+        campaign.update(
+            param.getName(),
+            param.getTargetAudienceSegment(),
+            parseDate(param.getStartDate()),
+            parseDate(param.getEndDate()),
+            param.getMessageTitle(),
+            param.getMessageBody(),
+            param.getMessageImageUrl(),
+            param.getMessageCtaText(),
+            param.getFulfillmentActionType() != null
+                ? FulfillmentActionType.valueOf(param.getFulfillmentActionType())
+                : null);
+        if (param.getStartDate() != null && param.getStartDate().isEmpty()) {
+          campaign.clearStartDate();
         }
-      } catch (IllegalArgumentException e) {
-        throw new InvalidCampaignStateException("Invalid status: " + param.getStatus());
-      } catch (IllegalStateException e) {
-        throw new InvalidCampaignStateException(e.getMessage());
+        if (param.getEndDate() != null && param.getEndDate().isEmpty()) {
+          campaign.clearEndDate();
+        }
+        campaign.updateTargeting(
+            param.getDisplayPlacement(),
+            param.getFrequencyCapType(),
+            param.getFrequencyCapMaxImpressions(),
+            param.getDeliveryStartTime(),
+            param.getDeliveryEndTime(),
+            param.getPersonalizationTokens(),
+            param.getRemindLaterDeferralDays(),
+            param.getFulfillmentWorkflowUrl(),
+            param.getDeclineSuppression(),
+            param.getConfirmationMessage(),
+            param.getAudienceRules());
+      } else if (campaign.getStatus() == CampaignStatus.ACTIVE) {
+        campaign.updateMessageCopy(
+            param.getMessageTitle(), param.getMessageBody(), param.getMessageCtaText());
+      } else {
+        throw new InvalidCampaignStateException("ENDED campaigns cannot be edited");
       }
-    }
 
-    campaignRepository.save(campaign);
-    return campaign;
+      if (param.getStatus() != null) {
+        try {
+          CampaignStatus newStatus = CampaignStatus.valueOf(param.getStatus());
+          switch (newStatus) {
+            case ACTIVE:
+              campaign.activate();
+              break;
+            case PAUSED:
+              campaign.pause();
+              break;
+            case ENDED:
+              campaign.end();
+              break;
+            default:
+              break;
+          }
+        } catch (IllegalArgumentException e) {
+          throw new InvalidCampaignStateException("Invalid status: " + param.getStatus());
+        } catch (IllegalStateException e) {
+          throw new InvalidCampaignStateException(e.getMessage());
+        }
+      }
+
+      campaignRepository.save(campaign);
+      return campaign;
     } catch (IllegalArgumentException e) {
       throw new InvalidCampaignStateException("Invalid parameter: " + e.getMessage());
     }
@@ -150,10 +174,13 @@ public class CampaignService {
     int clickedUnfinished =
         decisionRepository.countByCampaignIdAndDecision(
             campaignId, DecisionType.CLICKED_UNFINISHED);
+    int remindLater =
+        decisionRepository.countByCampaignIdAndDecision(campaignId, DecisionType.REMIND_LATER);
 
     List<CampaignDecision> decisions = decisionRepository.findByCampaignId(campaignId);
 
-    return new CampaignAnalytics(totalTargeted, accepted, declined, clickedUnfinished, decisions);
+    return new CampaignAnalytics(
+        totalTargeted, accepted, declined, clickedUnfinished, remindLater, decisions);
   }
 
   public DashboardSummary getDashboardSummary() {
@@ -173,7 +200,10 @@ public class CampaignService {
     int totalDeclined = decisionCounts.getOrDefault(DecisionType.DECLINED.name(), 0);
     int totalClickedUnfinished =
         decisionCounts.getOrDefault(DecisionType.CLICKED_UNFINISHED.name(), 0);
-    int totalTargeted = totalAccepted + totalDeclined + totalClickedUnfinished;
+    int totalRemindLater = decisionCounts.getOrDefault(DecisionType.REMIND_LATER.name(), 0);
+    int totalTargeted = totalAccepted + totalDeclined + totalClickedUnfinished + totalRemindLater;
+
+    String lastUpdated = new DateTime().toString();
 
     return new DashboardSummary(
         totalCampaigns,
@@ -184,7 +214,9 @@ public class CampaignService {
         totalTargeted,
         totalAccepted,
         totalDeclined,
-        totalClickedUnfinished);
+        totalClickedUnfinished,
+        totalRemindLater,
+        lastUpdated);
   }
 
   private DateTime parseDate(String dateStr) {

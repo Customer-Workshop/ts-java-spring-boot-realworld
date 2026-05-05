@@ -23,12 +23,27 @@
                 typeHandler="io.spring.infrastructure.mybatis.DateTimeHandler"/>
         <result property="updatedAt" column="updated_at"
                 typeHandler="io.spring.infrastructure.mybatis.DateTimeHandler"/>
+        <result property="displayPlacement" column="display_placement"/>
+        <result property="frequencyCapType" column="frequency_cap_type"/>
+        <result property="frequencyCapMaxImpressions" column="frequency_cap_max_impressions"/>
+        <result property="deliveryStartTime" column="delivery_start_time"/>
+        <result property="deliveryEndTime" column="delivery_end_time"/>
+        <result property="personalizationTokens" column="personalization_tokens"/>
+        <result property="remindLaterDeferralDays" column="remind_later_deferral_days"/>
+        <result property="fulfillmentWorkflowUrl" column="fulfillment_workflow_url"/>
+        <result property="declineSuppression" column="decline_suppression"/>
+        <result property="confirmationMessage" column="confirmation_message"/>
+        <result property="audienceRules" column="audience_rules"/>
     </resultMap>
 
     <insert id="insert">
         insert into campaigns (id, name, status, target_audience_segment, start_date, end_date,
             message_title, message_body, message_image_url, message_cta_text,
-            fulfillment_action_type, created_by, archived, created_at, updated_at)
+            fulfillment_action_type, created_by, archived, created_at, updated_at,
+            display_placement, frequency_cap_type, frequency_cap_max_impressions,
+            delivery_start_time, delivery_end_time, personalization_tokens,
+            remind_later_deferral_days, fulfillment_workflow_url, decline_suppression,
+            confirmation_message, audience_rules)
         values (#{campaign.id}, #{campaign.name}, #{campaign.status},
             #{campaign.targetAudienceSegment},
             #{campaign.startDate, typeHandler=io.spring.infrastructure.mybatis.DateTimeHandler},
@@ -37,7 +52,13 @@
             #{campaign.messageCtaText}, #{campaign.fulfillmentActionType},
             #{campaign.createdBy}, #{campaign.archived},
             #{campaign.createdAt, typeHandler=io.spring.infrastructure.mybatis.DateTimeHandler},
-            #{campaign.updatedAt, typeHandler=io.spring.infrastructure.mybatis.DateTimeHandler})
+            #{campaign.updatedAt, typeHandler=io.spring.infrastructure.mybatis.DateTimeHandler},
+            #{campaign.displayPlacement}, #{campaign.frequencyCapType},
+            #{campaign.frequencyCapMaxImpressions}, #{campaign.deliveryStartTime},
+            #{campaign.deliveryEndTime}, #{campaign.personalizationTokens},
+            #{campaign.remindLaterDeferralDays}, #{campaign.fulfillmentWorkflowUrl},
+            #{campaign.declineSuppression}, #{campaign.confirmationMessage},
+            #{campaign.audienceRules})
     </insert>
 
     <select id="findById" resultMap="campaignResult">
@@ -78,7 +99,18 @@
             message_cta_text = #{campaign.messageCtaText},
             fulfillment_action_type = #{campaign.fulfillmentActionType},
             archived = #{campaign.archived},
-            updated_at = #{campaign.updatedAt, typeHandler=io.spring.infrastructure.mybatis.DateTimeHandler}
+            updated_at = #{campaign.updatedAt, typeHandler=io.spring.infrastructure.mybatis.DateTimeHandler},
+            display_placement = #{campaign.displayPlacement},
+            frequency_cap_type = #{campaign.frequencyCapType},
+            frequency_cap_max_impressions = #{campaign.frequencyCapMaxImpressions},
+            delivery_start_time = #{campaign.deliveryStartTime},
+            delivery_end_time = #{campaign.deliveryEndTime},
+            personalization_tokens = #{campaign.personalizationTokens},
+            remind_later_deferral_days = #{campaign.remindLaterDeferralDays},
+            fulfillment_workflow_url = #{campaign.fulfillmentWorkflowUrl},
+            decline_suppression = #{campaign.declineSuppression},
+            confirmation_message = #{campaign.confirmationMessage},
+            audience_rules = #{campaign.audienceRules}
         where id = #{campaign.id}
     </update>
 

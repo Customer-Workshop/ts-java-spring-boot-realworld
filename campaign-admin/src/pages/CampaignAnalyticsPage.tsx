@@ -20,7 +20,9 @@ const COLORS = ['#22c55e', '#ef4444', '#f59e0b', '#6366f1'];
 
 export function CampaignAnalyticsPage() {
   const { id } = useParams<{ id: string }>();
-  const [analytics, setAnalytics] = useState<CampaignAnalytics | null>(null);
+  const [analytics, setAnalytics] = useState<CampaignAnalytics | null>(
+    null
+  );
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -35,14 +37,21 @@ export function CampaignAnalyticsPage() {
     }
   }, [id]);
 
-  if (loading) return <p style={{ color: '#64748b' }}>Loading analytics...</p>;
+  if (loading)
+    return <p style={{ color: '#64748b' }}>Loading analytics...</p>;
   if (!analytics || !campaign)
-    return <p style={{ color: '#dc2626' }}>Failed to load analytics.</p>;
+    return (
+      <p style={{ color: '#dc2626' }}>Failed to load analytics.</p>
+    );
 
   const decisionData = [
     { name: 'Accepted', value: analytics.acceptedCount },
     { name: 'Declined', value: analytics.declinedCount },
-    { name: 'Clicked (Unfinished)', value: analytics.clickedUnfinishedCount },
+    {
+      name: 'Clicked (Unfinished)',
+      value: analytics.clickedUnfinishedCount,
+    },
+    { name: 'Remind Later', value: analytics.remindLaterCount },
   ];
 
   const buildBarData = (
@@ -53,6 +62,7 @@ export function CampaignAnalyticsPage() {
       ACCEPTED: decisions['ACCEPTED'] || 0,
       DECLINED: decisions['DECLINED'] || 0,
       CLICKED_UNFINISHED: decisions['CLICKED_UNFINISHED'] || 0,
+      REMIND_LATER: decisions['REMIND_LATER'] || 0,
     }));
   };
 
@@ -69,7 +79,12 @@ export function CampaignAnalyticsPage() {
         &larr; Back to Campaign
       </Link>
       <h2
-        style={{ fontSize: '22px', fontWeight: 600, margin: '8px 0 24px', color: '#1a2744' }}
+        style={{
+          fontSize: '22px',
+          fontWeight: 600,
+          margin: '8px 0 24px',
+          color: '#1a2744',
+        }}
       >
         Analytics: {campaign.name}
       </h2>
@@ -78,7 +93,7 @@ export function CampaignAnalyticsPage() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
+          gridTemplateColumns: 'repeat(5, 1fr)',
           gap: '16px',
           marginBottom: '32px',
         }}
@@ -102,6 +117,11 @@ export function CampaignAnalyticsPage() {
           label="Clicked (Unfinished)"
           value={analytics.clickedUnfinishedCount}
           color="#f59e0b"
+        />
+        <KpiCard
+          label="Remind Later"
+          value={analytics.remindLaterCount}
+          color="#6366f1"
         />
       </div>
 
@@ -142,18 +162,33 @@ export function CampaignAnalyticsPage() {
 
         <ChartCard title="Commonality by Age Group">
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={buildBarData(analytics.commonalityByAgeGroup)}>
+            <BarChart
+              data={buildBarData(analytics.commonalityByAgeGroup)}
+            >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" fontSize={12} />
               <YAxis fontSize={12} />
               <Tooltip />
               <Legend />
-              <Bar dataKey="ACCEPTED" fill="#22c55e" name="Accepted" />
-              <Bar dataKey="DECLINED" fill="#ef4444" name="Declined" />
+              <Bar
+                dataKey="ACCEPTED"
+                fill="#22c55e"
+                name="Accepted"
+              />
+              <Bar
+                dataKey="DECLINED"
+                fill="#ef4444"
+                name="Declined"
+              />
               <Bar
                 dataKey="CLICKED_UNFINISHED"
                 fill="#f59e0b"
                 name="Unfinished"
+              />
+              <Bar
+                dataKey="REMIND_LATER"
+                fill="#6366f1"
+                name="Remind Later"
               />
             </BarChart>
           </ResponsiveContainer>
@@ -169,18 +204,33 @@ export function CampaignAnalyticsPage() {
       >
         <ChartCard title="Commonality by Region">
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={buildBarData(analytics.commonalityByRegion)}>
+            <BarChart
+              data={buildBarData(analytics.commonalityByRegion)}
+            >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" fontSize={12} />
               <YAxis fontSize={12} />
               <Tooltip />
               <Legend />
-              <Bar dataKey="ACCEPTED" fill="#22c55e" name="Accepted" />
-              <Bar dataKey="DECLINED" fill="#ef4444" name="Declined" />
+              <Bar
+                dataKey="ACCEPTED"
+                fill="#22c55e"
+                name="Accepted"
+              />
+              <Bar
+                dataKey="DECLINED"
+                fill="#ef4444"
+                name="Declined"
+              />
               <Bar
                 dataKey="CLICKED_UNFINISHED"
                 fill="#f59e0b"
                 name="Unfinished"
+              />
+              <Bar
+                dataKey="REMIND_LATER"
+                fill="#6366f1"
+                name="Remind Later"
               />
             </BarChart>
           </ResponsiveContainer>
@@ -188,18 +238,33 @@ export function CampaignAnalyticsPage() {
 
         <ChartCard title="Commonality by Segment">
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={buildBarData(analytics.commonalityBySegment)}>
+            <BarChart
+              data={buildBarData(analytics.commonalityBySegment)}
+            >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" fontSize={12} />
               <YAxis fontSize={12} />
               <Tooltip />
               <Legend />
-              <Bar dataKey="ACCEPTED" fill="#22c55e" name="Accepted" />
-              <Bar dataKey="DECLINED" fill="#ef4444" name="Declined" />
+              <Bar
+                dataKey="ACCEPTED"
+                fill="#22c55e"
+                name="Accepted"
+              />
+              <Bar
+                dataKey="DECLINED"
+                fill="#ef4444"
+                name="Declined"
+              />
               <Bar
                 dataKey="CLICKED_UNFINISHED"
                 fill="#f59e0b"
                 name="Unfinished"
+              />
+              <Bar
+                dataKey="REMIND_LATER"
+                fill="#6366f1"
+                name="Remind Later"
               />
             </BarChart>
           </ResponsiveContainer>

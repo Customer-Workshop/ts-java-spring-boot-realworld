@@ -56,6 +56,21 @@ export async function fetchDashboard(): Promise<DashboardSummary> {
   return response.data;
 }
 
+export async function exportDashboardCsv(): Promise<void> {
+  const response = await apiClient.get('/api/campaigns/dashboard/export', {
+    responseType: 'blob',
+  });
+  const blob = new Blob([response.data], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'campaigns_export.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+}
+
 export async function loginUser(
   email: string,
   password: string

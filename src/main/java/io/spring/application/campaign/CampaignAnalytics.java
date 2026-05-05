@@ -12,6 +12,7 @@ public class CampaignAnalytics {
   private final int acceptedCount;
   private final int declinedCount;
   private final int clickedUnfinishedCount;
+  private final int remindLaterCount;
   private final Map<String, Map<String, Integer>> commonalityBySegment;
   private final Map<String, Map<String, Integer>> commonalityByAgeGroup;
   private final Map<String, Map<String, Integer>> commonalityByRegion;
@@ -21,11 +22,13 @@ public class CampaignAnalytics {
       int acceptedCount,
       int declinedCount,
       int clickedUnfinishedCount,
+      int remindLaterCount,
       List<CampaignDecision> decisions) {
     this.totalTargetedPopulation = totalTargetedPopulation;
     this.acceptedCount = acceptedCount;
     this.declinedCount = declinedCount;
     this.clickedUnfinishedCount = clickedUnfinishedCount;
+    this.remindLaterCount = remindLaterCount;
     this.commonalityBySegment = buildCommonality(decisions, CampaignDecision::getUserSegment);
     this.commonalityByAgeGroup = buildCommonality(decisions, CampaignDecision::getUserAgeGroup);
     this.commonalityByRegion = buildCommonality(decisions, CampaignDecision::getUserRegion);

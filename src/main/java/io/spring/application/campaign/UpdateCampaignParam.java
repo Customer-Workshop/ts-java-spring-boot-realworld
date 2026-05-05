@@ -20,4 +20,15 @@ public class UpdateCampaignParam {
   private String messageCtaText;
   private String fulfillmentActionType;
   private String status;
+  private String displayPlacement;
+  private String frequencyCapType;
+  private Integer frequencyCapMaxImpressions;
+  private String deliveryStartTime;
+  private String deliveryEndTime;
+  private String personalizationTokens;
+  private Integer remindLaterDeferralDays;
+  private String fulfillmentWorkflowUrl;
+  private Boolean declineSuppression;
+  private String confirmationMessage;
+  private String audienceRules;
 }

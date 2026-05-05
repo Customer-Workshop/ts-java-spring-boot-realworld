@@ -1,6 +1,15 @@
 export type CampaignStatus = 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'ENDED';
 export type FulfillmentActionType = 'ACCEPT' | 'DECLINE' | 'REMIND_LATER';
-export type DecisionType = 'ACCEPTED' | 'DECLINED' | 'CLICKED_UNFINISHED';
+export type DecisionType =
+  | 'ACCEPTED'
+  | 'DECLINED'
+  | 'CLICKED_UNFINISHED'
+  | 'REMIND_LATER';
+export type DisplayPlacement = 'POST_LOGIN' | 'LOGGED_OFF';
+export type FrequencyCapType =
+  | 'ONCE_PER_SESSION'
+  | 'ONCE_PER_DAY'
+  | 'ONCE_PER_CAMPAIGN';
 
 export interface Campaign {
   id: string;
@@ -18,6 +27,17 @@ export interface Campaign {
   archived: boolean;
   createdAt: string;
   updatedAt: string;
+  displayPlacement: string | null;
+  frequencyCapType: string | null;
+  frequencyCapMaxImpressions: number;
+  deliveryStartTime: string | null;
+  deliveryEndTime: string | null;
+  personalizationTokens: string | null;
+  remindLaterDeferralDays: number;
+  fulfillmentWorkflowUrl: string | null;
+  declineSuppression: boolean;
+  confirmationMessage: string | null;
+  audienceRules: string | null;
 }
 
 export interface CampaignFormData {
@@ -30,6 +50,17 @@ export interface CampaignFormData {
   messageImageUrl: string;
   messageCtaText: string;
   fulfillmentActionType: FulfillmentActionType;
+  displayPlacement: string;
+  frequencyCapType: string;
+  frequencyCapMaxImpressions: number;
+  deliveryStartTime: string;
+  deliveryEndTime: string;
+  personalizationTokens: string;
+  remindLaterDeferralDays: number;
+  fulfillmentWorkflowUrl: string;
+  declineSuppression: boolean;
+  confirmationMessage: string;
+  audienceRules: string;
 }
 
 export interface CampaignAnalytics {
@@ -37,6 +68,7 @@ export interface CampaignAnalytics {
   acceptedCount: number;
   declinedCount: number;
   clickedUnfinishedCount: number;
+  remindLaterCount: number;
   commonalityBySegment: Record<string, Record<string, number>>;
   commonalityByAgeGroup: Record<string, Record<string, number>>;
   commonalityByRegion: Record<string, Record<string, number>>;
@@ -52,6 +84,8 @@ export interface DashboardSummary {
   totalAccepted: number;
   totalDeclined: number;
   totalClickedUnfinished: number;
+  totalRemindLater: number;
+  lastUpdated: string;
 }
 
 export interface User {

@@ -19,7 +19,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -137,7 +139,49 @@ public class CampaignsApi {
     response.put("totalAccepted", summary.getTotalAccepted());
     response.put("totalDeclined", summary.getTotalDeclined());
     response.put("totalClickedUnfinished", summary.getTotalClickedUnfinished());
+    response.put("totalRemindLater", summary.getTotalRemindLater());
+    response.put("lastUpdated", summary.getLastUpdated());
     return ResponseEntity.ok(response);
+  }
+
+  @GetMapping("/dashboard/export")
+  public ResponseEntity<byte[]> exportDashboard(@AuthenticationPrincipal User user) {
+    checkMarketingEntitlement(user);
+    List<Campaign> campaigns = campaignService.findAll(false);
+    StringBuilder csv = new StringBuilder();
+    csv.append(
+        "Campaign Name,Status,Target Segment,Start Date,End Date,Fulfillment Type,"
+            + "Display Placement,Frequency Cap,Delivery Window\n");
+    for (Campaign c : campaigns) {
+      csv.append(escapeCsv(c.getName())).append(',');
+      csv.append(c.getStatus().name()).append(',');
+      csv.append(escapeCsv(c.getTargetAudienceSegment())).append(',');
+      csv.append(c.getStartDate() != null ? c.getStartDate().toString("yyyy-MM-dd") : "")
+          .append(',');
+      csv.append(c.getEndDate() != null ? c.getEndDate().toString("yyyy-MM-dd") : "").append(',');
+      csv.append(c.getFulfillmentActionType().name()).append(',');
+      csv.append(escapeCsv(c.getDisplayPlacement())).append(',');
+      csv.append(escapeCsv(c.getFrequencyCapType())).append(',');
+      String window =
+          (c.getDeliveryStartTime() != null ? c.getDeliveryStartTime() : "")
+              + "-"
+              + (c.getDeliveryEndTime() != null ? c.getDeliveryEndTime() : "");
+      csv.append(escapeCsv(window)).append('\n');
+    }
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.parseMediaType("text/csv"));
+    headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=campaigns_export.csv");
+    return new ResponseEntity<>(csv.toString().getBytes(), headers, HttpStatus.OK);
+  }
+
+  private String escapeCsv(String value) {
+    if (value == null) {
+      return "";
+    }
+    if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+      return "\"" + value.replace("\"", "\"\"") + "\"";
+    }
+    return value;
   }
 
   private void checkMarketingEntitlement(User user) {
@@ -170,6 +214,17 @@ public class CampaignsApi {
     map.put("archived", campaign.isArchived());
     map.put("createdAt", campaign.getCreatedAt().toString());
     map.put("updatedAt", campaign.getUpdatedAt().toString());
+    map.put("displayPlacement", campaign.getDisplayPlacement());
+    map.put("frequencyCapType", campaign.getFrequencyCapType());
+    map.put("frequencyCapMaxImpressions", campaign.getFrequencyCapMaxImpressions());
+    map.put("deliveryStartTime", campaign.getDeliveryStartTime());
+    map.put("deliveryEndTime", campaign.getDeliveryEndTime());
+    map.put("personalizationTokens", campaign.getPersonalizationTokens());
+    map.put("remindLaterDeferralDays", campaign.getRemindLaterDeferralDays());
+    map.put("fulfillmentWorkflowUrl", campaign.getFulfillmentWorkflowUrl());
+    map.put("declineSuppression", campaign.isDeclineSuppression());
+    map.put("confirmationMessage", campaign.getConfirmationMessage());
+    map.put("audienceRules", campaign.getAudienceRules());
     return map;
   }
 
@@ -192,6 +247,7 @@ public class CampaignsApi {
     map.put("acceptedCount", analytics.getAcceptedCount());
     map.put("declinedCount", analytics.getDeclinedCount());
     map.put("clickedUnfinishedCount", analytics.getClickedUnfinishedCount());
+    map.put("remindLaterCount", analytics.getRemindLaterCount());
     map.put("commonalityBySegment", analytics.getCommonalityBySegment());
     map.put("commonalityByAgeGroup", analytics.getCommonalityByAgeGroup());
     map.put("commonalityByRegion", analytics.getCommonalityByRegion());

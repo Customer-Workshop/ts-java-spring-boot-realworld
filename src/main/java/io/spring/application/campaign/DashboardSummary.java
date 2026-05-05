@@ -15,4 +15,6 @@ public class DashboardSummary {
   private final int totalAccepted;
   private final int totalDeclined;
   private final int totalClickedUnfinished;
+  private final int totalRemindLater;
+  private final String lastUpdated;
 }

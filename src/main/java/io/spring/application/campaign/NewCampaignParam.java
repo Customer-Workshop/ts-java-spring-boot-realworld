@@ -20,4 +20,15 @@ public class NewCampaignParam {
   private String messageImageUrl;
   private String messageCtaText;
   @NotBlank private String fulfillmentActionType;
+  private String displayPlacement;
+  private String frequencyCapType;
+  private Integer frequencyCapMaxImpressions;
+  private String deliveryStartTime;
+  private String deliveryEndTime;
+  private String personalizationTokens;
+  private Integer remindLaterDeferralDays;
+  private String fulfillmentWorkflowUrl;
+  private Boolean declineSuppression;
+  private String confirmationMessage;
+  private String audienceRules;
 }

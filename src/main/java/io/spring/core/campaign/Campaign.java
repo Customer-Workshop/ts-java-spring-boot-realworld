@@ -26,6 +26,17 @@ public class Campaign {
   private boolean archived;
   private DateTime createdAt;
   private DateTime updatedAt;
+  private String displayPlacement;
+  private String frequencyCapType;
+  private int frequencyCapMaxImpressions;
+  private String deliveryStartTime;
+  private String deliveryEndTime;
+  private String personalizationTokens;
+  private int remindLaterDeferralDays;
+  private String fulfillmentWorkflowUrl;
+  private boolean declineSuppression;
+  private String confirmationMessage;
+  private String audienceRules;
 
   public Campaign(
       String name,
@@ -53,6 +64,57 @@ public class Campaign {
     this.archived = false;
     this.createdAt = new DateTime();
     this.updatedAt = this.createdAt;
+    this.frequencyCapMaxImpressions = 1;
+    this.remindLaterDeferralDays = 1;
+    this.declineSuppression = true;
+  }
+
+  public void updateTargeting(
+      String displayPlacement,
+      String frequencyCapType,
+      Integer frequencyCapMaxImpressions,
+      String deliveryStartTime,
+      String deliveryEndTime,
+      String personalizationTokens,
+      Integer remindLaterDeferralDays,
+      String fulfillmentWorkflowUrl,
+      Boolean declineSuppression,
+      String confirmationMessage,
+      String audienceRules) {
+    if (displayPlacement != null) {
+      this.displayPlacement = displayPlacement;
+    }
+    if (frequencyCapType != null) {
+      this.frequencyCapType = frequencyCapType;
+    }
+    if (frequencyCapMaxImpressions != null) {
+      this.frequencyCapMaxImpressions = frequencyCapMaxImpressions;
+    }
+    if (deliveryStartTime != null) {
+      this.deliveryStartTime = deliveryStartTime;
+    }
+    if (deliveryEndTime != null) {
+      this.deliveryEndTime = deliveryEndTime;
+    }
+    if (personalizationTokens != null) {
+      this.personalizationTokens = personalizationTokens;
+    }
+    if (remindLaterDeferralDays != null) {
+      this.remindLaterDeferralDays = remindLaterDeferralDays;
+    }
+    if (fulfillmentWorkflowUrl != null) {
+      this.fulfillmentWorkflowUrl = fulfillmentWorkflowUrl;
+    }
+    if (declineSuppression != null) {
+      this.declineSuppression = declineSuppression;
+    }
+    if (confirmationMessage != null) {
+      this.confirmationMessage = confirmationMessage;
+    }
+    if (audienceRules != null) {
+      this.audienceRules = audienceRules;
+    }
+    this.updatedAt = new DateTime();
   }
 
   public void update(
