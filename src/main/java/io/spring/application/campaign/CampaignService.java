@@ -91,6 +91,7 @@ public class CampaignService {
     return campaignRepository.findByStatus(status, includeArchived);
   }
 
+  @org.springframework.transaction.annotation.Transactional
   public Campaign updateCampaign(Campaign campaign, UpdateCampaignParam param, String userId) {
     try {
       String oldStatus = campaign.getStatus().name();
@@ -161,7 +162,7 @@ public class CampaignService {
         campaign.updateMessageCopy(
             param.getMessageTitle(), param.getMessageBody(), param.getMessageCtaText());
         fieldsModified = true;
-      } else if (param.getStatus() == null) {
+      } else if (param.getStatus() == null && !campaign.isEditable() && campaign.getStatus() != CampaignStatus.ACTIVE) {
         throw new InvalidCampaignStateException("ENDED campaigns cannot be edited");
       }
 
