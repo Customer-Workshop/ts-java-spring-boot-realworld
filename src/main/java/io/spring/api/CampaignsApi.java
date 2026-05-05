@@ -112,11 +112,11 @@ public class CampaignsApi {
   @PostMapping("/{id}/clone")
   public ResponseEntity<?> cloneCampaign(
       @PathVariable String id,
-      @RequestBody(required = false) Map<String, String> body,
+      @RequestBody(required = false) io.spring.application.campaign.CloneCampaignParam param,
       @AuthenticationPrincipal User user) {
     checkMarketingEntitlement(user);
     Campaign source = campaignService.findById(id).orElseThrow(ResourceNotFoundException::new);
-    String newName = body != null ? body.get("name") : null;
+    String newName = param != null ? param.getName() : null;
     Campaign clone = campaignService.cloneCampaign(source, newName, user.getId());
     return ResponseEntity.status(HttpStatus.CREATED).body(campaignResponse(clone));
   }
@@ -124,15 +124,14 @@ public class CampaignsApi {
   // Bulk status update
   @PostMapping("/bulk/status")
   public ResponseEntity<?> bulkUpdateStatus(
-      @RequestBody Map<String, Object> body, @AuthenticationPrincipal User user) {
+      @Valid @RequestBody io.spring.application.campaign.BulkStatusUpdateParam param,
+      @AuthenticationPrincipal User user) {
     checkMarketingEntitlement(user);
-    @SuppressWarnings("unchecked")
-    List<String> campaignIds = (List<String>) body.get("campaignIds");
-    String status = (String) body.get("status");
-    if (campaignIds == null || status == null) {
+    if (param.getCampaignIds() == null || param.getStatus() == null) {
       return ResponseEntity.badRequest().body(Map.of("error", "campaignIds and status required"));
     }
-    int updated = campaignService.bulkUpdateStatus(campaignIds, status, user.getId());
+    int updated =
+        campaignService.bulkUpdateStatus(param.getCampaignIds(), param.getStatus(), user.getId());
     return ResponseEntity.ok(Map.of("updated", updated));
   }
 

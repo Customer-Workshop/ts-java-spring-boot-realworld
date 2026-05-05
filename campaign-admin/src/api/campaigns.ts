@@ -51,7 +51,7 @@ export async function cloneCampaign(
   name?: string
 ): Promise<Campaign> {
   const response = await apiClient.post(`/api/campaigns/${id}/clone`, {
-    name,
+    clone: { name },
   });
   return response.data.campaign;
 }
@@ -61,8 +61,7 @@ export async function bulkUpdateStatus(
   status: string
 ): Promise<{ updated: number }> {
   const response = await apiClient.post('/api/campaigns/bulk/status', {
-    campaignIds,
-    status,
+    bulk: { campaignIds, status },
   });
   return response.data;
 }
