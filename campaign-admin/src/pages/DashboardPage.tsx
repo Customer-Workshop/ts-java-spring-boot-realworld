@@ -95,9 +95,9 @@ export function DashboardPage() {
       return false;
     if (filterDecision && c.fulfillmentActionType !== filterDecision)
       return false;
-    if (filterDateFrom && c.startDate && c.startDate.slice(0, 10) < filterDateFrom)
+    if (filterDateFrom && (!c.startDate || c.startDate.slice(0, 10) < filterDateFrom))
       return false;
-    if (filterDateTo && c.endDate && c.endDate.slice(0, 10) > filterDateTo)
+    if (filterDateTo && (!c.endDate || c.endDate.slice(0, 10) > filterDateTo))
       return false;
     return true;
   });
