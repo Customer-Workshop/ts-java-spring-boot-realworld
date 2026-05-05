@@ -63,11 +63,11 @@ async def _run_research(pack_id: str, request: ResearchRequest) -> None:
         logger.info("Research %s completed with %d evidence items", pack_id, len(pack.evidence))
     except Exception as e:
         logger.error("Research %s failed: %s", pack_id, e)
-        pack = load_pack(pack_id)
+        pack = await asyncio.to_thread(load_pack, pack_id)
         if pack:
             pack.status = ResearchStatus.FAILED
             pack.error = str(e)
-            save_pack(pack)
+            await asyncio.to_thread(save_pack, pack)
     finally:
         _running_tasks.pop(pack_id, None)
 
