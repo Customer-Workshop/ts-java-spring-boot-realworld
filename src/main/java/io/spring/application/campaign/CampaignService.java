@@ -27,20 +27,24 @@ public class CampaignService {
   }
 
   public Campaign createCampaign(NewCampaignParam param, String userId) {
-    Campaign campaign =
-        new Campaign(
-            param.getName(),
-            param.getTargetAudienceSegment(),
-            parseDate(param.getStartDate()),
-            parseDate(param.getEndDate()),
-            param.getMessageTitle(),
-            param.getMessageBody(),
-            param.getMessageImageUrl(),
-            param.getMessageCtaText(),
-            FulfillmentActionType.valueOf(param.getFulfillmentActionType()),
-            userId);
-    campaignRepository.save(campaign);
-    return campaign;
+    try {
+      Campaign campaign =
+          new Campaign(
+              param.getName(),
+              param.getTargetAudienceSegment(),
+              parseDate(param.getStartDate()),
+              parseDate(param.getEndDate()),
+              param.getMessageTitle(),
+              param.getMessageBody(),
+              param.getMessageImageUrl(),
+              param.getMessageCtaText(),
+              FulfillmentActionType.valueOf(param.getFulfillmentActionType()),
+              userId);
+      campaignRepository.save(campaign);
+      return campaign;
+    } catch (IllegalArgumentException e) {
+      throw new InvalidCampaignStateException("Invalid parameter: " + e.getMessage());
+    }
   }
 
   public Optional<Campaign> findById(String id) {
@@ -56,6 +60,7 @@ public class CampaignService {
   }
 
   public Campaign updateCampaign(Campaign campaign, UpdateCampaignParam param) {
+    try {
     if (campaign.isEditable()) {
       campaign.update(
           param.getName(),
@@ -107,6 +112,9 @@ public class CampaignService {
 
     campaignRepository.save(campaign);
     return campaign;
+    } catch (IllegalArgumentException e) {
+      throw new InvalidCampaignStateException("Invalid parameter: " + e.getMessage());
+    }
   }
 
   public void deleteCampaign(Campaign campaign) {
@@ -183,6 +191,6 @@ public class CampaignService {
     if (dateStr == null || dateStr.isEmpty()) {
       return null;
     }
-    return ISODateTimeFormat.dateTimeParser().parseDateTime(dateStr);
+    return ISODateTimeFormat.dateTimeParser().withZoneUTC().parseDateTime(dateStr);
   }
 }

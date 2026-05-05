@@ -2,7 +2,6 @@ package io.spring.application.campaign;
 
 import com.fasterxml.jackson.annotation.JsonRootName;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,5 +19,5 @@ public class NewCampaignParam {
   private String messageBody;
   private String messageImageUrl;
   private String messageCtaText;
-  @NotNull private String fulfillmentActionType;
+  @NotBlank private String fulfillmentActionType;
 }
