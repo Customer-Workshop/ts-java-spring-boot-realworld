@@ -141,6 +141,7 @@ public class CampaignService {
     }
   }
 
+  @org.springframework.transaction.annotation.Transactional
   public void deleteCampaign(Campaign campaign) {
     if (campaign.isDeletable()) {
       decisionRepository.deleteByCampaignId(campaign.getId());
