@@ -55,9 +55,14 @@ public class CampaignsApi {
     checkMarketingEntitlement(user);
     List<Campaign> campaigns;
     if (status != null && !status.isEmpty()) {
-      campaigns =
-          campaignService.findByStatus(
-              CampaignStatus.valueOf(status.toUpperCase()), includeArchived);
+      try {
+        campaigns =
+            campaignService.findByStatus(
+                CampaignStatus.valueOf(status.toUpperCase()), includeArchived);
+      } catch (IllegalArgumentException e) {
+        return ResponseEntity.badRequest()
+            .body(Map.of("error", "Invalid status: " + status));
+      }
     } else {
       campaigns = campaignService.findAll(includeArchived);
     }

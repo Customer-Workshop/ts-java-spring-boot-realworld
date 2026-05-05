@@ -83,8 +83,8 @@ public class CampaignService {
     }
 
     if (param.getStatus() != null) {
-      CampaignStatus newStatus = CampaignStatus.valueOf(param.getStatus());
       try {
+        CampaignStatus newStatus = CampaignStatus.valueOf(param.getStatus());
         switch (newStatus) {
           case ACTIVE:
             campaign.activate();
@@ -98,6 +98,8 @@ public class CampaignService {
           default:
             break;
         }
+      } catch (IllegalArgumentException e) {
+        throw new InvalidCampaignStateException("Invalid status: " + param.getStatus());
       } catch (IllegalStateException e) {
         throw new InvalidCampaignStateException(e.getMessage());
       }
