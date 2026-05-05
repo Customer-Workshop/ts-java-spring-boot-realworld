@@ -10,7 +10,7 @@ public interface CampaignRepository {
 
   List<Campaign> findAll(boolean includeArchived);
 
-  List<Campaign> findByStatus(CampaignStatus status);
+  List<Campaign> findByStatus(CampaignStatus status, boolean includeArchived);
 
   void remove(Campaign campaign);
 }

@@ -23,16 +23,24 @@ export function CampaignDetailPage() {
 
   const handleStatusChange = async (newStatus: string) => {
     if (!id) return;
-    const updated = await updateCampaign(id, { status: newStatus });
-    setCampaign(updated);
+    try {
+      const updated = await updateCampaign(id, { status: newStatus });
+      setCampaign(updated);
+    } catch {
+      alert('Failed to update campaign status.');
+    }
   };
 
   const handleDelete = async () => {
     if (!id) return;
     const action = campaign.status === 'DRAFT' ? 'permanently delete' : 'archive';
     if (!window.confirm(`Are you sure you want to ${action} this campaign?`)) return;
-    await deleteCampaign(id);
-    navigate('/campaigns');
+    try {
+      await deleteCampaign(id);
+      navigate('/campaigns');
+    } catch {
+      alert('Failed to delete campaign.');
+    }
   };
 
   return (

@@ -46,8 +46,12 @@ export function CampaignListPage() {
       campaign.status === 'DRAFT' ? 'permanently delete' : 'archive';
     if (!window.confirm(`Are you sure you want to ${action} "${campaign.name}"?`))
       return;
-    await deleteCampaign(campaign.id);
-    loadCampaigns();
+    try {
+      await deleteCampaign(campaign.id);
+      loadCampaigns();
+    } catch {
+      alert('Failed to delete campaign.');
+    }
   };
 
   return (

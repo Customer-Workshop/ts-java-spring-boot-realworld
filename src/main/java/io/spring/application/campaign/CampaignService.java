@@ -50,8 +50,8 @@ public class CampaignService {
     return campaignRepository.findAll(includeArchived);
   }
 
-  public List<Campaign> findByStatus(CampaignStatus status) {
-    return campaignRepository.findByStatus(status);
+  public List<Campaign> findByStatus(CampaignStatus status, boolean includeArchived) {
+    return campaignRepository.findByStatus(status, includeArchived);
   }
 
   public Campaign updateCampaign(Campaign campaign, UpdateCampaignParam param) {

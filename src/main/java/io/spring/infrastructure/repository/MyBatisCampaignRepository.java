@@ -36,8 +36,8 @@ public class MyBatisCampaignRepository implements CampaignRepository {
   }
 
   @Override
-  public List<Campaign> findByStatus(CampaignStatus status) {
-    return campaignMapper.findByStatus(status.name());
+  public List<Campaign> findByStatus(CampaignStatus status, boolean includeArchived) {
+    return campaignMapper.findByStatus(status.name(), includeArchived);
   }
 
   @Override

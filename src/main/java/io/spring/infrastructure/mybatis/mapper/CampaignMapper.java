@@ -13,7 +13,8 @@ public interface CampaignMapper {
 
   List<Campaign> findAll(@Param("includeArchived") boolean includeArchived);
 
-  List<Campaign> findByStatus(@Param("status") String status);
+  List<Campaign> findByStatus(
+      @Param("status") String status, @Param("includeArchived") boolean includeArchived);
 
   void update(@Param("campaign") Campaign campaign);
 

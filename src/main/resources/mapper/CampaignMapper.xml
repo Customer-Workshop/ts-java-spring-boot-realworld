@@ -55,7 +55,14 @@
     </select>
 
     <select id="findByStatus" resultMap="campaignResult">
-        select * from campaigns where status = #{status} and archived = 0 order by created_at desc
+        select * from campaigns
+        <where>
+            status = #{status}
+            <if test="!includeArchived">
+                and archived = 0
+            </if>
+        </where>
+        order by created_at desc
     </select>
 
     <update id="update">
