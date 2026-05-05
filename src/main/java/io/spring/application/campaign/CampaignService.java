@@ -154,16 +154,20 @@ public class CampaignService {
 
   public CampaignDecision recordDecision(
       String campaignId, String userId, CampaignDecisionParam param) {
-    CampaignDecision decision =
-        new CampaignDecision(
-            campaignId,
-            userId,
-            DecisionType.valueOf(param.getDecision()),
-            param.getUserSegment(),
-            param.getUserAgeGroup(),
-            param.getUserRegion());
-    decisionRepository.save(decision);
-    return decision;
+    try {
+      CampaignDecision decision =
+          new CampaignDecision(
+              campaignId,
+              userId,
+              DecisionType.valueOf(param.getDecision()),
+              param.getUserSegment(),
+              param.getUserAgeGroup(),
+              param.getUserRegion());
+      decisionRepository.save(decision);
+      return decision;
+    } catch (IllegalArgumentException e) {
+      throw new InvalidCampaignStateException("Invalid decision type: " + param.getDecision());
+    }
   }
 
   public CampaignAnalytics getAnalytics(String campaignId) {

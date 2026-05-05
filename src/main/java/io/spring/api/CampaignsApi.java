@@ -202,9 +202,8 @@ public class CampaignsApi {
     map.put("name", campaign.getName());
     map.put("status", campaign.getStatus().name());
     map.put("targetAudienceSegment", campaign.getTargetAudienceSegment());
-    map.put(
-        "startDate", campaign.getStartDate() != null ? campaign.getStartDate().toString() : null);
-    map.put("endDate", campaign.getEndDate() != null ? campaign.getEndDate().toString() : null);
+    map.put("startDate", campaign.getStartDate());
+    map.put("endDate", campaign.getEndDate());
     map.put("messageTitle", campaign.getMessageTitle());
     map.put("messageBody", campaign.getMessageBody());
     map.put("messageImageUrl", campaign.getMessageImageUrl());
@@ -212,8 +211,8 @@ public class CampaignsApi {
     map.put("fulfillmentActionType", campaign.getFulfillmentActionType().name());
     map.put("createdBy", campaign.getCreatedBy());
     map.put("archived", campaign.isArchived());
-    map.put("createdAt", campaign.getCreatedAt().toString());
-    map.put("updatedAt", campaign.getUpdatedAt().toString());
+    map.put("createdAt", campaign.getCreatedAt());
+    map.put("updatedAt", campaign.getUpdatedAt());
     map.put("displayPlacement", campaign.getDisplayPlacement());
     map.put("frequencyCapType", campaign.getFrequencyCapType());
     map.put("frequencyCapMaxImpressions", campaign.getFrequencyCapMaxImpressions());
@@ -237,7 +236,7 @@ public class CampaignsApi {
     map.put("userSegment", decision.getUserSegment());
     map.put("userAgeGroup", decision.getUserAgeGroup());
     map.put("userRegion", decision.getUserRegion());
-    map.put("decidedAt", decision.getDecidedAt().toString());
+    map.put("decidedAt", decision.getDecidedAt());
     return map;
   }
 
