@@ -125,7 +125,7 @@ public class CampaignService {
               campaign.end();
               break;
             default:
-              break;
+              throw new InvalidCampaignStateException("Cannot transition to status: " + newStatus);
           }
         } catch (IllegalArgumentException e) {
           throw new InvalidCampaignStateException("Invalid status: " + param.getStatus());

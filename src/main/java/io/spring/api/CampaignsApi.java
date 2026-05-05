@@ -1,5 +1,6 @@
 package io.spring.api;
 
+import io.spring.api.exception.InvalidCampaignStateException;
 import io.spring.api.exception.NoAuthorizationException;
 import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.campaign.CampaignAnalytics;
@@ -109,7 +110,10 @@ public class CampaignsApi {
       @PathVariable String id,
       @Valid @RequestBody CampaignDecisionParam param,
       @AuthenticationPrincipal User user) {
-    campaignService.findById(id).orElseThrow(ResourceNotFoundException::new);
+    Campaign campaign = campaignService.findById(id).orElseThrow(ResourceNotFoundException::new);
+    if (campaign.getStatus() != CampaignStatus.ACTIVE) {
+      throw new InvalidCampaignStateException("Decisions can only be recorded for ACTIVE campaigns");
+    }
     CampaignDecision decision = campaignService.recordDecision(id, user.getId(), param);
     Map<String, Object> response = new HashMap<>();
     response.put("decision", decisionToMap(decision));
