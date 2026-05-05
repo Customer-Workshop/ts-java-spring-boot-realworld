@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.ABTestVariantMapper">
+    <resultMap id="variantResult" type="io.spring.core.campaign.ABTestVariant">
+        <id property="id" column="id"/>
+        <result property="campaignId" column="campaign_id"/>
+        <result property="variantName" column="variant_name"/>
+        <result property="splitPercentage" column="split_percentage"/>
+        <result property="messageTitle" column="message_title"/>
+        <result property="messageBody" column="message_body"/>
+        <result property="messageCtaText" column="message_cta_text"/>
+        <result property="messageImageUrl" column="message_image_url"/>
+        <result property="impressions" column="impressions"/>
+        <result property="conversions" column="conversions"/>
+        <result property="winner" column="is_winner"/>
+        <result property="createdAt" column="created_at"
+                typeHandler="io.spring.infrastructure.mybatis.DateTimeHandler"/>
+    </resultMap>
+
+    <insert id="insert">
+        insert into campaign_ab_variants (id, campaign_id, variant_name, split_percentage,
+            message_title, message_body, message_cta_text, message_image_url,
+            impressions, conversions, is_winner, created_at)
+        values (#{variant.id}, #{variant.campaignId}, #{variant.variantName},
+            #{variant.splitPercentage}, #{variant.messageTitle}, #{variant.messageBody},
+            #{variant.messageCtaText}, #{variant.messageImageUrl},
+            #{variant.impressions}, #{variant.conversions}, #{variant.winner},
+            #{variant.createdAt, typeHandler=io.spring.infrastructure.mybatis.DateTimeHandler})
+    </insert>
+
+    <select id="findByCampaignId" resultMap="variantResult">
+        select * from campaign_ab_variants where campaign_id = #{campaignId} order by created_at
+    </select>
+
+    <delete id="deleteByCampaignId">
+        delete from campaign_ab_variants where campaign_id = #{campaignId}
+    </delete>
+
+    <update id="update">
+        update campaign_ab_variants set
+            variant_name = #{variant.variantName},
+            split_percentage = #{variant.splitPercentage},
+            message_title = #{variant.messageTitle},
+            message_body = #{variant.messageBody},
+            message_cta_text = #{variant.messageCtaText},
+            message_image_url = #{variant.messageImageUrl},
+            impressions = #{variant.impressions},
+            conversions = #{variant.conversions},
+            is_winner = #{variant.winner}
+        where id = #{variant.id}
+    </update>
+</mapper>

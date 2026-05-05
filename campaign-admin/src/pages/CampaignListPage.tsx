@@ -1,6 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { fetchCampaigns, deleteCampaign } from '../api/campaigns';
+import {
+  fetchCampaigns,
+  deleteCampaign,
+  cloneCampaign,
+  bulkUpdateStatus,
+} from '../api/campaigns';
 import { StatusBadge } from '../components/StatusBadge';
 import type { Campaign } from '../types/campaign';
 
@@ -12,10 +17,19 @@ const statusFilters: Array<{ label: string; value: string }> = [
   { label: 'Ended', value: 'ENDED' },
 ];
 
+const channelLabels: Record<string, string> = {
+  IN_APP: 'In-App',
+  EMAIL: 'Email',
+  SMS: 'SMS',
+  PUSH: 'Push',
+};
+
 export function CampaignListPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkAction, setBulkAction] = useState('');
   const navigate = useNavigate();
 
   const loadCampaigns = useCallback(async () => {
@@ -23,6 +37,7 @@ export function CampaignListPage() {
     try {
       const data = await fetchCampaigns(statusFilter || undefined);
       setCampaigns(data);
+      setSelectedIds(new Set());
     } catch (err: unknown) {
       if (
         err &&
@@ -54,6 +69,53 @@ export function CampaignListPage() {
     }
   };
 
+  const handleClone = async (campaign: Campaign) => {
+    try {
+      await cloneCampaign(campaign.id, campaign.name + ' (Copy)');
+      loadCampaigns();
+    } catch {
+      alert('Failed to clone campaign.');
+    }
+  };
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === campaigns.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(campaigns.map((c) => c.id)));
+    }
+  };
+
+  const handleBulkAction = async () => {
+    if (!bulkAction || selectedIds.size === 0) return;
+    if (
+      !window.confirm(
+        `Apply "${bulkAction}" to ${selectedIds.size} campaign(s)?`
+      )
+    )
+      return;
+    try {
+      const result = await bulkUpdateStatus(
+        Array.from(selectedIds),
+        bulkAction
+      );
+      alert(`${result.updated} campaign(s) updated.`);
+      loadCampaigns();
+    } catch {
+      alert('Bulk action failed.');
+    }
+    setBulkAction('');
+  };
+
   return (
     <div>
       <div
@@ -64,7 +126,14 @@ export function CampaignListPage() {
           marginBottom: '24px',
         }}
       >
-        <h2 style={{ fontSize: '22px', fontWeight: 600, margin: 0, color: '#1a2744' }}>
+        <h2
+          style={{
+            fontSize: '22px',
+            fontWeight: 600,
+            margin: 0,
+            color: '#1a2744',
+          }}
+        >
           Campaigns
         </h2>
         <Link
@@ -83,7 +152,15 @@ export function CampaignListPage() {
         </Link>
       </div>
 
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: '8px',
+          marginBottom: '20px',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+        }}
+      >
         {statusFilters.map((f) => (
           <button
             key={f.value}
@@ -105,6 +182,54 @@ export function CampaignListPage() {
             {f.label}
           </button>
         ))}
+
+        {selectedIds.size > 0 && (
+          <div
+            style={{
+              marginLeft: 'auto',
+              display: 'flex',
+              gap: '8px',
+              alignItems: 'center',
+            }}
+          >
+            <span
+              style={{ fontSize: '13px', color: '#6b7280' }}
+            >
+              {selectedIds.size} selected
+            </span>
+            <select
+              value={bulkAction}
+              onChange={(e) => setBulkAction(e.target.value)}
+              style={{
+                padding: '6px 12px',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '13px',
+              }}
+            >
+              <option value="">Bulk Action...</option>
+              <option value="ACTIVE">Activate</option>
+              <option value="PAUSED">Pause</option>
+              <option value="ENDED">End</option>
+            </select>
+            <button
+              onClick={handleBulkAction}
+              disabled={!bulkAction}
+              style={{
+                padding: '6px 14px',
+                border: 'none',
+                borderRadius: '6px',
+                background: bulkAction ? '#1d4ed8' : '#94a3b8',
+                color: '#fff',
+                cursor: bulkAction ? 'pointer' : 'not-allowed',
+                fontSize: '13px',
+                fontWeight: 600,
+              }}
+            >
+              Apply
+            </button>
+          </div>
+        )}
       </div>
 
       {loading ? (
@@ -128,7 +253,7 @@ export function CampaignListPage() {
           style={{
             background: '#fff',
             borderRadius: '8px',
-            overflow: 'hidden',
+            overflow: 'auto',
             boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
             border: '1px solid #e5e7eb',
           }}
@@ -142,12 +267,22 @@ export function CampaignListPage() {
           >
             <thead>
               <tr style={{ background: '#f8fafc' }}>
+                <th style={{ ...thStyle, width: '40px' }}>
+                  <input
+                    type="checkbox"
+                    checked={
+                      selectedIds.size === campaigns.length &&
+                      campaigns.length > 0
+                    }
+                    onChange={toggleSelectAll}
+                  />
+                </th>
                 <th style={thStyle}>Campaign Name</th>
                 <th style={thStyle}>Status</th>
+                <th style={thStyle}>Channel</th>
+                <th style={thStyle}>Priority</th>
                 <th style={thStyle}>Audience</th>
-                <th style={thStyle}>Start Date</th>
-                <th style={thStyle}>End Date</th>
-                <th style={thStyle}>Action Type</th>
+                <th style={thStyle}>Tags</th>
                 <th style={thStyle}>Actions</th>
               </tr>
             </thead>
@@ -155,8 +290,20 @@ export function CampaignListPage() {
               {campaigns.map((c) => (
                 <tr
                   key={c.id}
-                  style={{ borderBottom: '1px solid #f1f5f9' }}
+                  style={{
+                    borderBottom: '1px solid #f1f5f9',
+                    background: selectedIds.has(c.id)
+                      ? '#f0f9ff'
+                      : 'transparent',
+                  }}
                 >
+                  <td style={tdStyle}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(c.id)}
+                      onChange={() => toggleSelection(c.id)}
+                    />
+                  </td>
                   <td style={tdStyle}>
                     <Link
                       to={`/campaigns/${c.id}`}
@@ -168,24 +315,89 @@ export function CampaignListPage() {
                     >
                       {c.name}
                     </Link>
+                    {c.abTestEnabled && (
+                      <span
+                        style={{
+                          marginLeft: '6px',
+                          background: '#eef2ff',
+                          color: '#4f46e5',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          fontSize: '10px',
+                          fontWeight: 600,
+                        }}
+                      >
+                        A/B
+                      </span>
+                    )}
                   </td>
                   <td style={tdStyle}>
                     <StatusBadge status={c.status} />
                   </td>
+                  <td style={tdStyle}>
+                    <span
+                      style={{
+                        background: '#f1f5f9',
+                        padding: '3px 8px',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                      }}
+                    >
+                      {channelLabels[c.channel || 'IN_APP'] || c.channel}
+                    </span>
+                  </td>
+                  <td style={tdStyle}>
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '50%',
+                        background:
+                          c.priority >= 8
+                            ? '#fee2e2'
+                            : c.priority >= 5
+                            ? '#fef9c3'
+                            : '#f0fdf4',
+                        color:
+                          c.priority >= 8
+                            ? '#dc2626'
+                            : c.priority >= 5
+                            ? '#ca8a04'
+                            : '#16a34a',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {c.priority}
+                    </span>
+                  </td>
                   <td style={tdStyle}>{c.targetAudienceSegment}</td>
                   <td style={tdStyle}>
-                    {c.startDate
-                      ? new Date(c.startDate).toLocaleDateString()
-                      : '-'}
+                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                      {c.tags &&
+                        c.tags.split(',').map((tag: string) => (
+                          <span
+                            key={tag}
+                            style={{
+                              background: '#e0e7ff',
+                              color: '#3730a3',
+                              padding: '2px 8px',
+                              borderRadius: '12px',
+                              fontSize: '11px',
+                              fontWeight: 500,
+                            }}
+                          >
+                            {tag.trim()}
+                          </span>
+                        ))}
+                    </div>
                   </td>
                   <td style={tdStyle}>
-                    {c.endDate
-                      ? new Date(c.endDate).toLocaleDateString()
-                      : '-'}
-                  </td>
-                  <td style={tdStyle}>{c.fulfillmentActionType}</td>
-                  <td style={tdStyle}>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                       <Link
                         to={`/campaigns/${c.id}/edit`}
                         style={{
@@ -196,6 +408,19 @@ export function CampaignListPage() {
                       >
                         Edit
                       </Link>
+                      <button
+                        onClick={() => handleClone(c)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#059669',
+                          cursor: 'pointer',
+                          fontSize: '13px',
+                          padding: 0,
+                        }}
+                      >
+                        Clone
+                      </button>
                       <Link
                         to={`/campaigns/${c.id}/analytics`}
                         style={{

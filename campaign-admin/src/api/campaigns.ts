@@ -4,6 +4,8 @@ import type {
   CampaignAnalytics,
   CampaignFormData,
   DashboardSummary,
+  ABTestVariant,
+  AuditLogEntry,
 } from '../types/campaign';
 
 export async function fetchCampaigns(
@@ -42,6 +44,80 @@ export async function updateCampaign(
 
 export async function deleteCampaign(id: string): Promise<void> {
   await apiClient.delete(`/api/campaigns/${id}`);
+}
+
+export async function cloneCampaign(
+  id: string,
+  name?: string
+): Promise<Campaign> {
+  const response = await apiClient.post(`/api/campaigns/${id}/clone`, {
+    name,
+  });
+  return response.data.campaign;
+}
+
+export async function bulkUpdateStatus(
+  campaignIds: string[],
+  status: string
+): Promise<{ updated: number }> {
+  const response = await apiClient.post('/api/campaigns/bulk/status', {
+    campaignIds,
+    status,
+  });
+  return response.data;
+}
+
+export async function fetchABTestVariants(
+  campaignId: string
+): Promise<ABTestVariant[]> {
+  const response = await apiClient.get(
+    `/api/campaigns/${campaignId}/variants`
+  );
+  return response.data.variants;
+}
+
+export async function createABTestVariant(
+  campaignId: string,
+  variant: Omit<ABTestVariant, 'id' | 'campaignId' | 'impressions' | 'conversions' | 'conversionRate' | 'winner' | 'createdAt'>
+): Promise<ABTestVariant> {
+  const response = await apiClient.post(
+    `/api/campaigns/${campaignId}/variants`,
+    variant
+  );
+  return response.data.variant;
+}
+
+export async function declareABTestWinner(
+  campaignId: string,
+  variantId: string
+): Promise<ABTestVariant> {
+  const response = await apiClient.post(
+    `/api/campaigns/${campaignId}/variants/${variantId}/winner`
+  );
+  return response.data.variant;
+}
+
+export async function fetchCampaignTags(
+  campaignId: string
+): Promise<string[]> {
+  const response = await apiClient.get(
+    `/api/campaigns/${campaignId}/tags`
+  );
+  return response.data.tags;
+}
+
+export async function fetchAllTags(): Promise<string[]> {
+  const response = await apiClient.get('/api/campaigns/tags/all');
+  return response.data.tags;
+}
+
+export async function fetchAuditLog(
+  campaignId: string
+): Promise<AuditLogEntry[]> {
+  const response = await apiClient.get(
+    `/api/campaigns/${campaignId}/audit`
+  );
+  return response.data.auditLog;
 }
 
 export async function fetchCampaignAnalytics(

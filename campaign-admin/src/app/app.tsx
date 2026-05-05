@@ -8,6 +8,7 @@ import { CampaignListPage } from '../pages/CampaignListPage';
 import { CampaignFormPage } from '../pages/CampaignFormPage';
 import { CampaignDetailPage } from '../pages/CampaignDetailPage';
 import { CampaignAnalyticsPage } from '../pages/CampaignAnalyticsPage';
+import { CampaignCalendarPage } from '../pages/CampaignCalendarPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -67,6 +68,14 @@ export function App() {
         element={
           <ProtectedRoute>
             <CampaignAnalyticsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/calendar"
+        element={
+          <ProtectedRoute>
+            <CampaignCalendarPage />
           </ProtectedRoute>
         }
       />

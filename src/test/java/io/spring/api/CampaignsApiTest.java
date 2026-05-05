@@ -183,7 +183,7 @@ public class CampaignsApiTest extends TestWithCurrentUser {
         .then()
         .statusCode(204);
 
-    verify(campaignService).deleteCampaign(any());
+    verify(campaignService).deleteCampaign(any(), eq(user.getId()));
   }
 
   @Test

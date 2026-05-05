@@ -10,6 +10,7 @@ const navSections = [
       { path: '/dashboard', label: 'Dashboard', icon: '\u{1F4CA}' },
       { path: '/campaigns/new', label: 'Create campaign', icon: '\u2795' },
       { path: '/campaigns', label: 'Campaigns', icon: '\u{1F4CB}' },
+      { path: '/calendar', label: 'Calendar', icon: '\u{1F4C5}' },
     ],
   },
 ];

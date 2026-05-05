@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.CampaignTagMapper">
+    <insert id="insert">
+        insert into campaign_tags (id, campaign_id, tag)
+        values (#{id}, #{campaignId}, #{tag})
+    </insert>
+
+    <select id="findByCampaignId" resultType="java.lang.String">
+        select tag from campaign_tags where campaign_id = #{campaignId} order by tag
+    </select>
+
+    <delete id="deleteByCampaignId">
+        delete from campaign_tags where campaign_id = #{campaignId}
+    </delete>
+
+    <select id="findAllDistinctTags" resultType="java.lang.String">
+        select distinct tag from campaign_tags order by tag
+    </select>
+</mapper>

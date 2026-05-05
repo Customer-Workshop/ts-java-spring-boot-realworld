@@ -31,4 +31,8 @@ public class NewCampaignParam {
   private Boolean declineSuppression;
   private String confirmationMessage;
   private String audienceRules;
+  private String channel;
+  private Integer priority;
+  private String tags;
+  private Boolean abTestEnabled;
 }

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.spring.infrastructure.mybatis.mapper.CampaignAuditLogMapper">
+    <resultMap id="auditLogResult" type="io.spring.core.campaign.CampaignAuditLog">
+        <id property="id" column="id"/>
+        <result property="campaignId" column="campaign_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="action" column="action"/>
+        <result property="fieldName" column="field_name"/>
+        <result property="oldValue" column="old_value"/>
+        <result property="newValue" column="new_value"/>
+        <result property="timestamp" column="timestamp"
+                typeHandler="io.spring.infrastructure.mybatis.DateTimeHandler"/>
+    </resultMap>
+
+    <insert id="insert">
+        insert into campaign_audit_log (id, campaign_id, user_id, action, field_name, old_value, new_value, timestamp)
+        values (#{log.id}, #{log.campaignId}, #{log.userId}, #{log.action},
+            #{log.fieldName}, #{log.oldValue}, #{log.newValue},
+            #{log.timestamp, typeHandler=io.spring.infrastructure.mybatis.DateTimeHandler})
+    </insert>
+
+    <select id="findByCampaignId" resultMap="auditLogResult">
+        select * from campaign_audit_log where campaign_id = #{campaignId} order by timestamp desc
+    </select>
+</mapper>

@@ -10,6 +10,7 @@ export type FrequencyCapType =
   | 'ONCE_PER_SESSION'
   | 'ONCE_PER_DAY'
   | 'ONCE_PER_CAMPAIGN';
+export type Channel = 'IN_APP' | 'EMAIL' | 'SMS' | 'PUSH';
 
 export interface Campaign {
   id: string;
@@ -38,6 +39,10 @@ export interface Campaign {
   declineSuppression: boolean;
   confirmationMessage: string | null;
   audienceRules: string | null;
+  channel: string | null;
+  priority: number;
+  tags: string | null;
+  abTestEnabled: boolean;
 }
 
 export interface CampaignFormData {
@@ -61,6 +66,37 @@ export interface CampaignFormData {
   declineSuppression: boolean;
   confirmationMessage: string;
   audienceRules: string;
+  channel: string;
+  priority: number;
+  tags: string;
+  abTestEnabled: boolean;
+}
+
+export interface ABTestVariant {
+  id: string;
+  campaignId: string;
+  variantName: string;
+  splitPercentage: number;
+  messageTitle: string;
+  messageBody: string;
+  messageCtaText: string;
+  messageImageUrl: string;
+  impressions: number;
+  conversions: number;
+  conversionRate: number;
+  winner: boolean;
+  createdAt: string;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  campaignId: string;
+  userId: string;
+  action: string;
+  fieldName: string | null;
+  oldValue: string | null;
+  newValue: string | null;
+  timestamp: string;
 }
 
 export interface CampaignAnalytics {

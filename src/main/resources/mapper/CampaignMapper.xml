@@ -34,6 +34,10 @@
         <result property="declineSuppression" column="decline_suppression"/>
         <result property="confirmationMessage" column="confirmation_message"/>
         <result property="audienceRules" column="audience_rules"/>
+        <result property="channel" column="channel"/>
+        <result property="priority" column="priority"/>
+        <result property="tags" column="tags"/>
+        <result property="abTestEnabled" column="ab_test_enabled"/>
     </resultMap>
 
     <insert id="insert">
@@ -43,7 +47,8 @@
             display_placement, frequency_cap_type, frequency_cap_max_impressions,
             delivery_start_time, delivery_end_time, personalization_tokens,
             remind_later_deferral_days, fulfillment_workflow_url, decline_suppression,
-            confirmation_message, audience_rules)
+            confirmation_message, audience_rules,
+            channel, priority, tags, ab_test_enabled)
         values (#{campaign.id}, #{campaign.name}, #{campaign.status},
             #{campaign.targetAudienceSegment},
             #{campaign.startDate, typeHandler=io.spring.infrastructure.mybatis.DateTimeHandler},
@@ -58,7 +63,8 @@
             #{campaign.deliveryEndTime}, #{campaign.personalizationTokens},
             #{campaign.remindLaterDeferralDays}, #{campaign.fulfillmentWorkflowUrl},
             #{campaign.declineSuppression}, #{campaign.confirmationMessage},
-            #{campaign.audienceRules})
+            #{campaign.audienceRules},
+            #{campaign.channel}, #{campaign.priority}, #{campaign.tags}, #{campaign.abTestEnabled})
     </insert>
 
     <select id="findById" resultMap="campaignResult">
@@ -110,7 +116,11 @@
             fulfillment_workflow_url = #{campaign.fulfillmentWorkflowUrl},
             decline_suppression = #{campaign.declineSuppression},
             confirmation_message = #{campaign.confirmationMessage},
-            audience_rules = #{campaign.audienceRules}
+            audience_rules = #{campaign.audienceRules},
+            channel = #{campaign.channel},
+            priority = #{campaign.priority},
+            tags = #{campaign.tags},
+            ab_test_enabled = #{campaign.abTestEnabled}
         where id = #{campaign.id}
     </update>
 

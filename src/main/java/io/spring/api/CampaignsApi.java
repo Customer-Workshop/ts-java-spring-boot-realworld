@@ -3,6 +3,7 @@ package io.spring.api;
 import io.spring.api.exception.InvalidCampaignStateException;
 import io.spring.api.exception.NoAuthorizationException;
 import io.spring.api.exception.ResourceNotFoundException;
+import io.spring.application.campaign.ABTestVariantParam;
 import io.spring.application.campaign.CampaignAnalytics;
 import io.spring.application.campaign.CampaignDecisionParam;
 import io.spring.application.campaign.CampaignService;
@@ -10,7 +11,9 @@ import io.spring.application.campaign.DashboardSummary;
 import io.spring.application.campaign.EntitlementService;
 import io.spring.application.campaign.NewCampaignParam;
 import io.spring.application.campaign.UpdateCampaignParam;
+import io.spring.core.campaign.ABTestVariant;
 import io.spring.core.campaign.Campaign;
+import io.spring.core.campaign.CampaignAuditLog;
 import io.spring.core.campaign.CampaignDecision;
 import io.spring.core.campaign.CampaignStatus;
 import io.spring.core.user.User;
@@ -92,7 +95,7 @@ public class CampaignsApi {
       @AuthenticationPrincipal User user) {
     checkMarketingEntitlement(user);
     Campaign campaign = campaignService.findById(id).orElseThrow(ResourceNotFoundException::new);
-    Campaign updated = campaignService.updateCampaign(campaign, param);
+    Campaign updated = campaignService.updateCampaign(campaign, param, user.getId());
     return ResponseEntity.ok(campaignResponse(updated));
   }
 
@@ -101,8 +104,97 @@ public class CampaignsApi {
       @PathVariable String id, @AuthenticationPrincipal User user) {
     checkMarketingEntitlement(user);
     Campaign campaign = campaignService.findById(id).orElseThrow(ResourceNotFoundException::new);
-    campaignService.deleteCampaign(campaign);
+    campaignService.deleteCampaign(campaign, user.getId());
     return ResponseEntity.noContent().build();
+  }
+
+  // Clone campaign
+  @PostMapping("/{id}/clone")
+  public ResponseEntity<?> cloneCampaign(
+      @PathVariable String id,
+      @RequestBody(required = false) Map<String, String> body,
+      @AuthenticationPrincipal User user) {
+    checkMarketingEntitlement(user);
+    Campaign source = campaignService.findById(id).orElseThrow(ResourceNotFoundException::new);
+    String newName = body != null ? body.get("name") : null;
+    Campaign clone = campaignService.cloneCampaign(source, newName, user.getId());
+    return ResponseEntity.status(HttpStatus.CREATED).body(campaignResponse(clone));
+  }
+
+  // Bulk status update
+  @PostMapping("/bulk/status")
+  public ResponseEntity<?> bulkUpdateStatus(
+      @RequestBody Map<String, Object> body, @AuthenticationPrincipal User user) {
+    checkMarketingEntitlement(user);
+    @SuppressWarnings("unchecked")
+    List<String> campaignIds = (List<String>) body.get("campaignIds");
+    String status = (String) body.get("status");
+    if (campaignIds == null || status == null) {
+      return ResponseEntity.badRequest().body(Map.of("error", "campaignIds and status required"));
+    }
+    int updated = campaignService.bulkUpdateStatus(campaignIds, status, user.getId());
+    return ResponseEntity.ok(Map.of("updated", updated));
+  }
+
+  // A/B Test Variants
+  @GetMapping("/{id}/variants")
+  public ResponseEntity<?> getVariants(
+      @PathVariable String id, @AuthenticationPrincipal User user) {
+    checkMarketingEntitlement(user);
+    campaignService.findById(id).orElseThrow(ResourceNotFoundException::new);
+    List<ABTestVariant> variants = campaignService.getABTestVariants(id);
+    List<Map<String, Object>> variantList =
+        variants.stream().map(this::variantToMap).collect(Collectors.toList());
+    return ResponseEntity.ok(Map.of("variants", variantList));
+  }
+
+  @PostMapping("/{id}/variants")
+  public ResponseEntity<?> createVariant(
+      @PathVariable String id,
+      @Valid @RequestBody ABTestVariantParam param,
+      @AuthenticationPrincipal User user) {
+    checkMarketingEntitlement(user);
+    campaignService.findById(id).orElseThrow(ResourceNotFoundException::new);
+    ABTestVariant variant = campaignService.createABTestVariant(id, param);
+    return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("variant", variantToMap(variant)));
+  }
+
+  @PostMapping("/{id}/variants/{variantId}/winner")
+  public ResponseEntity<?> declareWinner(
+      @PathVariable String id,
+      @PathVariable String variantId,
+      @AuthenticationPrincipal User user) {
+    checkMarketingEntitlement(user);
+    campaignService.findById(id).orElseThrow(ResourceNotFoundException::new);
+    ABTestVariant winner = campaignService.declareWinner(id, variantId);
+    return ResponseEntity.ok(Map.of("variant", variantToMap(winner)));
+  }
+
+  // Tags
+  @GetMapping("/{id}/tags")
+  public ResponseEntity<?> getTags(@PathVariable String id, @AuthenticationPrincipal User user) {
+    checkMarketingEntitlement(user);
+    campaignService.findById(id).orElseThrow(ResourceNotFoundException::new);
+    List<String> tags = campaignService.getTags(id);
+    return ResponseEntity.ok(Map.of("tags", tags));
+  }
+
+  @GetMapping("/tags/all")
+  public ResponseEntity<?> getAllTags(@AuthenticationPrincipal User user) {
+    checkMarketingEntitlement(user);
+    return ResponseEntity.ok(Map.of("tags", campaignService.getAllDistinctTags()));
+  }
+
+  // Audit Trail
+  @GetMapping("/{id}/audit")
+  public ResponseEntity<?> getAuditLog(
+      @PathVariable String id, @AuthenticationPrincipal User user) {
+    checkMarketingEntitlement(user);
+    campaignService.findById(id).orElseThrow(ResourceNotFoundException::new);
+    List<CampaignAuditLog> logs = campaignService.getAuditLog(id);
+    List<Map<String, Object>> logList =
+        logs.stream().map(this::auditLogToMap).collect(Collectors.toList());
+    return ResponseEntity.ok(Map.of("auditLog", logList));
   }
 
   @PostMapping("/{id}/decisions")
@@ -155,7 +247,7 @@ public class CampaignsApi {
     StringBuilder csv = new StringBuilder();
     csv.append(
         "Campaign Name,Status,Target Segment,Start Date,End Date,Fulfillment Type,"
-            + "Display Placement,Frequency Cap,Delivery Window\n");
+            + "Display Placement,Frequency Cap,Delivery Window,Channel,Priority,Tags\n");
     for (Campaign c : campaigns) {
       csv.append(escapeCsv(c.getName())).append(',');
       csv.append(c.getStatus().name()).append(',');
@@ -170,7 +262,10 @@ public class CampaignsApi {
           (c.getDeliveryStartTime() != null ? c.getDeliveryStartTime() : "")
               + "-"
               + (c.getDeliveryEndTime() != null ? c.getDeliveryEndTime() : "");
-      csv.append(escapeCsv(window)).append('\n');
+      csv.append(escapeCsv(window)).append(',');
+      csv.append(escapeCsv(c.getChannel())).append(',');
+      csv.append(c.getPriority()).append(',');
+      csv.append(escapeCsv(c.getTags())).append('\n');
     }
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.parseMediaType("text/csv"));
@@ -231,6 +326,41 @@ public class CampaignsApi {
     map.put("declineSuppression", campaign.isDeclineSuppression());
     map.put("confirmationMessage", campaign.getConfirmationMessage());
     map.put("audienceRules", campaign.getAudienceRules());
+    map.put("channel", campaign.getChannel());
+    map.put("priority", campaign.getPriority());
+    map.put("tags", campaign.getTags());
+    map.put("abTestEnabled", campaign.isAbTestEnabled());
+    return map;
+  }
+
+  private Map<String, Object> variantToMap(ABTestVariant variant) {
+    Map<String, Object> map = new HashMap<>();
+    map.put("id", variant.getId());
+    map.put("campaignId", variant.getCampaignId());
+    map.put("variantName", variant.getVariantName());
+    map.put("splitPercentage", variant.getSplitPercentage());
+    map.put("messageTitle", variant.getMessageTitle());
+    map.put("messageBody", variant.getMessageBody());
+    map.put("messageCtaText", variant.getMessageCtaText());
+    map.put("messageImageUrl", variant.getMessageImageUrl());
+    map.put("impressions", variant.getImpressions());
+    map.put("conversions", variant.getConversions());
+    map.put("conversionRate", variant.getConversionRate());
+    map.put("winner", variant.isWinner());
+    map.put("createdAt", variant.getCreatedAt());
+    return map;
+  }
+
+  private Map<String, Object> auditLogToMap(CampaignAuditLog log) {
+    Map<String, Object> map = new HashMap<>();
+    map.put("id", log.getId());
+    map.put("campaignId", log.getCampaignId());
+    map.put("userId", log.getUserId());
+    map.put("action", log.getAction());
+    map.put("fieldName", log.getFieldName());
+    map.put("oldValue", log.getOldValue());
+    map.put("newValue", log.getNewValue());
+    map.put("timestamp", log.getTimestamp());
     return map;
   }
 

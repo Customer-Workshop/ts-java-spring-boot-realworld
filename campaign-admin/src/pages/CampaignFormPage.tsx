@@ -28,6 +28,10 @@ const defaultForm: CampaignFormData = {
   declineSuppression: true,
   confirmationMessage: 'Thank you for your response!',
   audienceRules: '',
+  channel: 'IN_APP',
+  priority: 5,
+  tags: '',
+  abTestEnabled: false,
 };
 
 export function CampaignFormPage() {
@@ -72,6 +76,10 @@ export function CampaignFormPage() {
             confirmationMessage:
               c.confirmationMessage || 'Thank you for your response!',
             audienceRules: c.audienceRules || '',
+            channel: c.channel || 'IN_APP',
+            priority: c.priority ?? 5,
+            tags: c.tags || '',
+            abTestEnabled: c.abTestEnabled ?? false,
           });
         })
         .catch(() => setError('Failed to load campaign'))
@@ -548,6 +556,93 @@ export function CampaignFormPage() {
             campaign lifetime)
           </label>
         </div>
+
+        {/* Industry Features Section */}
+        <h3
+          style={{
+            fontSize: '17px',
+            fontWeight: 600,
+            color: '#1a2744',
+            marginTop: '32px',
+            marginBottom: '16px',
+            paddingBottom: '8px',
+            borderBottom: '2px solid #e5e7eb',
+          }}
+        >
+          Channel & Priority
+        </h3>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div style={fieldGroup}>
+            <label style={labelStyle}>Delivery Channel</label>
+            <select
+              name="channel"
+              value={form.channel}
+              onChange={handleChange}
+              disabled={isActiveOnly}
+              style={inputStyle}
+            >
+              <option value="IN_APP">In-App</option>
+              <option value="EMAIL">Email</option>
+              <option value="SMS">SMS</option>
+              <option value="PUSH">Push Notification</option>
+            </select>
+            <p style={helpText}>
+              Primary channel for campaign delivery.
+            </p>
+          </div>
+
+          <div style={fieldGroup}>
+            <label style={labelStyle}>Priority (1-10)</label>
+            <input
+              name="priority"
+              type="number"
+              min={1}
+              max={10}
+              value={form.priority}
+              onChange={handleChange}
+              disabled={isActiveOnly}
+              style={inputStyle}
+            />
+            <p style={helpText}>
+              Higher priority campaigns are shown first when multiple campaigns target the same user.
+            </p>
+          </div>
+        </div>
+
+        <div style={fieldGroup}>
+          <label style={labelStyle}>Tags (comma-separated)</label>
+          <input
+            name="tags"
+            value={form.tags}
+            onChange={handleChange}
+            disabled={isActiveOnly}
+            style={inputStyle}
+            placeholder="e.g. rewards, premium, seasonal"
+          />
+          <p style={helpText}>
+            Organize campaigns with tags for easy filtering and categorization.
+          </p>
+        </div>
+
+        <div style={{ ...fieldGroup, display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <input
+            name="abTestEnabled"
+            type="checkbox"
+            checked={form.abTestEnabled}
+            onChange={handleChange}
+            disabled={isActiveOnly}
+            style={{ width: '18px', height: '18px' }}
+          />
+          <label style={{ ...labelStyle, marginBottom: 0 }}>
+            Enable A/B Testing for this campaign
+          </label>
+        </div>
+        {form.abTestEnabled && (
+          <p style={helpText}>
+            After creating the campaign, go to the campaign detail page to configure A/B test variants with different message content and split percentages.
+          </p>
+        )}
 
         <div
           style={{

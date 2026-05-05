@@ -37,6 +37,10 @@ public class Campaign {
   private boolean declineSuppression;
   private String confirmationMessage;
   private String audienceRules;
+  private String channel;
+  private int priority;
+  private String tags;
+  private boolean abTestEnabled;
 
   public Campaign(
       String name,
@@ -67,6 +71,9 @@ public class Campaign {
     this.frequencyCapMaxImpressions = 1;
     this.remindLaterDeferralDays = 1;
     this.declineSuppression = true;
+    this.channel = "IN_APP";
+    this.priority = 5;
+    this.abTestEnabled = false;
   }
 
   public void updateTargeting(
@@ -215,5 +222,42 @@ public class Campaign {
 
   public boolean isDeletable() {
     return this.status == CampaignStatus.DRAFT;
+  }
+
+  public void updateIndustryFields(String channel, Integer priority, String tags, Boolean abTestEnabled) {
+    if (channel != null) {
+      this.channel = channel;
+    }
+    if (priority != null) {
+      this.priority = priority;
+    }
+    if (tags != null) {
+      this.tags = tags;
+    }
+    if (abTestEnabled != null) {
+      this.abTestEnabled = abTestEnabled;
+    }
+    this.updatedAt = new DateTime();
+  }
+
+  public Campaign cloneCampaign(String newName, String createdBy) {
+    Campaign clone = new Campaign(
+        newName != null ? newName : this.name + " (Copy)",
+        this.targetAudienceSegment,
+        this.startDate,
+        this.endDate,
+        this.messageTitle,
+        this.messageBody,
+        this.messageImageUrl,
+        this.messageCtaText,
+        this.fulfillmentActionType,
+        createdBy);
+    clone.updateTargeting(
+        this.displayPlacement, this.frequencyCapType, this.frequencyCapMaxImpressions,
+        this.deliveryStartTime, this.deliveryEndTime, this.personalizationTokens,
+        this.remindLaterDeferralDays, this.fulfillmentWorkflowUrl,
+        this.declineSuppression, this.confirmationMessage, this.audienceRules);
+    clone.updateIndustryFields(this.channel, this.priority, this.tags, this.abTestEnabled);
+    return clone;
   }
 }

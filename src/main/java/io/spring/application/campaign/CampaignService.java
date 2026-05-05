@@ -1,16 +1,22 @@
 package io.spring.application.campaign;
 
 import io.spring.api.exception.InvalidCampaignStateException;
+import io.spring.core.campaign.ABTestVariant;
+import io.spring.core.campaign.ABTestVariantRepository;
 import io.spring.core.campaign.Campaign;
+import io.spring.core.campaign.CampaignAuditLog;
+import io.spring.core.campaign.CampaignAuditLogRepository;
 import io.spring.core.campaign.CampaignDecision;
 import io.spring.core.campaign.CampaignDecisionRepository;
 import io.spring.core.campaign.CampaignRepository;
 import io.spring.core.campaign.CampaignStatus;
+import io.spring.core.campaign.CampaignTagRepository;
 import io.spring.core.campaign.DecisionType;
 import io.spring.core.campaign.FulfillmentActionType;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import org.joda.time.DateTime;
 import org.joda.time.format.ISODateTimeFormat;
 import org.springframework.stereotype.Service;
@@ -19,11 +25,21 @@ import org.springframework.stereotype.Service;
 public class CampaignService {
   private final CampaignRepository campaignRepository;
   private final CampaignDecisionRepository decisionRepository;
+  private final ABTestVariantRepository abTestVariantRepository;
+  private final CampaignAuditLogRepository auditLogRepository;
+  private final CampaignTagRepository tagRepository;
 
   public CampaignService(
-      CampaignRepository campaignRepository, CampaignDecisionRepository decisionRepository) {
+      CampaignRepository campaignRepository,
+      CampaignDecisionRepository decisionRepository,
+      ABTestVariantRepository abTestVariantRepository,
+      CampaignAuditLogRepository auditLogRepository,
+      CampaignTagRepository tagRepository) {
     this.campaignRepository = campaignRepository;
     this.decisionRepository = decisionRepository;
+    this.abTestVariantRepository = abTestVariantRepository;
+    this.auditLogRepository = auditLogRepository;
+    this.tagRepository = tagRepository;
   }
 
   public Campaign createCampaign(NewCampaignParam param, String userId) {
@@ -52,7 +68,11 @@ public class CampaignService {
           param.getDeclineSuppression(),
           param.getConfirmationMessage(),
           param.getAudienceRules());
+      campaign.updateIndustryFields(
+          param.getChannel(), param.getPriority(), param.getTags(), param.getAbTestEnabled());
       campaignRepository.save(campaign);
+      saveTags(campaign.getId(), param.getTags());
+      auditLogRepository.save(CampaignAuditLog.created(campaign.getId(), userId));
       return campaign;
     } catch (IllegalArgumentException e) {
       throw new InvalidCampaignStateException("Invalid parameter: " + e.getMessage());
@@ -71,8 +91,9 @@ public class CampaignService {
     return campaignRepository.findByStatus(status, includeArchived);
   }
 
-  public Campaign updateCampaign(Campaign campaign, UpdateCampaignParam param) {
+  public Campaign updateCampaign(Campaign campaign, UpdateCampaignParam param, String userId) {
     try {
+      String oldStatus = campaign.getStatus().name();
       if (campaign.isEditable()) {
         campaign.update(
             param.getName(),
@@ -111,6 +132,13 @@ public class CampaignService {
         throw new InvalidCampaignStateException("ENDED campaigns cannot be edited");
       }
 
+      campaign.updateIndustryFields(
+          param.getChannel(), param.getPriority(), param.getTags(), param.getAbTestEnabled());
+
+      if (param.getTags() != null) {
+        saveTags(campaign.getId(), param.getTags());
+      }
+
       if (param.getStatus() != null) {
         try {
           CampaignStatus newStatus = CampaignStatus.valueOf(param.getStatus());
@@ -127,12 +155,17 @@ public class CampaignService {
             default:
               throw new InvalidCampaignStateException("Cannot transition to status: " + newStatus);
           }
+          auditLogRepository.save(
+              CampaignAuditLog.statusChange(campaign.getId(), userId, oldStatus, newStatus.name()));
         } catch (IllegalArgumentException e) {
           throw new InvalidCampaignStateException("Invalid status: " + param.getStatus());
         } catch (IllegalStateException e) {
           throw new InvalidCampaignStateException(e.getMessage());
         }
       }
+
+      auditLogRepository.save(
+          CampaignAuditLog.fieldUpdate(campaign.getId(), userId, "campaign", null, "updated"));
 
       campaignRepository.save(campaign);
       return campaign;
@@ -142,14 +175,26 @@ public class CampaignService {
   }
 
   @org.springframework.transaction.annotation.Transactional
-  public void deleteCampaign(Campaign campaign) {
+  public void deleteCampaign(Campaign campaign, String userId) {
     if (campaign.isDeletable()) {
+      auditLogRepository.save(CampaignAuditLog.deleted(campaign.getId(), userId));
+      abTestVariantRepository.deleteByCampaignId(campaign.getId());
+      tagRepository.deleteByCampaignId(campaign.getId());
       decisionRepository.deleteByCampaignId(campaign.getId());
       campaignRepository.remove(campaign);
     } else {
       campaign.archive();
       campaignRepository.save(campaign);
+      auditLogRepository.save(CampaignAuditLog.archived(campaign.getId(), userId));
     }
+  }
+
+  public Campaign cloneCampaign(Campaign source, String newName, String userId) {
+    Campaign clone = source.cloneCampaign(newName, userId);
+    campaignRepository.save(clone);
+    saveTags(clone.getId(), source.getTags());
+    auditLogRepository.save(CampaignAuditLog.cloned(clone.getId(), userId, source.getId()));
+    return clone;
   }
 
   public CampaignDecision recordDecision(
@@ -222,6 +267,109 @@ public class CampaignService {
         totalClickedUnfinished,
         totalRemindLater,
         lastUpdated);
+  }
+
+  // A/B Test methods
+  public List<ABTestVariant> getABTestVariants(String campaignId) {
+    return abTestVariantRepository.findByCampaignId(campaignId);
+  }
+
+  public ABTestVariant createABTestVariant(String campaignId, ABTestVariantParam param) {
+    ABTestVariant variant =
+        new ABTestVariant(
+            campaignId,
+            param.getVariantName(),
+            param.getSplitPercentage(),
+            param.getMessageTitle(),
+            param.getMessageBody(),
+            param.getMessageCtaText(),
+            param.getMessageImageUrl());
+    abTestVariantRepository.save(variant);
+    return variant;
+  }
+
+  public void deleteABTestVariants(String campaignId) {
+    abTestVariantRepository.deleteByCampaignId(campaignId);
+  }
+
+  public ABTestVariant declareWinner(String campaignId, String variantId) {
+    List<ABTestVariant> variants = abTestVariantRepository.findByCampaignId(campaignId);
+    ABTestVariant winner = null;
+    for (ABTestVariant v : variants) {
+      if (v.getId().equals(variantId)) {
+        v.markAsWinner();
+        winner = v;
+      }
+      abTestVariantRepository.update(v);
+    }
+    if (winner == null) {
+      throw new InvalidCampaignStateException("Variant not found: " + variantId);
+    }
+    return winner;
+  }
+
+  // Tag methods
+  public List<String> getTags(String campaignId) {
+    return tagRepository.findByCampaignId(campaignId);
+  }
+
+  public List<String> getAllDistinctTags() {
+    return tagRepository.findAllDistinctTags();
+  }
+
+  // Audit Log methods
+  public List<CampaignAuditLog> getAuditLog(String campaignId) {
+    return auditLogRepository.findByCampaignId(campaignId);
+  }
+
+  // Bulk status update
+  @org.springframework.transaction.annotation.Transactional
+  public int bulkUpdateStatus(List<String> campaignIds, String newStatus, String userId) {
+    CampaignStatus targetStatus = CampaignStatus.valueOf(newStatus);
+    int updated = 0;
+    for (String id : campaignIds) {
+      Optional<Campaign> opt = campaignRepository.findById(id);
+      if (opt.isPresent()) {
+        Campaign campaign = opt.get();
+        String oldStatus = campaign.getStatus().name();
+        try {
+          switch (targetStatus) {
+            case ACTIVE:
+              campaign.activate();
+              break;
+            case PAUSED:
+              campaign.pause();
+              break;
+            case ENDED:
+              campaign.end();
+              break;
+            default:
+              continue;
+          }
+          campaignRepository.save(campaign);
+          auditLogRepository.save(
+              CampaignAuditLog.statusChange(id, userId, oldStatus, targetStatus.name()));
+          updated++;
+        } catch (IllegalStateException e) {
+          // skip campaigns that can't transition
+        }
+      }
+    }
+    return updated;
+  }
+
+  private void saveTags(String campaignId, String tagsStr) {
+    if (tagsStr == null) {
+      return;
+    }
+    tagRepository.deleteByCampaignId(campaignId);
+    String[] tags = tagsStr.split(",");
+    for (String tag : tags) {
+      String trimmed = tag.trim();
+      if (!trimmed.isEmpty()) {
+        tagRepository.save(UUID.randomUUID().toString(), campaignId, trimmed);
+      }
+    }
   }
 
   private DateTime parseDate(String dateStr) {
