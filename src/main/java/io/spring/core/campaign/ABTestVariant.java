@@ -49,6 +49,10 @@ public class ABTestVariant {
     this.winner = true;
   }
 
+  public void clearWinner() {
+    this.winner = false;
+  }
+
   public double getConversionRate() {
     return impressions > 0 ? (double) conversions / impressions * 100 : 0;
   }

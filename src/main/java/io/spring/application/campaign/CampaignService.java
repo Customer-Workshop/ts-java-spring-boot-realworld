@@ -95,7 +95,19 @@ public class CampaignService {
     try {
       String oldStatus = campaign.getStatus().name();
       boolean fieldsModified = false;
-      if (campaign.isEditable()) {
+      boolean hasFieldParams =
+          param.getName() != null
+              || param.getTargetAudienceSegment() != null
+              || param.getStartDate() != null
+              || param.getEndDate() != null
+              || param.getMessageTitle() != null
+              || param.getMessageBody() != null
+              || param.getMessageImageUrl() != null
+              || param.getMessageCtaText() != null
+              || param.getFulfillmentActionType() != null
+              || param.getChannel() != null
+              || param.getTags() != null;
+      if (campaign.isEditable() && hasFieldParams) {
         campaign.update(
             param.getName(),
             param.getTargetAudienceSegment(),
@@ -132,11 +144,11 @@ public class CampaignService {
           saveTags(campaign.getId(), param.getTags());
         }
         fieldsModified = true;
-      } else if (campaign.getStatus() == CampaignStatus.ACTIVE) {
+      } else if (campaign.getStatus() == CampaignStatus.ACTIVE && hasFieldParams) {
         campaign.updateMessageCopy(
             param.getMessageTitle(), param.getMessageBody(), param.getMessageCtaText());
         fieldsModified = true;
-      } else {
+      } else if (param.getStatus() == null) {
         throw new InvalidCampaignStateException("ENDED campaigns cannot be edited");
       }
 
@@ -302,6 +314,8 @@ public class CampaignService {
       if (v.getId().equals(variantId)) {
         v.markAsWinner();
         winner = v;
+      } else {
+        v.clearWinner();
       }
       abTestVariantRepository.update(v);
     }
