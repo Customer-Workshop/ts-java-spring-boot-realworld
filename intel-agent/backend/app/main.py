@@ -62,6 +62,14 @@ app.add_middleware(
 _rate_limit: dict[str, list[float]] = defaultdict(list)
 RATE_LIMIT_MAX = 10
 RATE_LIMIT_WINDOW = 60  # seconds
+_SWEEP_THRESHOLD = 1000
+
+
+def _sweep_stale_entries(now: float) -> None:
+    """Remove all IP entries with no recent timestamps to bound memory."""
+    stale = [ip for ip, ts in _rate_limit.items() if not any(now - t < RATE_LIMIT_WINDOW for t in ts)]
+    for ip in stale:
+        del _rate_limit[ip]
 
 
 @app.middleware("http")
@@ -69,6 +77,8 @@ async def rate_limit_middleware(request: Request, call_next):
     if request.url.path == "/api/research" and request.method == "POST":
         client_ip = request.client.host if request.client else "unknown"
         now = time.time()
+        if len(_rate_limit) > _SWEEP_THRESHOLD:
+            _sweep_stale_entries(now)
         recent = [t for t in _rate_limit[client_ip] if now - t < RATE_LIMIT_WINDOW]
         if not recent:
             _rate_limit.pop(client_ip, None)
