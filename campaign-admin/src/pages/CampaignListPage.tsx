@@ -22,6 +22,8 @@ const channelLabels: Record<string, string> = {
   EMAIL: 'Email',
   SMS: 'SMS',
   PUSH: 'Push',
+  SOCIAL: 'Social',
+  ADS: 'Ads',
 };
 
 export function CampaignListPage() {

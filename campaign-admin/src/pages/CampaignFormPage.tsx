@@ -586,6 +586,8 @@ export function CampaignFormPage() {
               <option value="EMAIL">Email</option>
               <option value="SMS">SMS</option>
               <option value="PUSH">Push Notification</option>
+              <option value="SOCIAL">Social Media</option>
+              <option value="ADS">Ads</option>
             </select>
             <p style={helpText}>
               Primary channel for campaign delivery.
