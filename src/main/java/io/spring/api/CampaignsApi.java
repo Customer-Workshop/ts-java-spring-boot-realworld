@@ -257,10 +257,10 @@ public class CampaignsApi {
       csv.append(c.getFulfillmentActionType().name()).append(',');
       csv.append(escapeCsv(c.getDisplayPlacement())).append(',');
       csv.append(escapeCsv(c.getFrequencyCapType())).append(',');
-      String window =
-          (c.getDeliveryStartTime() != null ? c.getDeliveryStartTime() : "")
-              + "-"
-              + (c.getDeliveryEndTime() != null ? c.getDeliveryEndTime() : "");
+      String startTime = c.getDeliveryStartTime() != null ? c.getDeliveryStartTime() : "";
+      String endTime = c.getDeliveryEndTime() != null ? c.getDeliveryEndTime() : "";
+      String window = startTime.isEmpty() && endTime.isEmpty() ? "" :
+          startTime + "-" + endTime;
       csv.append(escapeCsv(window)).append(',');
       csv.append(escapeCsv(c.getChannel())).append(',');
       csv.append(c.getPriority()).append(',');
