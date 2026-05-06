@@ -69,8 +69,12 @@ async def rate_limit_middleware(request: Request, call_next):
     if request.url.path == "/api/research" and request.method == "POST":
         client_ip = request.client.host if request.client else "unknown"
         now = time.time()
-        _rate_limit[client_ip] = [t for t in _rate_limit[client_ip] if now - t < RATE_LIMIT_WINDOW]
-        if len(_rate_limit[client_ip]) >= RATE_LIMIT_MAX:
+        recent = [t for t in _rate_limit[client_ip] if now - t < RATE_LIMIT_WINDOW]
+        if not recent:
+            _rate_limit.pop(client_ip, None)
+        else:
+            _rate_limit[client_ip] = recent
+        if len(recent) >= RATE_LIMIT_MAX:
             return JSONResponse(
                 status_code=429,
                 content={"detail": "Too many research requests. Please try again later."},
