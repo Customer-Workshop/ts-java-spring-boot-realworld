@@ -86,7 +86,7 @@ async def start_research(request: ResearchRequest):
         campaign_context=request.campaign_context,
         status=ResearchStatus.SCRAPING,
     )
-    save_pack(pack)
+    await asyncio.to_thread(save_pack, pack)
 
     task = asyncio.create_task(_run_research(pack.id, request))
     _running_tasks[pack.id] = task
@@ -97,7 +97,7 @@ async def start_research(request: ResearchRequest):
 @app.get("/api/research/{pack_id}", response_model=dict)
 async def get_research(pack_id: str):
     """Get the current state of a research task."""
-    pack = load_pack(pack_id)
+    pack = await asyncio.to_thread(load_pack, pack_id)
     if not pack:
         raise HTTPException(status_code=404, detail="Research pack not found")
     return pack.model_dump(mode="json")
@@ -106,16 +106,16 @@ async def get_research(pack_id: str):
 @app.get("/api/research/{pack_id}/report", response_class=PlainTextResponse)
 async def get_report(pack_id: str):
     """Get the Markdown report for a completed research pack."""
-    pack = load_pack(pack_id)
+    pack = await asyncio.to_thread(load_pack, pack_id)
     if not pack:
         raise HTTPException(status_code=404, detail="Research pack not found")
-    return generate_markdown_report(pack)
+    return await asyncio.to_thread(generate_markdown_report, pack)
 
 
 @app.get("/api/research", response_model=list)
 async def list_research():
     """List all research packs."""
-    return list_packs()
+    return await asyncio.to_thread(list_packs)
 
 
 @app.delete("/api/research/{pack_id}")
@@ -124,7 +124,7 @@ async def delete_research(pack_id: str):
     if pack_id in _running_tasks:
         _running_tasks[pack_id].cancel()
         _running_tasks.pop(pack_id, None)
-    if not delete_pack(pack_id):
+    if not await asyncio.to_thread(delete_pack, pack_id):
         raise HTTPException(status_code=404, detail="Research pack not found")
     return {"deleted": True}
 
