@@ -780,7 +780,7 @@ export function CampaignDetailPage() {
                           color: '#1a2744',
                         }}
                       >
-                        {log.action.replace('_', ' ')}
+                        {log.action.replace(/_/g, ' ')}
                       </span>
                       {log.fieldName && (
                         <span
