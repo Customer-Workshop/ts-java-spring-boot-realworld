@@ -276,7 +276,7 @@ public class CampaignsApi {
     if (value == null) {
       return "";
     }
-    if (value.length() > 0 && "=+-@\t\r".indexOf(value.charAt(0)) >= 0) {
+    if (value.length() > 0 && "=+-@\t\r\n".indexOf(value.charAt(0)) >= 0) {
       value = "'" + value;
     }
     if (value.contains(",") || value.contains("\"") || value.contains("\n") || value.contains("\r")) {

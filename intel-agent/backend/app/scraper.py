@@ -155,49 +155,62 @@ def _check_ip(ip_str: str) -> bool:
     return not (ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved)
 
 
-async def _validate_url(url: str) -> bool:
-    """Validate URL scheme and that all resolved IPs are public.
+async def _resolve_and_validate(url: str) -> tuple[str, str, int]:
+    """Resolve DNS once, validate all IPs are public, return (validated_ip, hostname, port).
 
-    Uses asyncio.to_thread to avoid blocking the event loop.
+    Eliminates TOCTOU by using the same resolved IP for both validation and connection.
     """
     parsed = urlparse(url)
     if parsed.scheme not in ("http", "https"):
-        return False
+        raise _SsrfBlocked(url)
     hostname = parsed.hostname
     if not hostname:
-        return False
+        raise _SsrfBlocked(url)
+    port = parsed.port or (443 if parsed.scheme == "https" else 80)
     try:
         resolved = await asyncio.to_thread(
-            socket.getaddrinfo, hostname, None, socket.AF_UNSPEC, socket.SOCK_STREAM,
+            socket.getaddrinfo, hostname, port, socket.AF_UNSPEC, socket.SOCK_STREAM,
         )
     except socket.gaierror:
-        return False
+        raise _SsrfBlocked(url)
+    if not resolved:
+        raise _SsrfBlocked(url)
     for _, _, _, _, addr in resolved:
         if not _check_ip(addr[0]):
-            return False
-    return bool(resolved)
+            raise _SsrfBlocked(url)
+    validated_ip = resolved[0][4][0]
+    return validated_ip, hostname, port
+
+
+async def _fetch_via_ip(
+    url: str, validated_ip: str, hostname: str, port: int, client: httpx.AsyncClient,
+) -> httpx.Response:
+    """Fetch URL by connecting to the pre-validated IP, setting Host header for TLS/SNI."""
+    parsed = urlparse(url)
+    ip_url = parsed._replace(netloc=f"{validated_ip}:{port}").geturl()
+    req_headers = {**HEADERS, "Host": hostname}
+    return await client.get(
+        ip_url, headers=req_headers, follow_redirects=False, timeout=5,
+        extensions={"sni_hostname": hostname},
+    )
 
 
 async def _safe_fetch(
     url: str, client: httpx.AsyncClient,
 ) -> httpx.Response:
-    """Fetch a URL with SSRF protection: validate DNS, follow redirects safely.
+    """Fetch a URL with SSRF protection: resolve DNS once per request.
 
-    Uses the original URL (preserving hostname for TLS/SNI) but validates all
-    resolved IPs before each request. A short per-request timeout limits the
-    DNS rebinding window.
+    Resolves DNS, validates all IPs are public, then connects directly to the
+    validated IP with the original Host header. Eliminates DNS rebinding TOCTOU.
     """
-    if not await _validate_url(url):
-        raise _SsrfBlocked(url)
-
-    resp = await client.get(url, headers=HEADERS, follow_redirects=False, timeout=5)
+    validated_ip, hostname, port = await _resolve_and_validate(url)
+    resp = await _fetch_via_ip(url, validated_ip, hostname, port, client)
     redirects = 0
     while resp.is_redirect and redirects < 5:
         location = resp.headers.get("location", "")
         redirect_url = urljoin(str(resp.url), location)
-        if not await _validate_url(redirect_url):
-            raise _SsrfBlocked(redirect_url)
-        resp = await client.get(redirect_url, headers=HEADERS, follow_redirects=False, timeout=5)
+        r_ip, r_host, r_port = await _resolve_and_validate(redirect_url)
+        resp = await _fetch_via_ip(redirect_url, r_ip, r_host, r_port, client)
         redirects += 1
     return resp
 
