@@ -208,7 +208,7 @@ async def _safe_fetch(
     redirects = 0
     while resp.is_redirect and redirects < 5:
         location = resp.headers.get("location", "")
-        redirect_url = urljoin(str(resp.url), location)
+        redirect_url = urljoin(url, location)
         r_ip, r_host, r_port = await _resolve_and_validate(redirect_url)
         resp = await _fetch_via_ip(redirect_url, r_ip, r_host, r_port, client)
         redirects += 1

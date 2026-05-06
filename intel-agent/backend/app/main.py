@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
+import time
+from collections import defaultdict
 from contextlib import asynccontextmanager
 from typing import Optional
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 
 from .agent import IntelligenceAgent
 from .database import delete_pack, init_db, list_packs, load_pack, save_pack
@@ -42,13 +45,38 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+ALLOWED_ORIGINS = os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:4200,http://localhost:5173,http://127.0.0.1:4200,http://127.0.0.1:5173",
+).split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Simple in-memory rate limiter: max 10 research requests per minute per IP
+_rate_limit: dict[str, list[float]] = defaultdict(list)
+RATE_LIMIT_MAX = 10
+RATE_LIMIT_WINDOW = 60  # seconds
+
+
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    if request.url.path == "/api/research" and request.method == "POST":
+        client_ip = request.client.host if request.client else "unknown"
+        now = time.time()
+        _rate_limit[client_ip] = [t for t in _rate_limit[client_ip] if now - t < RATE_LIMIT_WINDOW]
+        if len(_rate_limit[client_ip]) >= RATE_LIMIT_MAX:
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Too many research requests. Please try again later."},
+            )
+        _rate_limit[client_ip].append(now)
+    return await call_next(request)
 
 
 async def _run_research(pack_id: str, request: ResearchRequest) -> None:
