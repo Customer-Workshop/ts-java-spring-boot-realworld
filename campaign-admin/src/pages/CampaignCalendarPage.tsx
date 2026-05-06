@@ -9,6 +9,8 @@ const channelLabels: Record<string, string> = {
   EMAIL: 'Email',
   SMS: 'SMS',
   PUSH: 'Push',
+  SOCIAL: 'Social',
+  ADS: 'Ads',
 };
 
 const statusColors: Record<string, string> = {
@@ -377,7 +379,7 @@ export function CampaignCalendarPage() {
                   fontWeight: 500,
                 }}
               >
-                {channelLabels[c.channel || 'IN_APP']}
+                {channelLabels[c.channel || 'IN_APP'] || c.channel || 'IN_APP'}
               </span>
               <StatusBadge status={c.status} />
               <span

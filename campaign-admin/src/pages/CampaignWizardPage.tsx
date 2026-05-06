@@ -174,7 +174,7 @@ export function CampaignWizardPage() {
         confirmationMessage: 'Thank you for your response!',
         audienceRules: '',
         channel: selectedChannels[0] || 'IN_APP',
-        priority: PRIORITY_OPTIONS.indexOf(priority) + 1 || 5,
+        priority: priority ? ({ Low: 2, Medium: 5, High: 8, Critical: 10 } as Record<string, number>)[priority] ?? 5 : 5,
         tags: keywords,
         abTestEnabled: false,
       };
