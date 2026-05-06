@@ -1,30 +1,104 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const navSections = [
+interface NavItem {
+  path: string;
+  label: string;
+}
+
+interface NavSection {
+  label: string;
+  icon: string;
+  collapsible?: boolean;
+  items: NavItem[];
+}
+
+const navSections: NavSection[] = [
   {
     label: 'Marketing',
     icon: '\u{1F4E2}',
+    collapsible: true,
     items: [
-      { path: '/dashboard', label: 'Dashboard', icon: '\u{1F4CA}' },
-      { path: '/campaigns/new', label: 'Create campaign', icon: '\u2795' },
-      { path: '/campaigns', label: 'Campaigns', icon: '\u{1F4CB}' },
-      { path: '/calendar', label: 'Calendar', icon: '\u{1F4C5}' },
+      { path: '/campaigns/new', label: 'Create campaign' },
+      { path: '/campaigns', label: 'Campaigns' },
+      { path: '/journey', label: 'Campaign journey' },
+      { path: '/locations', label: 'Locations' },
+      { path: '/dashboard', label: 'Analytics' },
+      { path: '/user-segment', label: 'User segment' },
+      { path: '/segment-criteria', label: 'Segment criteria' },
+      { path: '/mcm-media', label: 'MCM media' },
     ],
   },
   {
     label: 'Intelligence',
     icon: '\u{1F50D}',
+    collapsible: true,
     items: [
-      { path: '/intelligence', label: 'Market Research', icon: '\u{1F9E0}' },
+      { path: '/intelligence', label: 'Market Research' },
+      { path: '/internal-preview', label: 'Internal preview' },
+    ],
+  },
+  {
+    label: 'Administration',
+    icon: '\u{2699}\u{FE0F}',
+    collapsible: true,
+    items: [],
+  },
+  {
+    label: 'Configuration',
+    icon: '\u{1F527}',
+    collapsible: true,
+    items: [],
+  },
+  {
+    label: 'Reports',
+    icon: '\u{1F4CA}',
+    collapsible: true,
+    items: [
+      { path: '/calendar', label: 'Calendar view' },
     ],
   },
 ];
 
+const breadcrumbMap: Record<string, string> = {
+  '/dashboard': 'Analytics',
+  '/campaigns/new': 'Create campaign',
+  '/campaigns': 'Campaigns',
+  '/calendar': 'Calendar',
+  '/journey': 'Campaign journey',
+  '/locations': 'Locations',
+  '/user-segment': 'User segment',
+  '/segment-criteria': 'Segment criteria',
+  '/mcm-media': 'MCM media',
+  '/intelligence': 'Market Research',
+  '/internal-preview': 'Internal preview',
+};
+
 export function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const { username, logout } = useAuth();
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    Marketing: true,
+    Intelligence: true,
+    Administration: false,
+    Configuration: false,
+    Reports: false,
+  });
+
+  const toggleSection = (label: string) => {
+    setExpandedSections(prev => ({ ...prev, [label]: !prev[label] }));
+  };
+
+  const getBreadcrumb = () => {
+    for (const [path, label] of Object.entries(breadcrumbMap)) {
+      if (location.pathname === path) return label;
+    }
+    if (location.pathname.includes('/analytics')) return 'Analytics';
+    if (location.pathname.includes('/edit')) return 'Edit campaign';
+    if (location.pathname.startsWith('/campaigns/')) return 'Campaign detail';
+    return 'Campaigns';
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -62,7 +136,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               letterSpacing: '-0.02em',
             }}
           >
-            Campaign Admin Tool
+            Admin Tool
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -86,7 +160,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </header>
 
       <div style={{ display: 'flex', flex: 1 }}>
-        {/* Left Sidebar - White with navigation */}
+        {/* Left Sidebar */}
         <aside
           style={{
             width: '260px',
@@ -98,8 +172,52 @@ export function Layout({ children }: { children: React.ReactNode }) {
             overflowY: 'auto',
           }}
         >
+          {/* Entity selector */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '14px 16px',
+              borderBottom: '1px solid #e5e7eb',
+              cursor: 'pointer',
+            }}
+          >
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                background: '#1d4ed8',
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '16px',
+                fontWeight: 600,
+              }}
+            >
+              🏦
+            </div>
+            <div style={{ flex: 1 }}>
+              <div
+                style={{
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: '#1f2937',
+                }}
+              >
+                First Financial Bank
+              </div>
+              <div style={{ fontSize: '11px', color: '#9ca3af' }}>
+                Entity Info
+              </div>
+            </div>
+            <span style={{ fontSize: '12px', color: '#9ca3af' }}>⬦</span>
+          </div>
+
           {/* Search */}
-          <div style={{ padding: '16px' }}>
+          <div style={{ padding: '12px 16px' }}>
             <div
               style={{
                 display: 'flex',
@@ -119,56 +237,120 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Navigation */}
           <nav style={{ flex: 1 }}>
-            {navSections.map((section) => (
-              <div key={section.label}>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    padding: '10px 20px',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    color: '#1f2937',
-                    cursor: 'default',
-                  }}
-                >
-                  <span style={{ fontSize: '16px' }}>{section.icon}</span>
-                  {section.label}
+            {navSections.map((section) => {
+              const isExpanded = expandedSections[section.label] ?? false;
+              return (
+                <div key={section.label}>
+                  <div
+                    onClick={() =>
+                      section.collapsible && toggleSection(section.label)
+                    }
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '10px 20px',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      color: '#1f2937',
+                      cursor: section.collapsible ? 'pointer' : 'default',
+                      userSelect: 'none',
+                    }}
+                  >
+                    <span style={{ fontSize: '16px' }}>{section.icon}</span>
+                    <span style={{ flex: 1 }}>{section.label}</span>
+                    {section.collapsible && (
+                      <span
+                        style={{
+                          fontSize: '12px',
+                          color: '#9ca3af',
+                          transition: 'transform 0.2s',
+                          transform: isExpanded
+                            ? 'rotate(180deg)'
+                            : 'rotate(0)',
+                        }}
+                      >
+                        ▾
+                      </span>
+                    )}
+                  </div>
+                  {isExpanded &&
+                    section.items.map((item) => {
+                      const isActive =
+                        item.path === '/campaigns'
+                          ? location.pathname === '/campaigns'
+                          : location.pathname.startsWith(item.path);
+                      return (
+                        <Link
+                          key={item.path}
+                          to={item.path}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            padding: '9px 20px 9px 44px',
+                            color: isActive ? '#1d4ed8' : '#4b5563',
+                            textDecoration: 'none',
+                            fontSize: '13px',
+                            fontWeight: isActive ? 600 : 400,
+                            background: isActive ? '#eff6ff' : 'transparent',
+                            borderRight: isActive
+                              ? '3px solid #1d4ed8'
+                              : '3px solid transparent',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          {item.label}
+                        </Link>
+                      );
+                    })}
                 </div>
-                {section.items.map((item) => {
-                  const isActive =
-                    item.path === '/campaigns'
-                      ? location.pathname === '/campaigns'
-                      : location.pathname.startsWith(item.path);
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        padding: '9px 20px 9px 44px',
-                        color: isActive ? '#1d4ed8' : '#4b5563',
-                        textDecoration: 'none',
-                        fontSize: '13px',
-                        fontWeight: isActive ? 600 : 400,
-                        background: isActive ? '#eff6ff' : 'transparent',
-                        borderRight: isActive
-                          ? '3px solid #1d4ed8'
-                          : '3px solid transparent',
-                        transition: 'all 0.15s ease',
-                      }}
-                    >
-                      <span style={{ fontSize: '14px' }}>{item.icon}</span>
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </div>
-            ))}
+              );
+            })}
           </nav>
+
+          {/* Bottom entity info */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '14px 16px',
+              borderTop: '1px solid #e5e7eb',
+              marginTop: 'auto',
+            }}
+          >
+            <div
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                background: '#1d4ed8',
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '14px',
+              }}
+            >
+              👤
+            </div>
+            <div style={{ flex: 1 }}>
+              <div
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: '#1f2937',
+                }}
+              >
+                Entity Name
+              </div>
+              <div style={{ fontSize: '11px', color: '#9ca3af' }}>
+                Entity Info
+              </div>
+            </div>
+            <span style={{ fontSize: '12px', color: '#9ca3af' }}>⬦</span>
+          </div>
         </aside>
 
         {/* Main Content */}
@@ -192,20 +374,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             }}
           >
             {'\u{1F3E0}'}{' '}
-            <span>
-              Marketing &gt;{' '}
-              {location.pathname === '/dashboard'
-                ? 'Dashboard'
-                : location.pathname === '/campaigns/new'
-                  ? 'Create campaign'
-                  : location.pathname.includes('/analytics')
-                    ? 'Analytics'
-                    : location.pathname.includes('/edit')
-                      ? 'Edit campaign'
-                      : location.pathname.startsWith('/campaigns/')
-                        ? 'Campaign detail'
-                        : 'Campaigns'}
-            </span>
+            <span>Marketing &gt; {getBreadcrumb()}</span>
           </div>
           {children}
         </main>

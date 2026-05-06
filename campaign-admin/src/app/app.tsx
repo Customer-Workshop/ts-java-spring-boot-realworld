@@ -6,10 +6,19 @@ import { LoginPage } from '../pages/LoginPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import { CampaignListPage } from '../pages/CampaignListPage';
 import { CampaignFormPage } from '../pages/CampaignFormPage';
+import { CampaignWizardPage } from '../pages/CampaignWizardPage';
 import { CampaignDetailPage } from '../pages/CampaignDetailPage';
 import { CampaignAnalyticsPage } from '../pages/CampaignAnalyticsPage';
 import { CampaignCalendarPage } from '../pages/CampaignCalendarPage';
 import { IntelligencePage } from '../pages/IntelligencePage';
+import {
+  CampaignJourneyPage,
+  LocationsPage,
+  UserSegmentPage,
+  SegmentCriteriaPage,
+  McmMediaPage,
+  InternalPreviewPage,
+} from '../pages/PlaceholderPages';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -44,7 +53,7 @@ export function App() {
         path="/campaigns/new"
         element={
           <ProtectedRoute>
-            <CampaignFormPage />
+            <CampaignWizardPage />
           </ProtectedRoute>
         }
       />
@@ -85,6 +94,56 @@ export function App() {
         element={
           <ProtectedRoute>
             <IntelligencePage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* New pages from Fiserv Admin Tool */}
+      <Route
+        path="/journey"
+        element={
+          <ProtectedRoute>
+            <CampaignJourneyPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/locations"
+        element={
+          <ProtectedRoute>
+            <LocationsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/user-segment"
+        element={
+          <ProtectedRoute>
+            <UserSegmentPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/segment-criteria"
+        element={
+          <ProtectedRoute>
+            <SegmentCriteriaPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/mcm-media"
+        element={
+          <ProtectedRoute>
+            <McmMediaPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/internal-preview"
+        element={
+          <ProtectedRoute>
+            <InternalPreviewPage />
           </ProtectedRoute>
         }
       />
