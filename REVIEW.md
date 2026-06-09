@@ -66,7 +66,7 @@ All changes must comply with `.windsurf/rules/java-developer-guide.md`. Key enfo
 ---
 
 ### Milestone 4: javax → jakarta Namespace Migration
-**Scope:** Replace all `javax.validation`, `javax.servlet`, `javax.crypto` imports with `jakarta.*` equivalents. This is prep for Spring Boot 3 — the actual switch happens in Milestone 5 but the awareness of affected files is tracked here. NOTE: On Spring Boot 2.7, keep `javax.*` — this milestone documents the scope and may be merged with Milestone 5 if preferred.  
+**Scope:** Replace all `javax.validation` and `javax.servlet` imports with `jakarta.*` equivalents (`javax.crypto` stays — it's in `java.base`, not Jakarta EE). This is prep for Spring Boot 3 — the actual switch happens in Milestone 5 but the awareness of affected files is tracked here. NOTE: On Spring Boot 2.7, keep `javax.*` — this milestone documents the scope and may be merged with Milestone 5 if preferred.  
 **Files affected (21 files with javax imports):**
 - `src/main/java/io/spring/api/security/JwtTokenFilter.java` (javax.servlet)
 - `src/main/java/io/spring/application/user/UserService.java` (javax.validation)
