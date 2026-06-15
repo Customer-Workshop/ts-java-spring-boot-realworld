@@ -27,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.jdbc.Sql;
 
 @Import({
   ArticleQueryService.class,
@@ -34,6 +35,7 @@ import org.springframework.context.annotation.Import;
   MyBatisArticleRepository.class,
   MyBatisArticleFavoriteRepository.class
 })
+@Sql("classpath:create_article_bookmarks.sql")
 public class ArticleQueryServiceTest extends DbTestBase {
   @Autowired private ArticleQueryService queryService;
 
