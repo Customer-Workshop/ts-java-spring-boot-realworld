@@ -23,10 +23,12 @@ public class DefaultJwtService implements JwtService {
       @Value("${jwt.secret}") String secret, @Value("${jwt.sessionTime}") int sessionTime) {
     this.sessionTime = sessionTime;
     byte[] keyBytes = secret.getBytes();
-    if (keyBytes.length < 64) {
-      byte[] padded = new byte[64];
-      System.arraycopy(keyBytes, 0, padded, 0, keyBytes.length);
-      keyBytes = padded;
+    if (keyBytes.length < 32) {
+      throw new IllegalArgumentException(
+          "JWT secret must be at least 32 bytes (256 bits) for HMAC-SHA. "
+              + "Current length: "
+              + keyBytes.length
+              + " bytes.");
     }
     this.signingKey = Keys.hmacShaKeyFor(keyBytes);
   }
