@@ -8,11 +8,14 @@ import CustomLink from "../common/CustomLink";
 import CustomImage from "../common/CustomImage";
 import { usePageDispatch } from "../../lib/context/PageContext";
 import checkLogin from "../../lib/utils/checkLogin";
+import ArticleAPI from "../../lib/api/article";
 import { SERVER_BASE_URL } from "../../lib/utils/constant";
 import storage from "../../lib/utils/storage";
 
 const FAVORITED_CLASS = "btn btn-sm btn-primary";
 const NOT_FAVORITED_CLASS = "btn btn-sm btn-outline-primary";
+const BOOKMARKED_CLASS = "btn btn-sm btn-primary";
+const NOT_BOOKMARKED_CLASS = "btn btn-sm btn-outline-primary";
 
 const ArticlePreview = ({ article }) => {
   const setPage = usePageDispatch();
@@ -23,6 +26,31 @@ const ArticlePreview = ({ article }) => {
 
   const { data: currentUser } = useSWR("user", storage);
   const isLoggedIn = checkLogin(currentUser);
+
+  const handleClickBookmark = async (slug) => {
+    if (!isLoggedIn) {
+      Router.push(`/user/login`);
+      return;
+    }
+
+    setPreview({
+      ...preview,
+      bookmarked: !preview.bookmarked,
+    });
+
+    try {
+      if (preview.bookmarked) {
+        await ArticleAPI.unbookmark(slug, currentUser?.token);
+      } else {
+        await ArticleAPI.bookmark(slug, currentUser?.token);
+      }
+    } catch (error) {
+      setPreview({
+        ...preview,
+        bookmarked: !preview.bookmarked,
+      });
+    }
+  };
 
   const handleClickFavorite = async (slug) => {
     if (!isLoggedIn) {
@@ -96,6 +124,15 @@ const ArticlePreview = ({ article }) => {
         </div>
 
         <div className="pull-xs-right">
+          <button
+            className={
+              preview.bookmarked ? BOOKMARKED_CLASS : NOT_BOOKMARKED_CLASS
+            }
+            onClick={() => handleClickBookmark(preview.slug)}
+            style={{ marginRight: "4px" }}
+          >
+            <i className="ion-bookmark" />
+          </button>
           <button
             className={
               preview.favorited ? FAVORITED_CLASS : NOT_FAVORITED_CLASS
