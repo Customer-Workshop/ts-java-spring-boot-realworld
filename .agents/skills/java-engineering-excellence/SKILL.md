@@ -203,12 +203,11 @@ workflow (`.github/workflows/dependency-check.yml`) that:
    remediation session automatically
 
 ```bash
-# Run locally
-./gradlew dependencyCheckAnalyze
-# Report: build/reports/dependency-check/dependency-check-report.html
-
-# Quick dependency insight (no NVD download)
+# Quick dependency insight (no plugin needed)
 ./gradlew dependencies --configuration runtimeClasspath | grep -i "jackson\|log4j\|spring-"
+
+# Detailed insight for a specific artifact
+./gradlew dependencyInsight --dependency com.fasterxml.jackson.core:jackson-databind
 
 # Known critical CVEs in baseline:
 # - Spring Framework 5.3.15 (CVE-2022-22965 — Spring4Shell)
