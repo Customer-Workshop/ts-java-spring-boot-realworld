@@ -90,9 +90,57 @@ ts-java-spring-boot-realworld/
 | `org.flywaydb:flyway-core` | (managed) | 10.x (Boot 3.5 managed) |
 | Selenium (test) | 4.15.0 | 4.20.x |
 
-## Modernization — Namespace Migration Checklist
+## General Approach: Java 11 → 21 / Spring Boot 2.x → 3.x Upgrades
 
-When upgrading to Spring Boot 3.x / Jakarta EE:
+### Strategy: Layer-by-Layer with Continuous Verification
+
+Major version upgrades touch many files. The safe approach is incremental — one
+layer at a time, with the test suite gating each step. Never upgrade everything
+at once; a failing test after a 200-file change is nearly impossible to
+diagnose.
+
+**Recommended layer order:**
+
+1. **Build config first** — Gradle plugins, Java version, Spring Boot parent.
+   This makes compilation fail loudly for anything incompatible, exposing the
+   full scope of work. Run `./gradlew clean build -x test` to see what breaks.
+
+2. **Namespace migration** — `javax.*` → `jakarta.*`. This is mechanical but
+   dangerous: if you leave a stale explicit `javax` dependency on the classpath,
+   both providers exist and Spring silently binds to the wrong one. The test
+   suite will catch this (validation returns 200 instead of 422). Always remove
+   explicit `javax.validation:validation-api` or `javax.servlet:javax.servlet-api`
+   from `build.gradle` after migrating imports.
+
+3. **Security config** — `WebSecurityConfigurerAdapter` is removed in Boot 3.
+   Replace with a `@Bean SecurityFilterChain` using the lambda DSL. Update
+   `antMatchers` → `requestMatchers`, `authorizeRequests` → `authorizeHttpRequests`.
+
+4. **Infrastructure** — MyBatis, Flyway, database drivers, JWT libraries. These
+   typically have straightforward upgrade paths but may change package names or
+   method signatures.
+
+5. **GraphQL / DGS** — DGS 8.x is Boot 3 compatible. The codegen plugin version
+   must also be bumped. Schema files are unchanged; only the generated code and
+   runtime wiring differ.
+
+6. **Date/time** — `joda-time` → `java.time`. Replace `DateTime` with `Instant`
+   or `OffsetDateTime`. Remove the joda dependency entirely.
+
+**After each layer**, run `./gradlew clean test spotlessCheck`. Fix any failures
+before proceeding to the next layer. The test suite is the contract — if it
+breaks, the upgrade introduced a regression.
+
+### Known Pitfall: Dual Validation Providers
+
+The most dangerous silent failure in a Boot 2→3 upgrade: after changing imports
+to `jakarta.validation`, an explicit `javax.validation:validation-api` dependency
+left in `build.gradle` puts two providers on the classpath. Spring's validator
+binds to `jakarta`, but `@Valid` annotations on controllers resolve from the
+stale `javax` jar — validation is silently skipped. Tests that assert HTTP 422
+on invalid input catch this immediately.
+
+### Namespace Migration Checklist
 
 1. `javax.validation.*` → `jakarta.validation.*`
 2. `javax.servlet.*` → `jakarta.servlet.*`
@@ -143,13 +191,23 @@ session takes one layer, creates its own branch, and opens its own PR:
 The orchestrator merges all four branches, runs the full gate, and opens the
 final consolidated PR.
 
-## Security Scanning (for issue-triage task)
+## Security Scanning (SAST)
+
+The repo includes the OWASP Dependency-Check Gradle plugin and a GitHub Action
+workflow (`.github/workflows/dependency-check.yml`) that:
+
+1. Runs weekly (Monday 06:00 UTC) and on manual trigger
+2. Executes `./gradlew dependencyCheckAnalyze` against the NVD database
+3. Creates GitHub issues labeled `security` for findings with CVSS ≥ 7.0
+4. A Devin Automation watches for `security`-labeled issues and starts a
+   remediation session automatically
 
 ```bash
-# OWASP dependency-check (if plugin configured)
+# Run locally
 ./gradlew dependencyCheckAnalyze
+# Report: build/reports/dependency-check/dependency-check-report.html
 
-# Or use Gradle's built-in dependency insight
+# Quick dependency insight (no NVD download)
 ./gradlew dependencies --configuration runtimeClasspath | grep -i "jackson\|log4j\|spring-"
 
 # Known critical CVEs in baseline:
@@ -157,6 +215,14 @@ final consolidated PR.
 # - jackson-databind 2.13.x (multiple RCE vectors)
 # - joda-time (EOL, no security patches)
 # - sqlite-jdbc 3.36.x (buffer overflow CVEs)
+```
+
+### Automation Flow
+
+```
+SAST scan (weekly) → Finds CVE → Creates GitHub issue (labeled: security)
+    → Devin Automation triggers → Session runs !java_engineering_excellence
+    → task: issue-triage → Remediation PR opened → Team reviews
 ```
 
 ## Test Patterns (follow existing conventions)
