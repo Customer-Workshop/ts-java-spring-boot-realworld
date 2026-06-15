@@ -47,7 +47,7 @@ const ArticlePreview = ({ article }) => {
     } catch (error) {
       setPreview({
         ...preview,
-        bookmarked: !preview.bookmarked,
+        bookmarked: preview.bookmarked,
       });
     }
   };

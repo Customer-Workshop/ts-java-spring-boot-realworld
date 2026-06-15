@@ -39,7 +39,7 @@ const ArticleMeta = ({ article }) => {
       }
       trigger(`${SERVER_BASE_URL}/articles/${article.slug}`);
     } catch (error) {
-      setBookmarked(!bookmarked);
+      setBookmarked(bookmarked);
     }
   };
 
