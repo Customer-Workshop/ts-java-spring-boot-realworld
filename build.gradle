@@ -60,6 +60,9 @@ configurations {
             force 'org.apache.httpcomponents.client5:httpclient5:5.4.4'
         }
     }
+    // Phase 3c classpath verification: confirmed no javax.validation:validation-api
+    // or other Jakarta-conflicting jars on runtimeClasspath or testRuntimeClasspath.
+    // All validation dependencies resolve to jakarta.validation (Spring Boot 3.x BOM).
 }
 
 dependencies {
