@@ -21,6 +21,8 @@ import io.spring.graphql.types.Article;
 import io.spring.graphql.types.Comment;
 import io.spring.graphql.types.CommentEdge;
 import io.spring.graphql.types.CommentsConnection;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -114,8 +116,14 @@ public class CommentDatafetcher {
     return Comment.newBuilder()
         .id(comment.getId())
         .body(comment.getBody())
-        .updatedAt(comment.getCreatedAt().toString())
-        .createdAt(comment.getCreatedAt().toString())
+        .updatedAt(
+            DateTimeFormatter.ISO_OFFSET_DATE_TIME
+                .withZone(ZoneOffset.UTC)
+                .format(comment.getCreatedAt()))
+        .createdAt(
+            DateTimeFormatter.ISO_OFFSET_DATE_TIME
+                .withZone(ZoneOffset.UTC)
+                .format(comment.getCreatedAt()))
         .build();
   }
 }
