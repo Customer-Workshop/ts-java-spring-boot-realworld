@@ -84,9 +84,12 @@ dependencies {
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
     
     // Selenium E2E testing
-    testImplementation 'org.seleniumhq.selenium:selenium-java:4.15.0'
-    testImplementation 'io.github.bonigarcia:webdrivermanager:5.6.2'
-    testImplementation 'org.testng:testng:7.8.0'
+    // No explicit version: io.spring.dependency-management aligns selenium-java
+    // with the Spring Boot 3.5 BOM (Selenium 4.x), keeping the suite in sync
+    // with Boot's managed Selenium support.
+    testImplementation 'org.seleniumhq.selenium:selenium-java'
+    testImplementation 'io.github.bonigarcia:webdrivermanager:5.9.2'
+    testImplementation 'org.testng:testng:7.10.2'
     testImplementation 'com.aventstack:extentreports:5.1.1'
     // No explicit version: let the Spring Boot 3.5 BOM manage httpclient5 so it
     // stays in sync with Boot's HttpClientAutoConfiguration (which requires
