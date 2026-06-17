@@ -33,20 +33,15 @@ public class WebSecurityConfig {
   }
 
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-    http.csrf(csrf -> csrf.disable())
-        .cors(cors -> {})
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http.csrf(c -> c.disable())
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .exceptionHandling(
-            handling ->
-                handling.authenticationEntryPoint(
-                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-        .sessionManagement(
-            management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+        .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
-            authorize ->
-                authorize
-                    .requestMatchers(HttpMethod.OPTIONS)
+            auth ->
+                auth.requestMatchers(HttpMethod.OPTIONS)
                     .permitAll()
                     .requestMatchers("/graphiql")
                     .permitAll()
@@ -62,7 +57,6 @@ public class WebSecurityConfig {
                     .authenticated());
 
     http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
-
     return http.build();
   }
 
@@ -71,12 +65,7 @@ public class WebSecurityConfig {
     final CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowedOrigins(asList("*"));
     configuration.setAllowedMethods(asList("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
-    // setAllowCredentials(true) is important, otherwise:
-    // The value of the 'Access-Control-Allow-Origin' header in the response must not be the
-    // wildcard '*' when the request's credentials mode is 'include'.
     configuration.setAllowCredentials(false);
-    // setAllowedHeaders is important! Without it, OPTIONS preflight request
-    // will fail with 403 Invalid CORS request
     configuration.setAllowedHeaders(asList("Authorization", "Cache-Control", "Content-Type"));
     final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
