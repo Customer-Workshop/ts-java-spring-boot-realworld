@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '3.5.3'
+    id 'org.springframework.boot' version '3.5.0'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'java'
     id "com.netflix.dgs.codegen" version "7.0.3"
@@ -14,11 +14,7 @@ targetCompatibility = '21'
 spotless {
     java {
         target project.fileTree(project.rootDir) {
-            include '**/*.java'
-            // Exclude the whole build directory: it holds DGS-generated sources
-            // and compiler outputs, and on Gradle 8 a spotless input that
-            // overlaps another task's output dir fails strict validation.
-            exclude 'build/**'
+            include 'src/**/*.java'
         }
         googleJavaFormat()
     }
@@ -48,6 +44,8 @@ jacocoTestCoverageVerification {
     }
 }
 
+ext['byte-buddy.version'] = '1.15.4'
+
 repositories {
     mavenCentral()
 }
@@ -56,6 +54,12 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    configureEach {
+        resolutionStrategy {
+            force 'com.graphql-java:java-dataloader:5.0.3'
+            force 'org.apache.httpcomponents.client5:httpclient5:5.4.4'
+        }
+    }
 }
 
 dependencies {
@@ -63,39 +67,34 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
-    implementation platform('com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:9.2.2')
-    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+    implementation 'com.netflix.graphql.dgs:graphql-dgs-spring-graphql-starter:10.6.0'
     implementation 'org.flywaydb:flyway-core'
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6',
                 'io.jsonwebtoken:jjwt-jackson:0.12.6'
     implementation 'org.xerial:sqlite-jdbc:3.46.0.0'
+    implementation 'org.apache.httpcomponents.client5:httpclient5'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'io.rest-assured:rest-assured:5.5.1'
-    testImplementation 'io.rest-assured:json-path:5.5.1'
-    testImplementation 'io.rest-assured:xml-path:5.5.1'
-    testImplementation 'io.rest-assured:spring-mock-mvc:5.5.1'
+    testImplementation 'io.rest-assured:rest-assured:5.4.0'
+    testImplementation 'io.rest-assured:json-path:5.4.0'
+    testImplementation 'io.rest-assured:xml-path:5.4.0'
+    testImplementation 'io.rest-assured:spring-mock-mvc:5.4.0'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.3'
+    testImplementation 'org.mockito:mockito-core:5.14.2'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.14.2'
     
     // Selenium E2E testing
-    // No explicit version: io.spring.dependency-management aligns selenium-java
-    // with the Spring Boot 3.5 BOM (Selenium 4.x), keeping the suite in sync
-    // with Boot's managed Selenium support.
-    testImplementation 'org.seleniumhq.selenium:selenium-java'
-    testImplementation 'io.github.bonigarcia:webdrivermanager:5.9.2'
-    testImplementation 'org.testng:testng:7.10.2'
+    testImplementation 'org.seleniumhq.selenium:selenium-java:4.15.0'
+    testImplementation 'io.github.bonigarcia:webdrivermanager:5.6.2'
+    testImplementation 'org.testng:testng:7.8.0'
     testImplementation 'com.aventstack:extentreports:5.1.1'
-    // No explicit version: let the Spring Boot 3.5 BOM manage httpclient5 so it
-    // stays in sync with Boot's HttpClientAutoConfiguration (which requires
-    // TlsSocketStrategy, added in httpclient5 5.4). The Selenium sources do not
-    // reference httpclient5 directly.
-    testImplementation 'org.apache.httpcomponents.client5:httpclient5'
+    testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.4.4'
 }
 
 tasks.named('test') {
@@ -135,7 +134,6 @@ tasks.named('clean') {
 tasks.named('generateJava') {
     schemaPaths = ["${projectDir}/src/main/resources/schema"] // List of directories containing schema files
     packageName = 'io.spring.graphql' // The package name to use to generate sources
-    typeMapping = ["PageInfo": "graphql.relay.PageInfo"]
 }
 
 // Clean database before running to avoid Flyway migration conflicts
