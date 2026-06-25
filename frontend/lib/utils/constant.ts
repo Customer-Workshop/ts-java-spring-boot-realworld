@@ -7,7 +7,7 @@ export const ARTICLE_QUERY_MAP = {
   "tab=tag": `${SERVER_BASE_URL}/articles/tag`
 };
 
-export const DEFAULT_PROFILE_IMAGE = `https://static.productionready.io/images/smiley-cyrus.jpg`;
+export const DEFAULT_PROFILE_IMAGE = `/images/default-avatar.svg`;
 
 export const DEFAULT_LIMIT = 20;
 

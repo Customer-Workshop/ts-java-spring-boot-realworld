@@ -3,6 +3,7 @@ import React from "react";
 
 import Layout from "components/common/Layout";
 import ContextProvider from "lib/context";
+import "conduit.css";
 import "styles.css";
 
 if (typeof window !== "undefined") {
