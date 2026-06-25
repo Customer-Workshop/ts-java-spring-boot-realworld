@@ -27,7 +27,7 @@ const ArticlePage = (initialArticle) => {
   const { article }: Article = fetchedArticle || initialArticle;
 
   const markup = {
-    __html: marked(article.body, { sanitize: true }),
+    __html: marked(article.body.replace(/\\n/g, "\n"), { sanitize: true }),
   };
 
   return (
