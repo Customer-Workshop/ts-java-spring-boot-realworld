@@ -3,6 +3,7 @@ package io.spring.api;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static io.spring.TestHelper.articleDataFixture;
 import static java.util.Arrays.asList;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -12,6 +13,7 @@ import io.spring.api.security.WebSecurityConfig;
 import io.spring.application.ArticleQueryService;
 import io.spring.application.Page;
 import io.spring.application.article.ArticleCommandService;
+import io.spring.application.data.ArticleData;
 import io.spring.application.data.ArticleDataList;
 import io.spring.core.article.ArticleRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,13 +44,20 @@ public class ListArticleApiTest extends TestWithCurrentUser {
 
   @Test
   public void should_get_default_article_list() throws Exception {
-    ArticleDataList articleDataList =
-        new ArticleDataList(
-            asList(articleDataFixture("1", user), articleDataFixture("2", user)), 2);
+    ArticleData bookmarked = articleDataFixture("1", user);
+    bookmarked.setBookmarked(true);
+    ArticleData notBookmarked = articleDataFixture("2", user);
+    ArticleDataList articleDataList = new ArticleDataList(asList(bookmarked, notBookmarked), 2);
     when(articleQueryService.findRecentArticles(
             eq(null), eq(null), eq(null), eq(new Page(0, 20)), eq(null)))
         .thenReturn(articleDataList);
-    RestAssuredMockMvc.when().get("/articles").prettyPeek().then().statusCode(200);
+    RestAssuredMockMvc.when()
+        .get("/articles")
+        .prettyPeek()
+        .then()
+        .statusCode(200)
+        .body("articles[0].bookmarked", equalTo(true))
+        .body("articles[1].bookmarked", equalTo(false));
   }
 
   @Test
@@ -58,9 +67,10 @@ public class ListArticleApiTest extends TestWithCurrentUser {
 
   @Test
   public void should_get_feeds_success() throws Exception {
+    ArticleData bookmarked = articleDataFixture("1", user);
+    bookmarked.setBookmarked(true);
     ArticleDataList articleDataList =
-        new ArticleDataList(
-            asList(articleDataFixture("1", user), articleDataFixture("2", user)), 2);
+        new ArticleDataList(asList(bookmarked, articleDataFixture("2", user)), 2);
     when(articleQueryService.findUserFeed(eq(user), eq(new Page(0, 20))))
         .thenReturn(articleDataList);
 
@@ -70,6 +80,8 @@ public class ListArticleApiTest extends TestWithCurrentUser {
         .get("/articles/feed")
         .prettyPeek()
         .then()
-        .statusCode(200);
+        .statusCode(200)
+        .body("articles[0].bookmarked", equalTo(true))
+        .body("articles[1].bookmarked", equalTo(false));
   }
 }
