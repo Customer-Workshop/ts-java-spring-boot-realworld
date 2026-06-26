@@ -35,4 +35,23 @@
         </if>
         limit #{page.queryLimit}
     </select>
+    <select id="findUserBookmarkedArticleIds" resultType="java.lang.String">
+        select AB.article_id
+        from article_bookmarks AB
+        where AB.user_id = #{userId}
+        order by AB.created_at desc
+        limit #{page.offset}, #{page.limit}
+    </select>
+    <select id="countUserBookmarks" resultType="java.lang.Integer">
+        select count(1) from article_bookmarks where user_id = #{userId}
+    </select>
+    <select id="findBookmarkDates" resultType="io.spring.application.data.ArticleBookmarkDate">
+        select AB.article_id, AB.created_at
+        from article_bookmarks AB
+        where AB.user_id = #{userId}
+        and AB.article_id in
+        <foreach collection="ids" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </select>
 </mapper>
