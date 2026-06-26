@@ -5,7 +5,9 @@ import io.spring.application.CursorPager.Direction;
 import io.spring.core.user.User;
 import io.spring.infrastructure.DbTestBase;
 import io.spring.infrastructure.mybatis.readservice.ArticleBookmarksReadService;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.sql.DataSource;
@@ -99,7 +101,34 @@ public class ArticleBookmarksReadServiceTest extends DbTestBase {
     List<String> prevPage =
         readService.findUserBookmarkedArticleIdsWithCursor(
             userId, new CursorPageParameter<>("2020-01-01 00:00:02", 2, Direction.PREV));
-    Assertions.assertEquals(Arrays.asList("a4", "a3"), prevPage);
+    Assertions.assertEquals(Arrays.asList("a3", "a4"), prevPage);
+  }
+
+  @Test
+  public void should_return_nearest_page_on_prev_when_results_exceed_limit() {
+    String userId = "cursor-user";
+    insertBookmark("a1", userId, "2020-01-01 00:00:01");
+    insertBookmark("a2", userId, "2020-01-01 00:00:02");
+    insertBookmark("a3", userId, "2020-01-01 00:00:03");
+    insertBookmark("a4", userId, "2020-01-01 00:00:04");
+    insertBookmark("a5", userId, "2020-01-01 00:00:05");
+
+    // PREV from the oldest cursor: 4 rows (a2..a5) are above it but the page size is 2.
+    // The primitive must return the rows NEAREST the cursor ascending (a2, a3, [+1 extra a4]),
+    // not the farthest (a5, a4, ...). queryLimit = limit + 1 = 3.
+    List<String> prevPage =
+        readService.findUserBookmarkedArticleIdsWithCursor(
+            userId, new CursorPageParameter<>("2020-01-01 00:00:01", 2, Direction.PREV));
+
+    Assertions.assertEquals(Arrays.asList("a2", "a3", "a4"), prevPage);
+    Assertions.assertFalse(prevPage.contains("a5"));
+
+    // Mirror the query-service trimming + reverse the cursor wiring (MTM-3) applies for PREV:
+    // drop the extra row, reverse -> stable newest-bookmarked-first page that does not overlap
+    // the next page.
+    List<String> trimmed = new ArrayList<>(prevPage.subList(0, 2));
+    Collections.reverse(trimmed);
+    Assertions.assertEquals(Arrays.asList("a3", "a2"), trimmed);
   }
 
   @Test

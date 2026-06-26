@@ -27,7 +27,12 @@
                 AND AB.created_at > #{page.cursor}
             </if>
         </where>
-        order by AB.created_at desc
+        <if test='page.direction.name() == "NEXT"'>
+            order by AB.created_at desc
+        </if>
+        <if test='page.direction.name() == "PREV"'>
+            order by AB.created_at asc
+        </if>
         limit #{page.queryLimit}
     </select>
 </mapper>
