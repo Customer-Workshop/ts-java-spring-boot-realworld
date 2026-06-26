@@ -15,7 +15,9 @@ import io.spring.application.CursorPageParameter;
 import io.spring.application.CursorPager;
 import io.spring.application.CursorPager.Direction;
 import io.spring.application.DateTimeCursor;
+import io.spring.application.Node;
 import io.spring.application.data.ArticleData;
+import io.spring.application.data.BookmarkedArticleData;
 import io.spring.application.data.CommentData;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
@@ -23,6 +25,7 @@ import io.spring.graphql.DgsConstants.ARTICLEPAYLOAD;
 import io.spring.graphql.DgsConstants.COMMENT;
 import io.spring.graphql.DgsConstants.PROFILE;
 import io.spring.graphql.DgsConstants.QUERY;
+import io.spring.graphql.exception.AuthenticationException;
 import io.spring.graphql.types.Article;
 import io.spring.graphql.types.ArticleEdge;
 import io.spring.graphql.types.ArticlesConnection;
@@ -132,6 +135,53 @@ public class ArticleDatafetcher {
         .data(articlesConnection)
         .localContext(
             articles.getData().stream().collect(Collectors.toMap(ArticleData::getSlug, a -> a)))
+        .build();
+  }
+
+  @DgsQuery(field = QUERY.BookmarkedArticles)
+  public DataFetcherResult<ArticlesConnection> getBookmarkedArticles(
+      @InputArgument("first") Integer first,
+      @InputArgument("after") String after,
+      @InputArgument("last") Integer last,
+      @InputArgument("before") String before,
+      DgsDataFetchingEnvironment dfe) {
+    if (first == null && last == null) {
+      throw new IllegalArgumentException("first 和 last 必须只存在一个");
+    }
+
+    User current = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
+
+    CursorPager<BookmarkedArticleData> articles;
+    if (first != null) {
+      articles =
+          articleQueryService.findUserBookmarksWithCursor(
+              current,
+              new CursorPageParameter<>(DateTimeCursor.parse(after), first, Direction.NEXT));
+    } else {
+      articles =
+          articleQueryService.findUserBookmarksWithCursor(
+              current,
+              new CursorPageParameter<>(DateTimeCursor.parse(before), last, Direction.PREV));
+    }
+    graphql.relay.PageInfo pageInfo = buildArticlePageInfo(articles);
+    ArticlesConnection articlesConnection =
+        ArticlesConnection.newBuilder()
+            .pageInfo(pageInfo)
+            .edges(
+                articles.getData().stream()
+                    .map(
+                        b ->
+                            ArticleEdge.newBuilder()
+                                .cursor(b.getCursor().toString())
+                                .node(buildArticleResult(b.getArticle()))
+                                .build())
+                    .collect(Collectors.toList()))
+            .build();
+    return DataFetcherResult.<ArticlesConnection>newResult()
+        .data(articlesConnection)
+        .localContext(
+            articles.getData().stream()
+                .collect(Collectors.toMap(b -> b.getArticle().getSlug(), b -> b.getArticle())))
         .build();
   }
 
@@ -356,7 +406,7 @@ public class ArticleDatafetcher {
         .build();
   }
 
-  private DefaultPageInfo buildArticlePageInfo(CursorPager<ArticleData> articles) {
+  private DefaultPageInfo buildArticlePageInfo(CursorPager<? extends Node> articles) {
     return new DefaultPageInfo(
         articles.getStartCursor() == null
             ? null

@@ -138,4 +138,46 @@ public class ArticleBookmarksReadServiceTest extends DbTestBase {
             "nobody", new CursorPageParameter<>(null, 20, Direction.NEXT));
     Assertions.assertTrue(result.isEmpty());
   }
+
+  @Test
+  public void should_return_bookmarked_ids_ordered_by_created_at_desc_with_offset_limit() {
+    String userId = "offset-user";
+    insertBookmark("a1", userId, "2020-01-01 00:00:01");
+    insertBookmark("a2", userId, "2020-01-01 00:00:02");
+    insertBookmark("a3", userId, "2020-01-01 00:00:03");
+    insertBookmark("a4", "someone-else", "2020-01-01 00:00:09");
+
+    List<String> firstPage =
+        readService.findUserBookmarkedArticleIds(userId, new io.spring.application.Page(0, 2));
+    Assertions.assertEquals(Arrays.asList("a3", "a2"), firstPage);
+
+    List<String> secondPage =
+        readService.findUserBookmarkedArticleIds(userId, new io.spring.application.Page(2, 2));
+    Assertions.assertEquals(Arrays.asList("a1"), secondPage);
+  }
+
+  @Test
+  public void should_count_only_current_users_bookmarks() {
+    insertBookmark("a1", "count-user", "2020-01-01 00:00:01");
+    insertBookmark("a2", "count-user", "2020-01-01 00:00:02");
+    insertBookmark("a3", "another-user", "2020-01-01 00:00:03");
+
+    Assertions.assertEquals(2, readService.countUserBookmarks("count-user"));
+    Assertions.assertEquals(0, readService.countUserBookmarks("nobody"));
+  }
+
+  @Test
+  public void should_return_bookmark_dates_for_current_user_only() {
+    insertBookmark("a1", "dates-user", "2020-01-01 00:00:01");
+    insertBookmark("a2", "dates-user", "2020-01-01 00:00:02");
+    insertBookmark("a2", "other-user", "2020-06-06 06:06:06");
+
+    List<io.spring.application.data.ArticleBookmarkDate> dates =
+        readService.findBookmarkDates("dates-user", Arrays.asList("a1", "a2"));
+
+    Assertions.assertEquals(2, dates.size());
+    Assertions.assertTrue(dates.stream().allMatch(d -> d.getCreatedAt() != null));
+    Assertions.assertTrue(dates.stream().anyMatch(d -> d.getArticleId().equals("a1")));
+    Assertions.assertTrue(dates.stream().anyMatch(d -> d.getArticleId().equals("a2")));
+  }
 }

@@ -12,6 +12,7 @@ type Query {
     ): ArticlesConnection
     me: User
     feed(first: Int, after: String, last: Int, before: String): ArticlesConnection
+    bookmarkedArticles(first: Int, after: String, last: Int, before: String): ArticlesConnection
     profile(username: String!): ProfilePayload
     tags: [String]
 }
