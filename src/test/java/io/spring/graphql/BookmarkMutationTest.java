@@ -73,6 +73,7 @@ public class BookmarkMutationTest {
             article.getDescription(),
             article.getBody(),
             false,
+            false,
             0,
             article.getCreatedAt(),
             article.getUpdatedAt(),

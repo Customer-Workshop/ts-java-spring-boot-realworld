@@ -60,6 +60,7 @@ public class ArticleBookmarkApiTest extends TestWithCurrentUser {
             article.getDescription(),
             article.getBody(),
             false,
+            false,
             0,
             article.getCreatedAt(),
             article.getUpdatedAt(),
