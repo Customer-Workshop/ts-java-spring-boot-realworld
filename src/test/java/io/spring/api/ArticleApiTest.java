@@ -74,7 +74,33 @@ public class ArticleApiTest extends TestWithCurrentUser {
         .statusCode(200)
         .body("article.slug", equalTo(slug))
         .body("article.body", equalTo(articleData.getBody()))
+        .body("article.bookmarked", equalTo(false))
         .body("article.createdAt", equalTo(ISODateTimeFormat.dateTime().withZoneUTC().print(time)));
+  }
+
+  @Test
+  public void should_read_article_with_bookmarked_flag() throws Exception {
+    String slug = "test-new-article";
+    Article article =
+        new Article(
+            "Test New Article",
+            "Desc",
+            "Body",
+            Arrays.asList("java", "spring", "jpg"),
+            user.getId(),
+            new DateTime());
+    ArticleData articleData = TestHelper.getArticleDataFromArticleAndUser(article, user);
+    articleData.setBookmarked(true);
+
+    when(articleQueryService.findBySlug(eq(slug), eq(user))).thenReturn(Optional.of(articleData));
+
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .get("/articles/{slug}", slug)
+        .then()
+        .statusCode(200)
+        .body("article.bookmarked", equalTo(true));
   }
 
   @Test
@@ -139,6 +165,7 @@ public class ArticleApiTest extends TestWithCurrentUser {
             article.getTitle(),
             article.getDescription(),
             article.getBody(),
+            false,
             false,
             0,
             time,

@@ -51,6 +51,7 @@ type Article {
     createdAt: String!
     description: String!
     favorited: Boolean!
+    bookmarked: Boolean!
     favoritesCount: Int!
     slug: String!
     tagList: [String],
