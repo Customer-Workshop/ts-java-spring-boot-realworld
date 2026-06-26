@@ -128,6 +128,7 @@ public class ArticleQueryService {
     Map<String, DateTime> bookmarkedAt = bookmarkDates(currentUser.getId(), ids);
     List<BookmarkedArticleData> data =
         articles.stream()
+            .filter(article -> bookmarkedAt.get(article.getId()) != null)
             .map(article -> new BookmarkedArticleData(article, bookmarkedAt.get(article.getId())))
             .collect(toList());
     return new CursorPager<>(data, page.getDirection(), hasExtra);
