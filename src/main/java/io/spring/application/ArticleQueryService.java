@@ -203,6 +203,7 @@ public class ArticleQueryService {
     setFavoriteCount(articles);
     if (currentUser != null) {
       setIsFavorite(articles, currentUser);
+      setIsBookmarked(articles, currentUser);
       setIsFollowingAuthor(articles, currentUser);
     }
   }
@@ -249,8 +250,23 @@ public class ArticleQueryService {
         });
   }
 
+  private void setIsBookmarked(List<ArticleData> articles, User currentUser) {
+    Set<String> bookmarkedArticles =
+        articleBookmarksReadService.userBookmarks(
+            articles.stream().map(articleData -> articleData.getId()).collect(toList()),
+            currentUser);
+
+    articles.forEach(
+        articleData -> {
+          if (bookmarkedArticles.contains(articleData.getId())) {
+            articleData.setBookmarked(true);
+          }
+        });
+  }
+
   private void fillExtraInfo(String id, User user, ArticleData articleData) {
     articleData.setFavorited(articleFavoritesReadService.isUserFavorite(user.getId(), id));
+    articleData.setBookmarked(articleBookmarksReadService.isUserBookmark(user.getId(), id));
     articleData.setFavoritesCount(articleFavoritesReadService.articleFavoriteCount(id));
     articleData
         .getProfileData()
