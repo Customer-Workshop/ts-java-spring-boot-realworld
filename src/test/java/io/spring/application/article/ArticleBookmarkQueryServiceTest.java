@@ -239,4 +239,21 @@ public class ArticleBookmarkQueryServiceTest extends DbTestBase {
     Assertions.assertEquals(2, list.getCount());
     Assertions.assertEquals(Arrays.asList(a1.getId()), ids(list.getArticleDatas()));
   }
+
+  @Test
+  public void should_return_empty_when_every_bookmarked_article_is_deleted() {
+    bookmark("missing-1", user.getId(), "2021-05-01 10:00:01");
+    bookmark("missing-2", user.getId(), "2021-05-01 10:00:02");
+
+    // REST offset/limit path: no fillExtraInfo over an empty list (no empty IN () SQL).
+    ArticleDataList list = queryService.findUserBookmarks(user, new Page(0, 20));
+    Assertions.assertTrue(list.getArticleDatas().isEmpty());
+    Assertions.assertEquals(2, list.getCount());
+
+    // Cursor path: same guard.
+    CursorPager<BookmarkedArticleData> page =
+        queryService.findUserBookmarksWithCursor(
+            user, new CursorPageParameter<>(null, 20, Direction.NEXT));
+    Assertions.assertTrue(page.getData().isEmpty());
+  }
 }

@@ -121,7 +121,9 @@ public class ArticleQueryService {
     }
 
     List<ArticleData> articles = findArticlesInIdOrder(ids);
-    fillExtraInfo(articles, currentUser);
+    if (!articles.isEmpty()) {
+      fillExtraInfo(articles, currentUser);
+    }
 
     Map<String, DateTime> bookmarkedAt = bookmarkDates(currentUser.getId(), ids);
     List<BookmarkedArticleData> data =
@@ -139,7 +141,9 @@ public class ArticleQueryService {
       return new ArticleDataList(new ArrayList<>(), count);
     }
     List<ArticleData> articles = findArticlesInIdOrder(ids);
-    fillExtraInfo(articles, currentUser);
+    if (!articles.isEmpty()) {
+      fillExtraInfo(articles, currentUser);
+    }
     return new ArticleDataList(articles, count);
   }
 
