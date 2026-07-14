@@ -211,6 +211,57 @@ public class ArticleQueryServiceTest extends DbTestBase {
     Assertions.assertTrue(articleData.getProfileData().isFollowing());
   }
 
+  // AC13: the favorite read model reports `favorited` per (article, viewer) — true only for the
+  // viewing user's own favorite; false for other users and for an anonymous viewer.
+  @Test
+  public void should_report_favorited_only_for_viewing_users_own_favorite() {
+    User favoritingUser = new User("fav@test.com", "favuser", "123", "", "");
+    userRepository.save(favoritingUser);
+    User otherViewer = new User("viewer@test.com", "viewer", "123", "", "");
+    userRepository.save(otherViewer);
+
+    articleFavoriteRepository.save(new ArticleFavorite(article.getId(), favoritingUser.getId()));
+
+    Assertions.assertTrue(
+        queryService.findById(article.getId(), favoritingUser).get().isFavorited(),
+        "the favoriting user should see favorited=true");
+    Assertions.assertFalse(
+        queryService.findById(article.getId(), otherViewer).get().isFavorited(),
+        "a different viewer should see favorited=false");
+    Assertions.assertFalse(
+        queryService.findById(article.getId(), null).get().isFavorited(),
+        "an anonymous viewer should see favorited=false");
+  }
+
+  // AC14: favoritesCount equals the number of distinct users who favorited the article.
+  @Test
+  public void should_count_distinct_users_who_favorited() {
+    User userA = new User("a@test.com", "usera", "123", "", "");
+    userRepository.save(userA);
+    User userB = new User("b@test.com", "userb", "123", "", "");
+    userRepository.save(userB);
+
+    articleFavoriteRepository.save(new ArticleFavorite(article.getId(), userA.getId()));
+    articleFavoriteRepository.save(new ArticleFavorite(article.getId(), userB.getId()));
+
+    Assertions.assertEquals(
+        2, queryService.findById(article.getId(), userA).get().getFavoritesCount());
+  }
+
+  // AC5/AC14: favoriting the same article twice as the same user must not double-count.
+  @Test
+  public void should_not_double_count_when_same_user_favorites_twice() {
+    User favoritingUser = new User("fav@test.com", "favuser", "123", "", "");
+    userRepository.save(favoritingUser);
+
+    articleFavoriteRepository.save(new ArticleFavorite(article.getId(), favoritingUser.getId()));
+    articleFavoriteRepository.save(new ArticleFavorite(article.getId(), favoritingUser.getId()));
+
+    ArticleData articleData = queryService.findById(article.getId(), favoritingUser).get();
+    Assertions.assertTrue(articleData.isFavorited());
+    Assertions.assertEquals(1, articleData.getFavoritesCount());
+  }
+
   @Test
   public void should_get_user_feed() {
     User anotherUser = new User("other@email.com", "other", "123", "", "");
