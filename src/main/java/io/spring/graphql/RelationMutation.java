@@ -42,15 +42,11 @@ public class RelationMutation {
     User user = SecurityUtil.getCurrentUser().orElseThrow(AuthenticationException::new);
     User target =
         userRepository.findByUsername(username).orElseThrow(ResourceNotFoundException::new);
-    return userRepository
+    userRepository
         .findRelation(user.getId(), target.getId())
-        .map(
-            relation -> {
-              userRepository.removeRelation(relation);
-              Profile profile = buildProfile(username, user);
-              return ProfilePayload.newBuilder().profile(profile).build();
-            })
-        .orElseThrow(ResourceNotFoundException::new);
+        .ifPresent(userRepository::removeRelation);
+    Profile profile = buildProfile(username, user);
+    return ProfilePayload.newBuilder().profile(profile).build();
   }
 
   private Profile buildProfile(@InputArgument("username") String username, User current) {

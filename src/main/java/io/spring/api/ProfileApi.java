@@ -7,7 +7,6 @@ import io.spring.core.user.FollowRelation;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import java.util.HashMap;
-import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -51,20 +50,12 @@ public class ProfileApi {
   @DeleteMapping(path = "follow")
   public ResponseEntity unfollow(
       @PathVariable("username") String username, @AuthenticationPrincipal User user) {
-    Optional<User> userOptional = userRepository.findByUsername(username);
-    if (userOptional.isPresent()) {
-      User target = userOptional.get();
-      return userRepository
-          .findRelation(user.getId(), target.getId())
-          .map(
-              relation -> {
-                userRepository.removeRelation(relation);
-                return profileResponse(profileQueryService.findByUsername(username, user).get());
-              })
-          .orElseThrow(ResourceNotFoundException::new);
-    } else {
-      throw new ResourceNotFoundException();
-    }
+    User target =
+        userRepository.findByUsername(username).orElseThrow(ResourceNotFoundException::new);
+    userRepository
+        .findRelation(user.getId(), target.getId())
+        .ifPresent(userRepository::removeRelation);
+    return profileResponse(profileQueryService.findByUsername(username, user).get());
   }
 
   private ResponseEntity profileResponse(ProfileData profile) {

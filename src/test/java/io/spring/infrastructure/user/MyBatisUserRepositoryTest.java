@@ -6,15 +6,18 @@ import io.spring.core.user.UserRepository;
 import io.spring.infrastructure.DbTestBase;
 import io.spring.infrastructure.repository.MyBatisUserRepository;
 import java.util.Optional;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @Import(MyBatisUserRepository.class)
 public class MyBatisUserRepositoryTest extends DbTestBase {
   @Autowired private UserRepository userRepository;
+  @Autowired private DataSource dataSource;
   private User user;
 
   @BeforeEach
@@ -69,5 +72,27 @@ public class MyBatisUserRepositoryTest extends DbTestBase {
 
     userRepository.removeRelation(followRelation);
     Assertions.assertFalse(userRepository.findRelation(user.getId(), other.getId()).isPresent());
+  }
+
+  // AC8: following an already-followed user is idempotent — no duplicate relation is persisted.
+  @Test
+  public void should_not_create_duplicate_follow_relation() {
+    userRepository.save(user);
+    User other = new User("other@example.com", "other", "123", "", "");
+    userRepository.save(other);
+
+    FollowRelation followRelation = new FollowRelation(user.getId(), other.getId());
+    userRepository.saveRelation(followRelation);
+    userRepository.saveRelation(followRelation);
+
+    Assertions.assertTrue(userRepository.findRelation(user.getId(), other.getId()).isPresent());
+    Integer count =
+        new JdbcTemplate(dataSource)
+            .queryForObject(
+                "select count(*) from follows where user_id = ? and follow_id = ?",
+                Integer.class,
+                user.getId(),
+                other.getId());
+    Assertions.assertEquals(1, count);
   }
 }
