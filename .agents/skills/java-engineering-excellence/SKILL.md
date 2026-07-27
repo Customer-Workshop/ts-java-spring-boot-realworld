@@ -85,7 +85,7 @@ ts-java-spring-boot-realworld/
 | `io.jsonwebtoken:jjwt-api` | 0.11.2 | 0.12.x |
 | `joda-time:joda-time` | 2.10.13 | remove → `java.time` |
 | `org.xerial:sqlite-jdbc` | 3.36.0.3 | 3.45.x+ |
-| `io.rest-assured:spring-mock-mvc` (test) | 4.5.1 | 5.4.x |
+| `io.rest-assured:spring-mock-mvc` (test) | 5.4.0 | — (done) |
 | `com.diffplug.spotless` | 6.2.1 | 6.25.x |
 | `org.flywaydb:flyway-core` | (managed) | 10.x (Boot 3.5 managed) |
 | Selenium (test) | 4.15.0 | 4.20.x |
