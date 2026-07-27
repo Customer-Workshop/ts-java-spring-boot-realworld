@@ -84,7 +84,7 @@ ts-java-spring-boot-realworld/
 | `org.mybatis.spring.boot:mybatis-spring-boot-starter` | 2.2.2 | 3.0.x |
 | `io.jsonwebtoken:jjwt-api` | 0.11.2 | 0.12.x |
 | `joda-time:joda-time` | 2.10.13 | remove → `java.time` |
-| `org.xerial:sqlite-jdbc` | 3.36.0.3 | 3.45.x+ |
+| `org.xerial:sqlite-jdbc` | 3.53.2.0 | up to date (Java 8+ bytecode, runs on 11 and 21) |
 | `io.rest-assured:spring-mock-mvc` (test) | 4.5.1 | 5.4.x |
 | `com.diffplug.spotless` | 6.2.1 | 6.25.x |
 | `org.flywaydb:flyway-core` | (managed) | 10.x (Boot 3.5 managed) |
@@ -213,7 +213,7 @@ workflow (`.github/workflows/dependency-check.yml`) that:
 # - Spring Framework 5.3.15 (CVE-2022-22965 — Spring4Shell)
 # - jackson-databind 2.13.x (multiple RCE vectors)
 # - joda-time (EOL, no security patches)
-# - sqlite-jdbc 3.36.x (buffer overflow CVEs)
+# - sqlite-jdbc 3.36.x (buffer overflow CVEs) — remediated, now 3.53.2.0
 ```
 
 ### Automation Flow
