@@ -88,7 +88,7 @@ ts-java-spring-boot-realworld/
 | `io.rest-assured:spring-mock-mvc` (test) | 4.5.1 | 5.4.x |
 | `com.diffplug.spotless` | 6.2.1 | 6.25.x |
 | `org.flywaydb:flyway-core` | (managed) | 10.x (Boot 3.5 managed) |
-| Selenium (test) | 4.15.0 | 4.20.x |
+| Selenium (test) | 4.46.0 (`ext['selenium.version']` overrides the Boot BOM's 3.141.59) | 4.46.x |
 
 ## General Approach: Java 11 → 21 / Spring Boot 2.x → 3.x Upgrades
 

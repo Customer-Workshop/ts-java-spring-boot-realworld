@@ -55,6 +55,10 @@ configurations {
     }
 }
 
+// The Spring Boot 2.6.3 BOM manages org.seleniumhq.selenium at 3.141.59, which would drag
+// selenium-java's own modules back to 3.x and split the classpath.
+ext['selenium.version'] = '4.46.0'
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -82,7 +86,7 @@ dependencies {
     testImplementation 'org.mockito:mockito-inline:4.0.0'
     
     // Selenium E2E testing
-    testImplementation 'org.seleniumhq.selenium:selenium-java:4.15.0'
+    testImplementation 'org.seleniumhq.selenium:selenium-java:4.46.0'
     testImplementation 'io.github.bonigarcia:webdrivermanager:5.6.2'
     testImplementation 'org.testng:testng:7.8.0'
     testImplementation 'com.aventstack:extentreports:5.1.1'
