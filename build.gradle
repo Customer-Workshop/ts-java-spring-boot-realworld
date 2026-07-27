@@ -55,6 +55,11 @@ configurations {
     }
 }
 
+// Override the Spring Boot BOM-managed Mockito pin so transitively pulled
+// mockito artifacts resolve to the same version as the declared one.
+ext['mockito.version'] = '5.18.0'
+ext['byte-buddy.version'] = '1.17.5'
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -79,7 +84,7 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.2.2'
-    testImplementation 'org.mockito:mockito-inline:4.0.0'
+    testImplementation 'org.mockito:mockito-core:5.18.0'
     
     // Selenium E2E testing
     testImplementation 'org.seleniumhq.selenium:selenium-java:4.15.0'
