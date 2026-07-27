@@ -82,7 +82,7 @@ ts-java-spring-boot-realworld/
 | `com.netflix.dgs.codegen` | 5.0.6 | 7.x+ |
 | `com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter` | 4.9.21 | 8.x+ (Boot 3 compatible) |
 | `org.mybatis.spring.boot:mybatis-spring-boot-starter` | 2.2.2 | 3.0.x |
-| `io.jsonwebtoken:jjwt-api` | 0.11.2 | 0.12.x |
+| `io.jsonwebtoken:jjwt-api` | 0.12.6 | already on 0.12.x |
 | `joda-time:joda-time` | 2.10.13 | remove → `java.time` |
 | `org.xerial:sqlite-jdbc` | 3.36.0.3 | 3.45.x+ |
 | `io.rest-assured:spring-mock-mvc` (test) | 4.5.1 | 5.4.x |
