@@ -8,6 +8,7 @@ plugins {
 }
 
 version = '0.0.1-SNAPSHOT'
+ext['restAssuredVersion'] = '5.5.2'
 sourceCompatibility = '11'
 targetCompatibility = '11'
 
@@ -72,10 +73,10 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'io.rest-assured:rest-assured:4.5.1'
-    testImplementation 'io.rest-assured:json-path:4.5.1'
-    testImplementation 'io.rest-assured:xml-path:4.5.1'
-    testImplementation 'io.rest-assured:spring-mock-mvc:4.5.1'
+    testImplementation "io.rest-assured:rest-assured:${restAssuredVersion}"
+    testImplementation "io.rest-assured:json-path:${restAssuredVersion}"
+    testImplementation "io.rest-assured:xml-path:${restAssuredVersion}"
+    testImplementation "io.rest-assured:spring-mock-mvc:${restAssuredVersion}"
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.2.2'
