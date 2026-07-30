@@ -3,6 +3,7 @@ import React from "react";
 import ArticleActions from "./ArticleActions";
 import CustomImage from "../common/CustomImage";
 import CustomLink from "../common/CustomLink";
+import { getFullDate, getRelativeTime } from "../../lib/utils/relativeTime";
 
 const ArticleMeta = ({ article }) => {
   if (!article) return;
@@ -24,8 +25,8 @@ const ArticleMeta = ({ article }) => {
         >
           {article.author?.username}
         </CustomLink>
-        <span className="date">
-          {new Date(article.createdAt).toDateString()}
+        <span className="date" title={getFullDate(article.createdAt)}>
+          {getRelativeTime(article.createdAt)}
         </span>
       </div>
 
