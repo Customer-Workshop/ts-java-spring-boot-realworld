@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import io.spring.application.DateTimeFormats;
 import java.io.IOException;
-import org.joda.time.DateTime;
-import org.joda.time.format.ISODateTimeFormat;
+import java.time.Instant;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,23 +21,23 @@ public class JacksonCustomizations {
 
   public static class RealWorldModules extends SimpleModule {
     public RealWorldModules() {
-      addSerializer(DateTime.class, new DateTimeSerializer());
+      addSerializer(Instant.class, new DateTimeSerializer());
     }
   }
 
-  public static class DateTimeSerializer extends StdSerializer<DateTime> {
+  public static class DateTimeSerializer extends StdSerializer<Instant> {
 
     protected DateTimeSerializer() {
-      super(DateTime.class);
+      super(Instant.class);
     }
 
     @Override
-    public void serialize(DateTime value, JsonGenerator gen, SerializerProvider provider)
+    public void serialize(Instant value, JsonGenerator gen, SerializerProvider provider)
         throws IOException {
       if (value == null) {
         gen.writeNull();
       } else {
-        gen.writeString(ISODateTimeFormat.dateTime().withZoneUTC().print(value));
+        gen.writeString(DateTimeFormats.DATE_TIME_FORMAT.format(value));
       }
     }
   }
