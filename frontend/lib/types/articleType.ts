@@ -8,13 +8,13 @@ export interface Article {
 
 export type ArticleType = {
   tagList: string[];
-  createdAt: number;
+  createdAt: string;
   author: Author;
   description: string;
   title: string;
   body: string;
   slug: string;
-  updatedAt: number;
+  updatedAt: string;
   favoritesCount: number;
   favorited: boolean;
 };

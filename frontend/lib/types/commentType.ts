@@ -3,12 +3,12 @@ export interface Comments {
 }
 
 export type CommentType = {
-  createdAt: number;
+  createdAt: string;
   id: string;
   body: string;
   slug: string;
   author: Author;
-  updatedAt: number;
+  updatedAt: string;
 };
 
 export type Author = {
