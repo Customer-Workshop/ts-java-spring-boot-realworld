@@ -143,7 +143,7 @@ public class ArticleApiTest extends TestWithCurrentUser {
             0,
             time,
             time,
-            Arrays.asList("joda"),
+            Arrays.asList("java-time"),
             new ProfileData(
                 anotherUser.getId(),
                 anotherUser.getUsername(),

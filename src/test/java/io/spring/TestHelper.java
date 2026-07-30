@@ -36,7 +36,7 @@ public class TestHelper {
         0,
         article.getCreatedAt(),
         article.getUpdatedAt(),
-        Arrays.asList("joda"),
+        Arrays.asList("java-time"),
         new ProfileData(user.getId(), user.getUsername(), user.getBio(), user.getImage(), false));
   }
 }
