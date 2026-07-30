@@ -53,7 +53,12 @@ public class ArticleQueryServiceTest extends DbTestBase {
     userRepository.save(user);
     article =
         new Article(
-            "test", "desc", "body", Arrays.asList("java", "spring"), user.getId(), Instant.now().truncatedTo(ChronoUnit.MILLIS));
+            "test",
+            "desc",
+            "body",
+            Arrays.asList("java", "spring"),
+            user.getId(),
+            Instant.now().truncatedTo(ChronoUnit.MILLIS));
     articleRepository.save(article);
   }
 
