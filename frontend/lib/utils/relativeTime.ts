@@ -6,9 +6,9 @@ const UNITS = [
   { name: "hour", seconds: 60 * 60 },
   { name: "minute", seconds: 60 },
   { name: "second", seconds: 1 },
-];
+] as const;
 
-const relativeTimeFormatter = new (Intl as any).RelativeTimeFormat(undefined, {
+const relativeTimeFormatter = new Intl.RelativeTimeFormat(undefined, {
   numeric: "always",
 });
 
