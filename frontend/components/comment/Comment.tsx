@@ -6,6 +6,7 @@ import CustomImage from "../common/CustomImage";
 import Maybe from "../common/Maybe";
 import DeleteButton from "./DeleteButton";
 import checkLogin from "../../lib/utils/checkLogin";
+import formatDate from "../../lib/utils/formatDate";
 import storage from "../../lib/utils/storage";
 
 const Comment = ({ comment }) => {
@@ -40,7 +41,7 @@ const Comment = ({ comment }) => {
           {comment.author.username}
         </CustomLink>
         <span className="date-posted">
-          {new Date(comment.createdAt).toDateString()}
+          {formatDate(comment.createdAt)}
         </span>
         <Maybe test={canModify}>
           <DeleteButton commentId={comment.id} />

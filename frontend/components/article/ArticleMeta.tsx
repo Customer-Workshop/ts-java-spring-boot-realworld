@@ -3,6 +3,7 @@ import React from "react";
 import ArticleActions from "./ArticleActions";
 import CustomImage from "../common/CustomImage";
 import CustomLink from "../common/CustomLink";
+import formatDate from "../../lib/utils/formatDate";
 
 const ArticleMeta = ({ article }) => {
   if (!article) return;
@@ -25,7 +26,7 @@ const ArticleMeta = ({ article }) => {
           {article.author?.username}
         </CustomLink>
         <span className="date">
-          {new Date(article.createdAt).toDateString()}
+          {formatDate(article.createdAt)}
         </span>
       </div>
 
