@@ -1,6 +1,9 @@
 package io.spring.infrastructure.mybatis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,15 +28,10 @@ public class DateTimeHandlerTest {
     handler.setParameter(preparedStatement, 1, instant, null);
     verify(preparedStatement)
         .setTimestamp(
-            org.mockito.ArgumentMatchers.eq(1),
-            org.mockito.ArgumentMatchers.eq(timestamp),
-            org.mockito.ArgumentMatchers.argThat(
-                calendar -> calendar.getTimeZone().equals(TimeZone.getTimeZone("UTC"))));
-    when(
-            resultSet.getTimestamp(
-                org.mockito.ArgumentMatchers.eq("created_at"),
-                org.mockito.ArgumentMatchers.any(Calendar.class)))
-        .thenReturn(timestamp);
+            eq(1),
+            eq(timestamp),
+            argThat(calendar -> calendar.getTimeZone().equals(TimeZone.getTimeZone("UTC"))));
+    when(resultSet.getTimestamp(eq("created_at"), any(Calendar.class))).thenReturn(timestamp);
 
     assertEquals(instant, handler.getResult(resultSet, "created_at"));
   }
