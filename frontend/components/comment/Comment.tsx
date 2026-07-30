@@ -6,6 +6,7 @@ import CustomImage from "../common/CustomImage";
 import Maybe from "../common/Maybe";
 import DeleteButton from "./DeleteButton";
 import checkLogin from "../../lib/utils/checkLogin";
+import relativeTime from "../../lib/utils/relativeTime";
 import storage from "../../lib/utils/storage";
 
 const Comment = ({ comment }) => {
@@ -39,8 +40,11 @@ const Comment = ({ comment }) => {
         >
           {comment.author.username}
         </CustomLink>
-        <span className="date-posted">
-          {new Date(comment.createdAt).toDateString()}
+        <span
+          className="date-posted"
+          title={new Date(comment.createdAt).toLocaleString()}
+        >
+          {relativeTime(comment.createdAt)}
         </span>
         <Maybe test={canModify}>
           <DeleteButton commentId={comment.id} />

@@ -9,6 +9,7 @@ import CustomImage from "../common/CustomImage";
 import { usePageDispatch } from "../../lib/context/PageContext";
 import checkLogin from "../../lib/utils/checkLogin";
 import { SERVER_BASE_URL } from "../../lib/utils/constant";
+import relativeTime from "../../lib/utils/relativeTime";
 import storage from "../../lib/utils/storage";
 
 const FAVORITED_CLASS = "btn btn-sm btn-primary";
@@ -90,8 +91,11 @@ const ArticlePreview = ({ article }) => {
           >
             <span onClick={() => setPage(0)}>{preview.author.username}</span>
           </CustomLink>
-          <span className="date">
-            {new Date(preview.createdAt).toDateString()}
+          <span
+            className="date"
+            title={new Date(preview.createdAt).toLocaleString()}
+          >
+            {relativeTime(preview.createdAt)}
           </span>
         </div>
 
