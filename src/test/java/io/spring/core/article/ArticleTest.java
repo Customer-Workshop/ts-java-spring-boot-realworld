@@ -27,9 +27,16 @@ public class ArticleTest {
   }
 
   @Test
-  public void should_handle_other_language() {
-    Article article = new Article("中文：标题", "desc", "body", Arrays.asList("java"), "123");
-    assertThat(article.getSlug(), is("中文-标题"));
+  public void should_strip_non_ascii_characters() {
+    Article article =
+        new Article("中文：标题 hello world", "desc", "body", Arrays.asList("java"), "123");
+    assertThat(article.getSlug(), is("hello-world"));
+  }
+
+  @Test
+  public void should_transliterate_accented_characters() {
+    Article article = new Article("Café Résumé", "desc", "body", Arrays.asList("java"), "123");
+    assertThat(article.getSlug(), is("cafe-resume"));
   }
 
   @Test
