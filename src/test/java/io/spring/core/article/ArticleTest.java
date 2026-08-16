@@ -40,6 +40,12 @@ public class ArticleTest {
   }
 
   @Test
+  public void should_fall_back_to_id_when_title_has_no_ascii() {
+    Article article = new Article("中文：标题", "desc", "body", Arrays.asList("java"), "123");
+    assertThat(article.getSlug(), is(article.getId()));
+  }
+
+  @Test
   public void should_handle_commas() {
     Article article = new Article("what?the.hell,w", "desc", "body", Arrays.asList("java"), "123");
     assertThat(article.getSlug(), is("what-the-hell-w"));

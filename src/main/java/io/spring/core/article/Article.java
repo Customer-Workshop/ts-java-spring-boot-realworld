@@ -6,6 +6,7 @@ import io.spring.Util;
 import java.text.Normalizer;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -39,7 +40,7 @@ public class Article {
       String userId,
       DateTime createdAt) {
     this.id = UUID.randomUUID().toString();
-    this.slug = toSlug(title);
+    this.slug = slugFrom(title);
     this.title = title;
     this.description = description;
     this.body = body;
@@ -52,7 +53,7 @@ public class Article {
   public void update(String title, String description, String body) {
     if (!Util.isEmpty(title)) {
       this.title = title;
-      this.slug = toSlug(title);
+      this.slug = slugFrom(title);
       this.updatedAt = new DateTime();
     }
     if (!Util.isEmpty(description)) {
@@ -68,8 +69,13 @@ public class Article {
   public static String toSlug(String title) {
     return Normalizer.normalize(title, Normalizer.Form.NFD)
         .replaceAll("\\p{M}", "")
-        .toLowerCase()
+        .toLowerCase(Locale.ROOT)
         .replaceAll("[^a-z0-9]+", "-")
         .replaceAll("^-+|-+$", "");
+  }
+
+  private String slugFrom(String title) {
+    String slug = toSlug(title);
+    return slug.isEmpty() ? id : slug;
   }
 }
