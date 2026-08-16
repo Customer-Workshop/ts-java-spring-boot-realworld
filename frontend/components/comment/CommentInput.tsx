@@ -9,6 +9,9 @@ import checkLogin from "../../lib/utils/checkLogin";
 import { SERVER_BASE_URL } from "../../lib/utils/constant";
 import storage from "../../lib/utils/storage";
 
+const COMMENT_MAX_LENGTH = 16384;
+const COMMENT_WARN_THRESHOLD = 15000;
+
 const CommentInput = () => {
   const { data: currentUser } = useSWR("user", storage);
   const isLoggedIn = checkLogin(currentUser);
@@ -19,6 +22,9 @@ const CommentInput = () => {
 
   const [content, setContent] = React.useState("");
   const [isLoading, setLoading] = React.useState(false);
+
+  const isOverLimit = content.length > COMMENT_MAX_LENGTH;
+  const showCounter = content.length > COMMENT_WARN_THRESHOLD;
 
   const handleChange = React.useCallback((e) => {
     setContent(e.target.value);
@@ -72,6 +78,11 @@ const CommentInput = () => {
           onChange={handleChange}
           disabled={isLoading}
         />
+        {showCounter && (
+          <div style={{ color: isOverLimit ? "red" : undefined }}>
+            {content.length} / {COMMENT_MAX_LENGTH}
+          </div>
+        )}
       </div>
       <div className="card-footer">
         <CustomImage
@@ -79,7 +90,11 @@ const CommentInput = () => {
           src={currentUser?.image}
           alt="Comment author's profile image"
         />
-        <button className="btn btn-sm btn-primary" type="submit">
+        <button
+          className="btn btn-sm btn-primary"
+          type="submit"
+          disabled={isOverLimit}
+        >
           Post Comment
         </button>
       </div>
