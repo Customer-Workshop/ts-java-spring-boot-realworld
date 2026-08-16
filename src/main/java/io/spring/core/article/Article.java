@@ -3,6 +3,7 @@ package io.spring.core.article;
 import static java.util.stream.Collectors.toList;
 
 import io.spring.Util;
+import java.text.Normalizer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
@@ -65,6 +66,10 @@ public class Article {
   }
 
   public static String toSlug(String title) {
-    return title.toLowerCase().replaceAll("[\\&|[\\uFE30-\\uFFA0]|\\’|\\”|\\s\\?\\,\\.]+", "-");
+    return Normalizer.normalize(title, Normalizer.Form.NFD)
+        .replaceAll("\\p{M}", "")
+        .toLowerCase()
+        .replaceAll("[^a-z0-9]+", "-")
+        .replaceAll("^-+|-+$", "");
   }
 }
