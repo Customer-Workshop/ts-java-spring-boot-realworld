@@ -65,6 +65,11 @@ public class Article {
   }
 
   public static String toSlug(String title) {
-    return title.toLowerCase().replaceAll("[\\&|[\\uFE30-\\uFFA0]|\\’|\\”|\\s\\?\\,\\.]+", "-");
+    return title
+        .toLowerCase()
+        .replaceAll("[\\&|[\\uFE30-\\uFFA0]|\\’|\\”|\\s\\?\\,\\.]+", "-")
+        .replaceAll("[\\x00-\\x2F\\x3A-\\x60\\x7B-\\x7F]+", "-")
+        .replaceAll("-{2,}", "-")
+        .replaceAll("^-+|-+$", "");
   }
 }
