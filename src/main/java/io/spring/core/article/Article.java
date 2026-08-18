@@ -64,7 +64,10 @@ public class Article {
     }
   }
 
+  private static final String SEPARATOR_PATTERN =
+      "[[\\p{ASCII}&&[^a-zA-Z0-9]]|[\\uFE30-\\uFFA0]|\\u2019|\\u201D]+";
+
   public static String toSlug(String title) {
-    return title.toLowerCase().replaceAll("[\\&|[\\uFE30-\\uFFA0]|\\’|\\”|\\s\\?\\,\\.]+", "-");
+    return title.toLowerCase().replaceAll(SEPARATOR_PATTERN, "-").replaceAll("^-+|-+$", "");
   }
 }
