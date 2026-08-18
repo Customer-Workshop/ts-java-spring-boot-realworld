@@ -9,8 +9,8 @@ import checkLogin from "../../lib/utils/checkLogin";
 import { SERVER_BASE_URL } from "../../lib/utils/constant";
 import storage from "../../lib/utils/storage";
 
-const COUNTER_THRESHOLD = 15000;
-const MAX_LENGTH = 16384;
+const COMMENT_MAX_LENGTH = 16384;
+const COMMENT_WARN_THRESHOLD = 15000;
 
 const CommentInput = () => {
   const { data: currentUser } = useSWR("user", storage);
@@ -22,6 +22,9 @@ const CommentInput = () => {
 
   const [content, setContent] = React.useState("");
   const [isLoading, setLoading] = React.useState(false);
+
+  const isOverLimit = content.length > COMMENT_MAX_LENGTH;
+  const showCounter = content.length > COMMENT_WARN_THRESHOLD;
 
   const handleChange = React.useCallback((e) => {
     setContent(e.target.value);
@@ -49,8 +52,6 @@ const CommentInput = () => {
     trigger(`${SERVER_BASE_URL}/articles/${pid}/comments`);
   };
 
-  const isTooLong = content.length > MAX_LENGTH;
-
   if (!isLoggedIn) {
     return (
       <p>
@@ -77,9 +78,9 @@ const CommentInput = () => {
           onChange={handleChange}
           disabled={isLoading}
         />
-        {content.length > COUNTER_THRESHOLD && (
-          <div style={{ color: isTooLong ? "red" : undefined }}>
-            {content.length} / {MAX_LENGTH}
+        {showCounter && (
+          <div style={{ color: isOverLimit ? "red" : undefined }}>
+            {content.length} / {COMMENT_MAX_LENGTH}
           </div>
         )}
       </div>
@@ -92,7 +93,7 @@ const CommentInput = () => {
         <button
           className="btn btn-sm btn-primary"
           type="submit"
-          disabled={isTooLong}
+          disabled={isOverLimit}
         >
           Post Comment
         </button>
