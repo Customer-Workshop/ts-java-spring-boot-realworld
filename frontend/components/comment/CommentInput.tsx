@@ -9,6 +9,9 @@ import checkLogin from "../../lib/utils/checkLogin";
 import { SERVER_BASE_URL } from "../../lib/utils/constant";
 import storage from "../../lib/utils/storage";
 
+const COUNTER_THRESHOLD = 15000;
+const MAX_LENGTH = 16384;
+
 const CommentInput = () => {
   const { data: currentUser } = useSWR("user", storage);
   const isLoggedIn = checkLogin(currentUser);
@@ -46,6 +49,8 @@ const CommentInput = () => {
     trigger(`${SERVER_BASE_URL}/articles/${pid}/comments`);
   };
 
+  const isTooLong = content.length > MAX_LENGTH;
+
   if (!isLoggedIn) {
     return (
       <p>
@@ -72,6 +77,11 @@ const CommentInput = () => {
           onChange={handleChange}
           disabled={isLoading}
         />
+        {content.length > COUNTER_THRESHOLD && (
+          <div style={{ color: isTooLong ? "red" : undefined }}>
+            {content.length} / {MAX_LENGTH}
+          </div>
+        )}
       </div>
       <div className="card-footer">
         <CustomImage
@@ -79,7 +89,11 @@ const CommentInput = () => {
           src={currentUser?.image}
           alt="Comment author's profile image"
         />
-        <button className="btn btn-sm btn-primary" type="submit">
+        <button
+          className="btn btn-sm btn-primary"
+          type="submit"
+          disabled={isTooLong}
+        >
           Post Comment
         </button>
       </div>
