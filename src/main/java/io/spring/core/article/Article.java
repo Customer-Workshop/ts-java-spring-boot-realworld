@@ -3,6 +3,9 @@ package io.spring.core.article;
 import static java.util.stream.Collectors.toList;
 
 import io.spring.Util;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.Normalizer;
 import java.util.HashSet;
 import java.util.List;
@@ -40,7 +43,7 @@ public class Article {
       String userId,
       DateTime createdAt) {
     this.id = UUID.randomUUID().toString();
-    this.slug = slugFrom(title);
+    this.slug = toSlug(title);
     this.title = title;
     this.description = description;
     this.body = body;
@@ -53,7 +56,7 @@ public class Article {
   public void update(String title, String description, String body) {
     if (!Util.isEmpty(title)) {
       this.title = title;
-      this.slug = slugFrom(title);
+      this.slug = toSlug(title);
       this.updatedAt = new DateTime();
     }
     if (!Util.isEmpty(description)) {
@@ -67,15 +70,29 @@ public class Article {
   }
 
   public static String toSlug(String title) {
-    return Normalizer.normalize(title, Normalizer.Form.NFD)
-        .replaceAll("\\p{M}", "")
-        .toLowerCase(Locale.ROOT)
-        .replaceAll("[^a-z0-9]+", "-")
-        .replaceAll("^-+|-+$", "");
+    String slug =
+        Normalizer.normalize(title, Normalizer.Form.NFD)
+            .replaceAll("\\p{M}", "")
+            .toLowerCase(Locale.ROOT)
+            .replaceAll("[^a-z0-9]+", "-")
+            .replaceAll("^-+|-+$", "");
+    return slug.isEmpty() ? hashSlug(title) : slug;
   }
 
-  private String slugFrom(String title) {
-    String slug = toSlug(title);
-    return slug.isEmpty() ? id : slug;
+  private static String hashSlug(String title) {
+    try {
+      byte[] digest =
+          MessageDigest.getInstance("SHA-256")
+              .digest(
+                  Normalizer.normalize(title, Normalizer.Form.NFC)
+                      .getBytes(StandardCharsets.UTF_8));
+      StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < 6; i++) {
+        sb.append(String.format("%02x", digest[i]));
+      }
+      return sb.toString();
+    } catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException(e);
+    }
   }
 }

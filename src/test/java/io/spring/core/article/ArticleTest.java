@@ -40,9 +40,17 @@ public class ArticleTest {
   }
 
   @Test
-  public void should_fall_back_to_id_when_title_has_no_ascii() {
+  public void should_fall_back_to_deterministic_hash_when_title_has_no_ascii() {
     Article article = new Article("中文：标题", "desc", "body", Arrays.asList("java"), "123");
-    assertThat(article.getSlug(), is(article.getId()));
+    assertThat(article.getSlug(), is(Article.toSlug("中文：标题")));
+    assertThat(article.getSlug().matches("[a-f0-9]{12}"), is(true));
+  }
+
+  @Test
+  public void should_generate_same_slug_for_same_non_ascii_title() {
+    Article first = new Article("中文：标题", "desc", "body", Arrays.asList("java"), "123");
+    Article second = new Article("中文：标题", "desc", "body", Arrays.asList("java"), "456");
+    assertThat(first.getSlug(), is(second.getSlug()));
   }
 
   @Test
