@@ -3,8 +3,10 @@ package io.spring.core.article;
 import static java.util.stream.Collectors.toList;
 
 import io.spring.Util;
+import java.text.Normalizer;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -65,6 +67,21 @@ public class Article {
   }
 
   public static String toSlug(String title) {
-    return title.toLowerCase().replaceAll("[\\&|[\\uFE30-\\uFFA0]|\\’|\\”|\\s\\?\\,\\.]+", "-");
+    if (Util.isEmpty(title)) {
+      return fallbackSlug(title);
+    }
+
+    String slug =
+        Normalizer.normalize(title, Normalizer.Form.NFKD)
+            .replaceAll("\\p{M}+", "")
+            .toLowerCase(Locale.ROOT)
+            .replaceAll("[^a-z0-9]+", "-")
+            .replaceAll("^-|-$", "");
+
+    return slug.isEmpty() ? fallbackSlug(title) : slug;
+  }
+
+  private static String fallbackSlug(String title) {
+    return "article-" + Integer.toHexString(title == null ? 0 : title.hashCode());
   }
 }
