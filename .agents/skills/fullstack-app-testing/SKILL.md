@@ -6,7 +6,7 @@ description: How to run and E2E-test the RealWorld app (Spring Boot backend + Ne
 # Full-stack E2E testing of ts-java-spring-boot-realworld
 
 ## Running the app
-- Backend MUST run on Java 11. If the shell's default `java` is 17/21, `./gradlew bootRun` fails during `:compileJava` with a Lombok error (`NoSuchFieldError: JCTree$JCImport ... qualid`). Fix: `JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 ./gradlew bootRun`. The blueprint sets Java 11 via update-alternatives/$ENVRC, but fresh shells may still default to a newer JDK — always export JAVA_HOME explicitly.
+- Backend runs on Java 21 (Gradle toolchain). If the shell's default `java` is older, run `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew bootRun` — always export JAVA_HOME explicitly in fresh shells.
 - Backend listens on :8080 and recreates SQLite `dev.db` with seed data (users janedoe/bobsmith/johndoe, several articles) on every bootRun. Ready when `curl http://localhost:8080/tags` returns JSON (startup can take ~1–2 min).
 - Frontend: `cd frontend && NODE_OPTIONS=--openssl-legacy-provider npm run dev` → http://localhost:3000 (talks to :8080 via `frontend/lib/utils/constant.ts`). The openssl-legacy-provider flag is required on Node 18+.
 

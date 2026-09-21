@@ -37,7 +37,7 @@ description: >
 
 ```
 ts-java-spring-boot-realworld/
-├── build.gradle              # Gradle build (Spring Boot 2.6.3, Java 11)
+├── build.gradle              # Gradle build (Spring Boot 3.5.x, Java 21 toolchain)
 ├── gradlew / gradlew.bat     # Gradle wrapper
 ├── src/main/java/io/spring/
 │   ├── api/                  # REST controllers (@RestController)
@@ -72,23 +72,25 @@ ts-java-spring-boot-realworld/
 └── frontend/                 # Next.js frontend (separate, optional)
 ```
 
-## Key Dependencies (current baseline — Spring Boot 2.6.3 / Java 11)
+## Key Dependencies (current baseline — Spring Boot 3.5.x / Java 21)
 
-| Artifact | Version | Upgrade Target (Boot 3.5.x) |
-|----------|---------|----------------------------|
-| `org.springframework.boot` (plugin) | 2.6.3 | 3.5.x |
-| `io.spring.dependency-management` | 1.0.11 | 1.1.x |
-| Java `sourceCompatibility` | 11 | 21 |
-| `com.netflix.dgs.codegen` | 5.0.6 | 7.x+ |
-| `com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter` | 4.9.21 | 8.x+ (Boot 3 compatible) |
-| `org.mybatis.spring.boot:mybatis-spring-boot-starter` | 2.2.2 | 3.0.x |
-| `io.jsonwebtoken:jjwt-api` | 0.11.2 | 0.12.x |
-| `joda-time:joda-time` | 2.10.13 | remove → `java.time` |
-| `org.xerial:sqlite-jdbc` | 3.36.0.3 | 3.45.x+ |
-| `io.rest-assured:spring-mock-mvc` (test) | 4.5.1 | 5.4.x |
-| `com.diffplug.spotless` | 6.2.1 | 6.25.x |
-| `org.flywaydb:flyway-core` | (managed) | 10.x (Boot 3.5 managed) |
-| Selenium (test) | 4.15.0 | 4.20.x |
+| Artifact | Version | Notes |
+|----------|---------|-------|
+| `org.springframework.boot` (plugin) | 3.5.9 | |
+| `io.spring.dependency-management` | 1.1.7 | |
+| Java toolchain | 21 | `java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }` |
+| Gradle wrapper | 8.14.5 | |
+| `com.netflix.dgs.codegen` | 7.0.3 | `PageInfo` mapped to `graphql.relay.PageInfo` |
+| `com.netflix.graphql.dgs:graphql-dgs-platform-dependencies` (BOM) | 10.6.0 | starter: `graphql-dgs-spring-graphql-starter` |
+| `org.mybatis.spring.boot:mybatis-spring-boot-starter` | 3.0.5 | |
+| `io.jsonwebtoken:jjwt-api` | 0.12.7 | `Jwts.parser()`, `verifyWith()`, `getPayload()` |
+| `joda-time:joda-time` | 2.10.13 | kept; custom Jackson serializer in `JacksonCustomizations` |
+| `org.xerial:sqlite-jdbc` | 3.36.0.3 | possible future bump: 3.45.x+ |
+| `io.rest-assured:*` (test) | (Boot managed) | |
+| `com.diffplug.spotless` | 7.2.1 | |
+| `jacoco` | 0.8.13 | |
+| `org.flywaydb:flyway-core` | (managed) | |
+| Selenium (test) | (Boot managed) | `WebDriverWait` takes `Duration` |
 
 ## General Approach: Java 11 → 21 / Spring Boot 2.x → 3.x Upgrades
 
